@@ -50,10 +50,6 @@ const ICE_CREAM_FACTS = [
   "🤫 Oregon urban legend: ice cream may not be eaten on Sundays in public. The loophole? This didn't apply to ice cream SUNDAES!",
   "🎬 Clint Eastwood ran for mayor of Carmel, CA on a campaign promise to repeal the ban on eating ice cream on sidewalks. He won and immediately struck down the law!",
   "🎬 In Carmel, CA it used to be illegal to eat ice cream while standing on a public sidewalk - to prevent sticky melted messes on city streets!",
-  // Ice Cream's Dark History
-  "🏥 Dark history: In the mid-20th century, mental institutions used 'ice cream therapy' as a PR cover-up for experimental procedures and neglect.",
-  "📰 Facilities conducting harsh experiments would invite photographers to shoot patients smiling and eating ice cream on the lawn - hiding the truth.",
-  "🏥 The upbeat 'ice cream on the lawn' media coverage successfully distracted the public and inspectors from investigating human rights abuses inside.",
   // Funny Waiting Phrases
   "🚚 Summoning your local ice cream dealer...",
   "🚚 Still locating your local ice cream dealer...",
@@ -182,7 +178,7 @@ export function SummoningAnimation({ isActive, phase = 'summoning' }: SummoningA
     return () => drive.stop();
   }, [isActive]);
 
-  // Cycle through facts every 6 seconds for comfortable reading pace
+  // Cycle through facts every 4 seconds
   useEffect(() => {
     if (!isActive) return;
     const interval = setInterval(() => {
@@ -217,7 +213,7 @@ export function SummoningAnimation({ isActive, phase = 'summoning' }: SummoningA
           }),
         ]).start();
       });
-    }, 6000);
+    }, 4000);
 
     // Initial fade in
     Animated.parallel([
