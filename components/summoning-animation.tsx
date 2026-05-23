@@ -34,6 +34,22 @@ const ICE_CREAM_FACTS = [
   "👅 Brain freeze cure: press your tongue to the roof of your mouth!",
   "🇺🇸 July is National Ice Cream Month thanks to President Ronald Reagan!",
   "🍦 Vanilla is the most popular flavor, proving humans are deeply predictable.",
+  // Ice Cream Science & Cravings
+  "🧠 Brain scans show eating ice cream lights up the SAME pleasure centers as winning the lottery!",
+  "💨 Cheap ice cream is pumped with up to 50% air (called 'overrun'). You're literally paying to eat sweetened frozen air!",
+  "❄️ Top-selling ice cream cities include Anchorage, Alaska - proving our cravings ignore the weather entirely!",
+  "🌿 The industry uses seaweed extract (carrageenan) as a secret stabilizer to keep your ice cream from melting into sad soup.",
+  // Hilarious Historical Disasters
+  "🩻 In Victorian London, 'penny lick' vendors sold ice cream in glass cups. Customers licked them clean and vendors refilled them WITHOUT washing - creating a citywide health disaster!",
+  "💰 George Washington loved ice cream so much he spent $200 in one summer (worth thousands today), leaving his accounting books looking absolutely ridiculous!",
+  "🎪 The ice cream cone was born from CHAOS at the 1904 World's Fair. A vendor ran out of dishes, panicked, and teamed up with a waffle vendor to save his business!",
+  "⚓ During WWII, the US Navy spent $1 MILLION converting a concrete barge into a floating ice cream parlor to lift sailor morale. Enemy intelligence was absolutely confused.",
+  // Wild Ice Cream Laws
+  "🐎 In several southern states, it's illegal to walk with an ice cream cone in your back pocket. Why? Horse thieves used it to lure horses away from farms!",
+  "🐎 The pocket-cone law exists because thieves would claim the horse 'just followed them.' Lawmakers banned the technique entirely!",
+  "🤫 Oregon urban legend: ice cream may not be eaten on Sundays in public. The loophole? This didn't apply to ice cream SUNDAES!",
+  "🎬 Clint Eastwood ran for mayor of Carmel, CA on a campaign promise to repeal the ban on eating ice cream on sidewalks. He won and immediately struck down the law!",
+  "🎬 In Carmel, CA it used to be illegal to eat ice cream while standing on a public sidewalk - to prevent sticky melted messes on city streets!",
   // Funny Waiting Phrases
   "🚚 Summoning your local ice cream dealer...",
   "🚚 Still locating your local ice cream dealer...",
