@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, iceCreamRequests, driverProfiles, driverLocationHistory, type InsertIceCreamRequest, type InsertDriverProfile } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -18,26 +18,24 @@ export async function getDb() {
   return _db;
 }
 
+// ============= AUTH FUNCTIONS (Required for OAuth) =============
+
 export async function upsertUser(user: InsertUser): Promise<void> {
   if (!user.openId) {
     throw new Error("User openId is required for upsert");
   }
-
   const db = await getDb();
   if (!db) {
     console.warn("[Database] Cannot upsert user: database not available");
     return;
   }
-
   try {
     const values: InsertUser = {
       openId: user.openId,
     };
     const updateSet: Record<string, unknown> = {};
-
     const textFields = ["name", "email", "loginMethod"] as const;
     type TextField = (typeof textFields)[number];
-
     const assignNullable = (field: TextField) => {
       const value = user[field];
       if (value === undefined) return;
@@ -45,9 +43,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values[field] = normalized;
       updateSet[field] = normalized;
     };
-
     textFields.forEach(assignNullable);
-
     if (user.lastSignedIn !== undefined) {
       values.lastSignedIn = user.lastSignedIn;
       updateSet.lastSignedIn = user.lastSignedIn;
@@ -59,15 +55,12 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values.role = "admin";
       updateSet.role = "admin";
     }
-
     if (!values.lastSignedIn) {
       values.lastSignedIn = new Date();
     }
-
     if (Object.keys(updateSet).length === 0) {
       updateSet.lastSignedIn = new Date();
     }
-
     await db.insert(users).values(values).onDuplicateKeyUpdate({
       set: updateSet,
     });
@@ -83,10 +76,210 @@ export async function getUserByOpenId(openId: string) {
     console.warn("[Database] Cannot get user: database not available");
     return undefined;
   }
-
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// ============= ICE CREAM REQUEST FUNCTIONS =============
+
+/**
+ * Create a new ice cream request
+ */
+export async function createRequest(data: InsertIceCreamRequest) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(iceCreamRequests).values(data);
+  return (result as any).insertId || 0;
+}
+
+/**
+ * Get all waiting requests (for drivers to see)
+ */
+export async function getWaitingRequests() {
+  const db = await getDb();
+  if (!db) return [];
+
+  return db
+    .select()
+    .from(iceCreamRequests)
+    .where(eq(iceCreamRequests.status, "waiting"));
+}
+
+/**
+ * Get requests for a specific customer
+ */
+export async function getCustomerRequests(customerId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return db
+    .select()
+    .from(iceCreamRequests)
+    .where(eq(iceCreamRequests.customerId, customerId));
+}
+
+/**
+ * Get active requests for a driver
+ */
+export async function getDriverRequests(driverId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return db
+    .select()
+    .from(iceCreamRequests)
+    .where(
+      and(
+        eq(iceCreamRequests.driverId, driverId),
+        eq(iceCreamRequests.status, "in_transit"),
+      ),
+    );
+}
+
+/**
+ * Accept a request (assign to driver)
+ */
+export async function acceptRequest(requestId: number, driverId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(iceCreamRequests)
+    .set({
+      driverId,
+      status: "accepted",
+      acceptedAt: new Date(),
+    })
+    .where(eq(iceCreamRequests.id, requestId));
+}
+
+/**
+ * Update request status
+ */
+export async function updateRequestStatus(
+  requestId: number,
+  status: "waiting" | "accepted" | "in_transit" | "completed" | "cancelled",
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const updateData: any = { status };
+  if (status === "completed") {
+    updateData.completedAt = new Date();
+  } else if (status === "cancelled") {
+    updateData.cancelledAt = new Date();
+  }
+
+  await db.update(iceCreamRequests).set(updateData).where(eq(iceCreamRequests.id, requestId));
+}
+
+/**
+ * Get driver profile
+ */
+export async function getDriverProfile(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const profiles = await db
+    .select()
+    .from(driverProfiles)
+    .where(eq(driverProfiles.userId, userId));
+
+  return profiles[0] || null;
+}
+
+/**
+ * Create driver profile
+ */
+export async function createDriverProfile(data: InsertDriverProfile) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(driverProfiles).values(data);
+  return (result as any).insertId || 0;
+}
+
+/**
+ * Update driver location
+ */
+export async function updateDriverLocation(
+  driverId: number,
+  latitude: number,
+  longitude: number,
+  heading?: number,
+  speed?: number,
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Update driver profile with latest location
+  await db
+    .update(driverProfiles)
+    .set({
+      currentLatitude: latitude,
+      currentLongitude: longitude,
+      lastLocationUpdate: new Date(),
+    })
+    .where(eq(driverProfiles.id, driverId));
+
+  // Record location history
+  await db.insert(driverLocationHistory).values({
+    driverId,
+    latitude,
+    longitude,
+    heading,
+    speed: speed ? String(speed) : undefined,
+  });
+}
+
+/**
+ * Get driver location history
+ */
+export async function getDriverLocationHistory(driverId: number, limit: number = 100) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return db
+    .select()
+    .from(driverLocationHistory)
+    .where(eq(driverLocationHistory.driverId, driverId))
+    .limit(limit);
+}
+
+/**
+ * Update driver earnings
+ */
+export async function updateDriverEarnings(driverId: number, amount: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const profile = await getDriverProfile(driverId);
+  if (!profile) throw new Error("Driver profile not found");
+
+  const newEarnings = (parseFloat(String(profile.totalEarnings)) + amount).toFixed(2);
+  const newDeliveries = (profile.totalDeliveries || 0) + 1;
+
+  await db
+    .update(driverProfiles)
+    .set({
+      totalEarnings: newEarnings,
+      totalDeliveries: newDeliveries,
+    })
+    .where(eq(driverProfiles.id, driverId));
+}
+
+/**
+ * Set driver online status
+ */
+export async function setDriverOnlineStatus(driverId: number, isOnline: boolean) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(driverProfiles)
+    .set({
+      isOnline: isOnline ? 1 : 0,
+    })
+    .where(eq(driverProfiles.id, driverId));
+}
