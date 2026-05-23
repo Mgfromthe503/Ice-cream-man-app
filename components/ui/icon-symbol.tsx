@@ -27,6 +27,7 @@ const MAPPING = {
   "star.fill": "star",
   "location.fill": "location-on",
   "list.bullet": "list",
+  "truck.box.fill": "local-shipping",
 } as IconMapping;
 
 /**

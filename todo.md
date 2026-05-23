@@ -130,3 +130,13 @@
 - [x] Match customers to drivers by area code/zone
 - [x] Wire up push notifications so drivers get alerts on new orders
 - [x] Add funny waiting messages (pregnant women, ice cream dealer, etc.)
+
+## Phase 16: Driver Registration & Recruitment (User Requested)
+- [ ] Build driver registration flow (name, truck info, license, photo)
+- [ ] Require registration before drivers can receive requests
+- [ ] Implement supply/demand detection (not enough drivers = show recruitment)
+- [ ] Show "Ice Cream Truck Drivers Wanted!" when demand exceeds supply
+- [ ] Create professional Craigslist job post for beta testing drivers
+- [ ] Create Indeed job listing for ice cream truck drivers
+- [ ] Update Google Play Store description with driver recruitment messaging
+- [ ] Generate shareable recruitment link within the app

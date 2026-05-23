@@ -8,6 +8,7 @@ import { trpc } from '@/lib/trpc';
 import { useLocation } from '@/lib/location-context';
 import { RatingsPrompt } from '@/components/ratings-prompt';
 import { SummoningAnimation } from '@/components/summoning-animation';
+import { DriversWantedBanner } from '@/components/drivers-wanted-banner';
 
 export default function CustomerHomeScreen() {
   const colors = useColors();
@@ -148,6 +149,11 @@ export default function CustomerHomeScreen() {
             <Text className="text-3xl font-bold text-foreground">🍦 Ice Cream Man</Text>
             <Text className="text-sm text-muted">One tap. Ice cream delivered.</Text>
           </View>
+
+          {/* Drivers Wanted Banner - shows when no drivers available */}
+          {requestStatus === 'idle' && (
+            <DriversWantedBanner registeredDrivers={0} activeCustomers={5} />
+          )}
 
           {/* Location Status */}
           <View className="bg-surface rounded-xl p-3 flex-row items-center gap-3 border border-border">

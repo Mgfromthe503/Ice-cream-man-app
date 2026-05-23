@@ -49,10 +49,10 @@ export default function DriverTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="earnings"
+        name="register"
         options={{
-          title: 'Earnings',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="dollarsign.circle.fill" color={color} />,
+          title: 'My Truck',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="truck.box.fill" color={color} />,
         }}
       />
       <Tabs.Screen
@@ -60,6 +60,12 @@ export default function DriverTabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="earnings"
+        options={{
+          href: null, // Hidden from tab bar, accessed via profile
         }}
       />
       <Tabs.Screen

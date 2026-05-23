@@ -204,7 +204,7 @@ describe('Big Ice Cream Order Button', () => {
   });
 
   it('should stop pulsing when summoning is active', () => {
-    const requestStatus = 'summoning';
+    const requestStatus: string = 'summoning';
     const shouldPulse = requestStatus === 'idle';
     expect(shouldPulse).toBe(false);
   });

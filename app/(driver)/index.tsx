@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import * as Haptics from 'expo-haptics';
 import { trpc } from '@/lib/trpc';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 
 interface RequestItem {
   id: number;
@@ -16,10 +17,13 @@ interface RequestItem {
 
 export default function DriverDashboardScreen() {
   const colors = useColors();
+  const router = useRouter();
   const [activeRequest, setActiveRequest] = useState<number | null>(null);
   const [activeLocation, setActiveLocation] = useState<string>('');
   const [areaCode, setAreaCode] = useState<string>('');
   const [isAreaCodeSet, setIsAreaCodeSet] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [isCheckingRegistration, setIsCheckingRegistration] = useState(true);
   const [areaCodeInput, setAreaCodeInput] = useState('');
   const [requests, setRequests] = useState<RequestItem[]>([]);
 
@@ -28,20 +32,26 @@ export default function DriverDashboardScreen() {
   const acceptRequestMutation = trpc.requests.accept.useMutation();
   const completeDeliveryMutation = trpc.driver.completeDelivery.useMutation();
 
-  // Load saved area code
+  // Load saved area code and check registration
   useEffect(() => {
-    const loadAreaCode = async () => {
+    const loadData = async () => {
       try {
-        const saved = await AsyncStorage.getItem('driverAreaCode');
-        if (saved) {
-          setAreaCode(saved);
+        const [savedAreaCode, registered] = await Promise.all([
+          AsyncStorage.getItem('driverAreaCode'),
+          AsyncStorage.getItem('driverIsRegistered'),
+        ]);
+        if (savedAreaCode) {
+          setAreaCode(savedAreaCode);
           setIsAreaCodeSet(true);
         }
+        setIsRegistered(registered === 'true');
       } catch (error) {
-        console.error('Error loading area code:', error);
+        console.error('Error loading data:', error);
+      } finally {
+        setIsCheckingRegistration(false);
       }
     };
-    loadAreaCode();
+    loadData();
   }, []);
 
   // Update requests from backend data
@@ -142,6 +152,46 @@ export default function DriverDashboardScreen() {
       Alert.alert('Error', 'Failed to complete delivery.');
     }
   };
+
+  // Registration Gate - must register truck before receiving requests
+  if (!isCheckingRegistration && !isRegistered) {
+    return (
+      <ScreenContainer className="p-6">
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          <View className="flex-1 gap-6 justify-center">
+            <View className="items-center gap-4">
+              <Text style={{ fontSize: 60 }}>🚚📋</Text>
+              <Text className="text-2xl font-bold text-foreground text-center">
+                Register Your Truck First!
+              </Text>
+              <Text className="text-sm text-muted text-center px-4">
+                Before you can receive ice cream requests, you need to register your truck and verify your information. This helps customers know there are real ice cream trucks available.
+              </Text>
+            </View>
+
+            <Pressable
+              onPress={() => router.push('/(driver)/register')}
+              style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
+            >
+              <View className="bg-primary rounded-xl p-5 items-center">
+                <Text className="text-white font-bold text-lg">🚚 Register My Truck</Text>
+              </View>
+            </Pressable>
+
+            <View className="bg-surface rounded-xl p-4 gap-2 border border-border">
+              <Text className="text-sm font-semibold text-foreground">Why register?</Text>
+              <Text className="text-xs text-muted leading-5">
+                • Customers can see real drivers are available{"\n"}
+                • Get matched to nearby customers automatically{"\n"}
+                • Build your reputation with ratings{"\n"}
+                • Track your earnings and gas savings
+              </Text>
+            </View>
+          </View>
+        </ScrollView>
+      </ScreenContainer>
+    );
+  }
 
   // Area Code Setup Screen
   if (!isAreaCodeSet) {
