@@ -10,6 +10,7 @@ import { RatingsPrompt } from '@/components/ratings-prompt';
 import { SummoningAnimation } from '@/components/summoning-animation';
 import { DriversWantedBanner } from '@/components/drivers-wanted-banner';
 import { ETADisplay } from '@/components/eta-messaging';
+import { FactOfTheDay } from '@/components/fact-of-the-day';
 
 export default function CustomerHomeScreen() {
   const colors = useColors();
@@ -150,6 +151,9 @@ export default function CustomerHomeScreen() {
             <Text className="text-3xl font-bold text-foreground">🍦 Ice Cream Man</Text>
             <Text className="text-sm text-muted">One tap. Ice cream delivered.</Text>
           </View>
+
+          {/* Ice Cream Fact of the Day */}
+          {requestStatus === 'idle' && <FactOfTheDay />}
 
           {/* Drivers Wanted Banner - shows when no drivers available */}
           {requestStatus === 'idle' && (

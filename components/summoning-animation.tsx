@@ -182,7 +182,7 @@ export function SummoningAnimation({ isActive, phase = 'summoning' }: SummoningA
     return () => drive.stop();
   }, [isActive]);
 
-  // Cycle through facts every 4 seconds
+  // Cycle through facts every 6 seconds for comfortable reading pace
   useEffect(() => {
     if (!isActive) return;
     const interval = setInterval(() => {
@@ -217,7 +217,7 @@ export function SummoningAnimation({ isActive, phase = 'summoning' }: SummoningA
           }),
         ]).start();
       });
-    }, 4000);
+    }, 6000);
 
     // Initial fade in
     Animated.parallel([
