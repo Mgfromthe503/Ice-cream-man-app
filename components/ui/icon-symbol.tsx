@@ -26,6 +26,7 @@ const MAPPING = {
   "clock.fill": "access-time",
   "star.fill": "star",
   "location.fill": "location-on",
+  "list.bullet": "list",
 } as IconMapping;
 
 /**

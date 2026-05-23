@@ -115,3 +115,9 @@
 - [x] Create marketing strategy document
 - [x] Set up GitHub repository documentation
 - [x] All unit tests passing (12/12)
+
+## Phase 14: Bug Fixes (User Reported)
+- [x] Move ratings to post-delivery (rate the ice cream man, not yourself)
+- [x] Fix location feature to properly detect user location (Oregon)
+- [x] Remove fake spending tracker (no way to track actual purchases)
+- [x] Replace spending tracker with useful customer features
