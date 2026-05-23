@@ -61,12 +61,14 @@ export async function initializeBilling(): Promise<boolean> {
   }
 
   try {
+    // react-native-iap is only available on native builds
+    // It will be added as a dependency during EAS build
     const RNIap = require('react-native-iap');
     const result = await RNIap.initConnection();
     console.log('[Billing] Connection initialized:', result);
     return true;
   } catch (error) {
-    console.error('[Billing] Failed to initialize:', error);
+    console.log('[Billing] IAP not available (expected on web/dev):', (error as any)?.message);
     return false;
   }
 }

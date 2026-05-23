@@ -129,12 +129,6 @@ const config: ExpoConfig = {
         },
       },
     ],
-    [
-      "react-native-iap",
-      {
-        paymentProvider: "Play Store",
-      },
-    ],
   ],
   experiments: {
     typedRoutes: true,
