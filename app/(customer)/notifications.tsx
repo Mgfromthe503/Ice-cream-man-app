@@ -11,7 +11,6 @@ interface NotifPrefs {
   driverOnWay: boolean;
   driverNearby: boolean;
   driverArrived: boolean;
-  promotions: boolean;
   safetyAlerts: boolean;
 }
 
@@ -20,7 +19,6 @@ const DEFAULT_PREFS: NotifPrefs = {
   driverOnWay: true,
   driverNearby: true,
   driverArrived: true,
-  promotions: false,
   safetyAlerts: true,
 };
 
@@ -185,13 +183,6 @@ export default function NotificationsScreen() {
               Other Notifications
             </Text>
 
-            <NotifToggle
-              emoji="🎁"
-              label="Promotions & Deals"
-              description="Special offers and discounts from vendors"
-              value={prefs.promotions}
-              onToggle={() => togglePref('promotions')}
-            />
             <NotifToggle
               emoji="⚠️"
               label="Safety Alerts"
