@@ -6,6 +6,7 @@ import * as Haptics from 'expo-haptics';
 import { trpc } from '@/lib/trpc';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
+import { ETAMessaging } from '@/components/eta-messaging';
 
 interface RequestItem {
   id: number;
@@ -304,6 +305,20 @@ export default function DriverDashboardScreen() {
               </View>
             </Pressable>
           </View>
+        )}
+
+        {/* ETA Messaging - show when driver has active delivery */}
+        {activeRequest && (
+          <ETAMessaging
+            isActive={!!activeRequest}
+            customerName="Customer"
+            onSendETA={(message) => {
+              // Send notification to customer
+              import('@/lib/notification-service').then(({ notifyCustomerETA }) => {
+                notifyCustomerETA('Ice Cream Man', message);
+              });
+            }}
+          />
         )}
 
         {/* Requests List */}

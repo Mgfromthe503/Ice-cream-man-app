@@ -9,6 +9,7 @@ import { useLocation } from '@/lib/location-context';
 import { RatingsPrompt } from '@/components/ratings-prompt';
 import { SummoningAnimation } from '@/components/summoning-animation';
 import { DriversWantedBanner } from '@/components/drivers-wanted-banner';
+import { ETADisplay } from '@/components/eta-messaging';
 
 export default function CustomerHomeScreen() {
   const colors = useColors();
@@ -191,6 +192,8 @@ export default function CustomerHomeScreen() {
                     </Text>
                   </View>
                 )}
+                {/* ETA Message from Driver */}
+                <ETADisplay message={estimatedTime ? `${estimatedTime} minutes away` : null} driverName={driverName} />
                 <Pressable
                   onPress={() => router.push('/(customer)/map')}
                   style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}

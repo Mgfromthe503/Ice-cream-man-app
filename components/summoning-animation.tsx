@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Animated, Easing } from 'react-native';
+import { View, Text, Animated, Easing, Platform } from 'react-native';
+import { useAudioPlayer } from 'expo-audio';
 
 const ICE_CREAM_FACTS = [
   "🍦 Who invented ice cream? The Chinese did around 200 BC!",
@@ -42,6 +43,9 @@ const SUMMONING_PHASES = [
   "🚚 Truck located! On the way...",
 ];
 
+// Use require for bundled asset
+const jingleSource = require('../assets/ice-cream-jingle.mp3');
+
 interface SummoningAnimationProps {
   isActive: boolean;
   phase?: 'summoning' | 'searching' | 'found' | 'onTheWay';
@@ -55,6 +59,43 @@ export function SummoningAnimation({ isActive, phase = 'summoning' }: SummoningA
   const slideAnim = useRef(new Animated.Value(30)).current;
   const truckAnim = useRef(new Animated.Value(-50)).current;
   const dotsAnim = useRef(new Animated.Value(0)).current;
+
+  // Audio player for the jingle
+  const player = useAudioPlayer(jingleSource);
+
+  // Play/stop jingle when animation activates
+  useEffect(() => {
+    if (isActive && player) {
+      try {
+        player.loop = true;
+        player.volume = 0.5;
+        player.play();
+      } catch (e) {
+        // Audio may not be available on all platforms
+        console.log('Audio playback not available:', e);
+      }
+    } else if (!isActive && player) {
+      try {
+        player.pause();
+        player.seekTo(0);
+      } catch (e) {
+        // Ignore errors on pause
+      }
+    }
+  }, [isActive, player]);
+
+  // Clean up audio on unmount
+  useEffect(() => {
+    return () => {
+      if (player) {
+        try {
+          player.release();
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      }
+    };
+  }, []);
 
   // Pulse animation for the summoning circle
   useEffect(() => {
@@ -183,6 +224,13 @@ export function SummoningAnimation({ isActive, phase = 'summoning' }: SummoningA
 
   return (
     <View className="items-center gap-4 py-4">
+      {/* Jingle Playing Indicator */}
+      <View className="flex-row items-center gap-2 bg-surface rounded-full px-4 py-2">
+        <Text style={{ fontSize: 16 }}>🎵</Text>
+        <Text className="text-xs text-muted font-medium">Ice cream jingle playing...</Text>
+        <Text style={{ fontSize: 16 }}>🎶</Text>
+      </View>
+
       {/* Summoning Circle with Pulse */}
       <Animated.View
         style={{

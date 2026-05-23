@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Notification types
-export type NotificationType = 'new_request' | 'request_accepted' | 'driver_arriving' | 'delivery_complete';
+export type NotificationType = 'new_request' | 'request_accepted' | 'driver_arriving' | 'delivery_complete' | 'eta_update';
 
 interface NotificationPayload {
   type: NotificationType;
@@ -123,6 +123,18 @@ export async function notifyCustomerAccepted(driverName: string, eta: number): P
     title: '🚚 Ice Cream Man is Coming!',
     body: `${driverName} accepted your request! ETA: ${eta} minutes`,
     data: { driverName, eta },
+  });
+}
+
+/**
+ * Notify customer of driver ETA update
+ */
+export async function notifyCustomerETA(driverName: string, etaMessage: string): Promise<void> {
+  await sendLocalNotification({
+    type: 'eta_update',
+    title: `🚚 ${driverName} says:`,
+    body: etaMessage,
+    data: { driverName, message: etaMessage },
   });
 }
 

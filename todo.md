@@ -132,11 +132,14 @@
 - [x] Add funny waiting messages (pregnant women, ice cream dealer, etc.)
 
 ## Phase 16: Driver Registration & Recruitment (User Requested)
-- [ ] Build driver registration flow (name, truck info, license, photo)
-- [ ] Require registration before drivers can receive requests
-- [ ] Implement supply/demand detection (not enough drivers = show recruitment)
-- [ ] Show "Ice Cream Truck Drivers Wanted!" when demand exceeds supply
-- [ ] Create professional Craigslist job post for beta testing drivers
-- [ ] Create Indeed job listing for ice cream truck drivers
-- [ ] Update Google Play Store description with driver recruitment messaging
-- [ ] Generate shareable recruitment link within the app
+- [x] Build driver registration flow (name, truck info, auto-assigned truck number)
+- [x] Require registration before drivers can receive requests
+- [x] Implement supply/demand detection (not enough drivers = show recruitment)
+- [x] Show "Ice Cream Truck Drivers Wanted!" when demand exceeds supply
+- [x] Update Google Play Store description with driver recruitment messaging
+
+## Phase 17: Jingle & ETA Messaging
+- [x] Add ice cream truck jingle sound during summoning animation
+- [x] Create driver-to-customer ETA messaging system
+- [x] Add quick-reply ETA buttons for drivers (2 min, 5 min, 10 min, On my way!)
+- [x] Show ETA notifications on customer screen during active request
