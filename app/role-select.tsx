@@ -1,16 +1,20 @@
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, Pressable, ScrollView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { useAuth } from '@/lib/auth-context';
-import { useColors } from '@/hooks/use-colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
+import { FactTicker } from '@/components/fact-ticker';
 
 export default function RoleSelectScreen() {
   const router = useRouter();
   const { setUserRole } = useAuth();
-  const colors = useColors();
 
   const handleRoleSelect = async (role: 'customer' | 'driver') => {
     try {
+      if (Platform.OS !== 'web') {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }
       await setUserRole(role);
       if (role === 'customer') {
         router.replace('/(customer)');
@@ -23,52 +27,135 @@ export default function RoleSelectScreen() {
   };
 
   return (
-    <ScreenContainer className="p-6">
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1">
-        <View className="flex-1 gap-8 justify-center">
-          {/* Header */}
-          <View className="items-center gap-2">
-            <Text className="text-4xl font-bold text-foreground">🍦 Ice Cream Man</Text>
-            <Text className="text-base text-muted text-center">Choose your role to get started</Text>
-          </View>
+    <View style={{ flex: 1 }}>
+      <LinearGradient
+        colors={['#FFF8DC', '#FFE4E1', '#FFB6D9', '#FF69B4']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{ flex: 1 }}
+      >
+        <ScreenContainer containerClassName="bg-transparent" className="p-6">
+          <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1">
+            <View style={{ flex: 1, gap: 28, justifyContent: 'center' }}>
+              {/* Header */}
+              <View style={{ alignItems: 'center', gap: 8 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Text style={{ fontSize: 44 }}>🍦</Text>
+                  <Text style={{ fontSize: 32, fontWeight: '900', color: '#8B4513' }}>
+                    Ice Cream Man
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 15, color: '#A0826D', textAlign: 'center' }}>
+                  Choose your role to get started
+                </Text>
+              </View>
 
-          {/* Customer Card */}
-          <Pressable
-            onPress={() => handleRoleSelect('customer')}
-            style={({ pressed }) => [
-              {
-                opacity: pressed ? 0.8 : 1,
-              },
-            ]}
-          >
-            <View className="bg-surface rounded-2xl p-8 border-2 border-primary shadow-md">
-              <Text className="text-5xl text-center mb-4">👨‍👧‍👦</Text>
-              <Text className="text-2xl font-bold text-foreground text-center mb-2">Customer</Text>
-              <Text className="text-sm text-muted text-center leading-relaxed">
-                Order ice cream to your neighborhood with one tap. Track the ice cream truck in real-time.
-              </Text>
-            </View>
-          </Pressable>
+              {/* Customer Card */}
+              <Pressable
+                onPress={() => handleRoleSelect('customer')}
+                style={({ pressed }) => [{
+                  opacity: pressed ? 0.9 : 1,
+                  transform: [{ scale: pressed ? 0.97 : 1 }],
+                }]}
+              >
+                <LinearGradient
+                  colors={['#FF69B4', '#FF1493', '#C71585']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{
+                    borderRadius: 24,
+                    padding: 28,
+                    shadowColor: '#FF1493',
+                    shadowOffset: { width: 0, height: 8 },
+                    shadowOpacity: 0.4,
+                    shadowRadius: 16,
+                    elevation: 10,
+                  }}
+                >
+                  <View style={{ alignItems: 'center', gap: 12 }}>
+                    <Text style={{ fontSize: 56 }}>👨‍👧‍👦</Text>
+                    <Text style={{ fontSize: 24, fontWeight: '800', color: '#FFFFFF' }}>
+                      Customer
+                    </Text>
+                    <Text style={{ fontSize: 14, color: '#FFE4E1', textAlign: 'center', lineHeight: 20 }}>
+                      Order ice cream to your neighborhood with one tap.{'\n'}Track the ice cream truck in real-time.
+                    </Text>
+                    <View style={{
+                      backgroundColor: 'rgba(255,255,255,0.25)',
+                      borderRadius: 20,
+                      paddingHorizontal: 20,
+                      paddingVertical: 8,
+                      marginTop: 4,
+                    }}>
+                      <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 13 }}>
+                        Tap to Order Ice Cream →
+                      </Text>
+                    </View>
+                  </View>
+                </LinearGradient>
+              </Pressable>
 
-          {/* Driver Card */}
-          <Pressable
-            onPress={() => handleRoleSelect('driver')}
-            style={({ pressed }) => [
-              {
-                opacity: pressed ? 0.8 : 1,
-              },
-            ]}
-          >
-            <View className="bg-surface rounded-2xl p-8 border-2 border-warning shadow-md">
-              <Text className="text-5xl text-center mb-4">🚚</Text>
-              <Text className="text-2xl font-bold text-foreground text-center mb-2">Ice Cream Vendor</Text>
-              <Text className="text-sm text-muted text-center leading-relaxed">
-                Receive customer requests and earn money. Get alerts for neighborhoods requesting service.
-              </Text>
+              {/* Driver Card */}
+              <Pressable
+                onPress={() => handleRoleSelect('driver')}
+                style={({ pressed }) => [{
+                  opacity: pressed ? 0.9 : 1,
+                  transform: [{ scale: pressed ? 0.97 : 1 }],
+                }]}
+              >
+                <LinearGradient
+                  colors={['#FFD700', '#FFA500', '#FF8C00']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{
+                    borderRadius: 24,
+                    padding: 28,
+                    shadowColor: '#FF8C00',
+                    shadowOffset: { width: 0, height: 8 },
+                    shadowOpacity: 0.4,
+                    shadowRadius: 16,
+                    elevation: 10,
+                  }}
+                >
+                  <View style={{ alignItems: 'center', gap: 12 }}>
+                    <Text style={{ fontSize: 56 }}>🚚</Text>
+                    <Text style={{ fontSize: 24, fontWeight: '800', color: '#FFFFFF' }}>
+                      Ice Cream Vendor
+                    </Text>
+                    <Text style={{ fontSize: 14, color: '#FFF8E7', textAlign: 'center', lineHeight: 20 }}>
+                      Receive customer requests and earn money.{'\n'}Get alerts for neighborhoods requesting service.
+                    </Text>
+                    <View style={{
+                      backgroundColor: 'rgba(255,255,255,0.25)',
+                      borderRadius: 20,
+                      paddingHorizontal: 20,
+                      paddingVertical: 8,
+                      marginTop: 4,
+                    }}>
+                      <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 13 }}>
+                        Start Earning Money →
+                      </Text>
+                    </View>
+                  </View>
+                </LinearGradient>
+              </Pressable>
+
+              {/* Fun Facts Ticker */}
+              <FactTicker variant="banner" />
+
+              {/* Footer tagline */}
+              <View style={{ alignItems: 'center', gap: 4, marginTop: 8 }}>
+                <Text style={{ fontSize: 12, color: '#A0826D', textAlign: 'center' }}>
+                  Connecting neighborhoods with ice cream trucks
+                </Text>
+                <Text style={{ fontSize: 11, color: '#C4A882' }}>
+                  v1.0.0
+                </Text>
+              </View>
             </View>
-          </Pressable>
-        </View>
-      </ScrollView>
-    </ScreenContainer>
+          </ScrollView>
+        </ScreenContainer>
+      </LinearGradient>
+    </View>
   );
 }

@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, FlatList, Alert, ActivityIndicator, TextInput } from 'react-native';
+import { View, Text, Pressable, ScrollView, FlatList, Alert, ActivityIndicator, TextInput, Linking, Platform } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { useState, useEffect } from 'react';
@@ -7,6 +7,7 @@ import { trpc } from '@/lib/trpc';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { ETAMessaging } from '@/components/eta-messaging';
+import { FactTicker } from '@/components/fact-ticker';
 
 interface RequestItem {
   id: number;
@@ -123,12 +124,55 @@ export default function DriverDashboardScreen() {
       
       setActiveRequest(requestId);
       setActiveLocation(location);
+      // Save to AsyncStorage so map tab can read it
+      await AsyncStorage.setItem('activeDeliveryLocation', location);
       // Remove accepted request from list
       setRequests(requests.filter((r) => r.id !== requestId));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error) {
       console.error('Failed to accept request:', error);
       Alert.alert('Error', 'Failed to accept request.');
+    }
+  };
+
+  /**
+   * Open maps app with directions to customer's location.
+   * Uses Google Maps on Android, Apple Maps on iOS, Google Maps URL on web.
+   */
+  const handleNavigateToCustomer = async (address: string) => {
+    try {
+      if (Platform.OS !== 'web') {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+
+      const encodedAddress = encodeURIComponent(address);
+      let url = '';
+
+      if (Platform.OS === 'ios') {
+        // Apple Maps with directions
+        url = `maps://app?daddr=${encodedAddress}&dirflg=d`;
+      } else if (Platform.OS === 'android') {
+        // Google Maps with navigation mode
+        url = `google.navigation:q=${encodedAddress}&mode=d`;
+      } else {
+        // Web fallback - Google Maps
+        url = `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}&travelmode=driving`;
+      }
+
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        await Linking.openURL(url);
+      } else {
+        // Fallback to Google Maps web URL
+        const fallbackUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}&travelmode=driving`;
+        await Linking.openURL(fallbackUrl);
+      }
+    } catch (error) {
+      console.error('Navigation error:', error);
+      Alert.alert(
+        'Navigation Error',
+        'Could not open maps. Please search for the address manually: ' + address
+      );
     }
   };
 
@@ -146,6 +190,8 @@ export default function DriverDashboardScreen() {
       
       setActiveRequest(null);
       setActiveLocation('');
+      // Clear from AsyncStorage so map tab shows empty state
+      await AsyncStorage.removeItem('activeDeliveryLocation');
       Alert.alert('🎉 Delivery Complete!', 'Great job! Ready for the next one.');
       refetch(); // Refresh available requests
     } catch (error) {
@@ -293,6 +339,27 @@ export default function DriverDashboardScreen() {
                 <Text className="text-sm text-white opacity-90">{activeLocation}</Text>
               </View>
             </View>
+
+            {/* NAVIGATE BUTTON - Opens maps with directions to customer */}
+            <Pressable
+              onPress={() => handleNavigateToCustomer(activeLocation)}
+              style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
+            >
+              <View style={{
+                backgroundColor: '#1565C0',
+                borderRadius: 12,
+                padding: 14,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+              }}>
+                <Text style={{ fontSize: 20 }}>🗺️</Text>
+                <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>Navigate to Customer</Text>
+                <Text style={{ fontSize: 14 }}>📍</Text>
+              </View>
+            </Pressable>
+
             <Pressable
               onPress={handleCompleteDelivery}
               disabled={completeDeliveryMutation.isPending}
@@ -344,6 +411,9 @@ export default function DriverDashboardScreen() {
                   <Text className="text-primary font-semibold">🔄 Refresh</Text>
                 </View>
               </Pressable>
+              <View style={{ marginTop: 16, width: '100%' }}>
+                <FactTicker variant="card" />
+              </View>
             </View>
           )}
 
@@ -370,17 +440,44 @@ export default function DriverDashboardScreen() {
                     </View>
                   </View>
                 </View>
-                <Pressable
-                  onPress={() => handleAcceptRequest(item.id, item.location)}
-                  disabled={acceptRequestMutation.isPending || !!activeRequest}
-                  style={({ pressed }) => [{ opacity: (pressed || !!activeRequest) ? 0.6 : 1 }]}
-                >
-                  <View className={`${activeRequest ? 'bg-muted' : 'bg-primary'} rounded-lg p-3`}>
-                    <Text className="text-white font-bold text-center">
-                      {acceptRequestMutation.isPending ? '⏳ Accepting...' : activeRequest ? '🔒 Finish current delivery first' : '🍦 Accept Request'}
-                    </Text>
-                  </View>
-                </Pressable>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  {/* Preview directions button */}
+                  <Pressable
+                    onPress={() => handleNavigateToCustomer(item.location)}
+                    style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1, flex: 1 }]}
+                  >
+                    <View style={{
+                      backgroundColor: '#1565C0',
+                      borderRadius: 10,
+                      padding: 12,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 4,
+                    }}>
+                      <Text style={{ fontSize: 14 }}>🗺️</Text>
+                      <Text style={{ color: '#fff', fontWeight: '600', fontSize: 12 }}>Directions</Text>
+                    </View>
+                  </Pressable>
+
+                  {/* Accept request button */}
+                  <Pressable
+                    onPress={() => handleAcceptRequest(item.id, item.location)}
+                    disabled={acceptRequestMutation.isPending || !!activeRequest}
+                    style={({ pressed }) => [{ opacity: (pressed || !!activeRequest) ? 0.6 : 1, flex: 2 }]}
+                  >
+                    <View style={{
+                      backgroundColor: activeRequest ? '#9BA1A6' : colors.primary,
+                      borderRadius: 10,
+                      padding: 12,
+                      alignItems: 'center',
+                    }}>
+                      <Text style={{ color: '#fff', fontWeight: '700', fontSize: 13 }}>
+                        {acceptRequestMutation.isPending ? '⏳ Accepting...' : activeRequest ? '🔒 Busy' : '🍦 Accept'}
+                      </Text>
+                    </View>
+                  </Pressable>
+                </View>
               </View>
             )}
           />

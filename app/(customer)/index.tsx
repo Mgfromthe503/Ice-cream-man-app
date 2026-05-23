@@ -10,6 +10,11 @@ import { RatingsPrompt } from '@/components/ratings-prompt';
 import { SummoningAnimation } from '@/components/summoning-animation';
 import { DriversWantedBanner } from '@/components/drivers-wanted-banner';
 import { ETADisplay } from '@/components/eta-messaging';
+import { useAudioPlayer } from 'expo-audio';
+import { FactTicker } from '@/components/fact-ticker';
+
+// Short jingle snippet for arrival notification
+const arrivalJingleSource = require('../../assets/ice-cream-jingle-short.mp3');
 
 export default function CustomerHomeScreen() {
   const colors = useColors();
@@ -18,6 +23,10 @@ export default function CustomerHomeScreen() {
   const [requestStatus, setRequestStatus] = useState<'idle' | 'summoning' | 'searching' | 'accepted' | 'arrived' | 'completed'>('idle');
   const [estimatedTime, setEstimatedTime] = useState<number | null>(null);
   const [showRating, setShowRating] = useState(false);
+
+  // Arrival jingle - plays once when driver arrives
+  const arrivalPlayer = useAudioPlayer(arrivalJingleSource);
+  const arrivalPlayedRef = useRef(false);
   const [driverName, setDriverName] = useState('your Ice Cream Man');
   const createRequestMutation = trpc.requests.create.useMutation();
 
@@ -70,6 +79,9 @@ export default function CustomerHomeScreen() {
 
   const handleBigIceCreamPress = async () => {
     try {
+      // Prevent multiple presses while already summoning (prevents jingle stacking)
+      if (requestStatus !== 'idle') return;
+
       if (!userLocation) {
         Alert.alert(
           'Location Needed 📍',
@@ -108,6 +120,17 @@ export default function CustomerHomeScreen() {
         setRequestStatus('arrived');
         setEstimatedTime(null);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        // Play arrival jingle once
+        if (arrivalPlayer && !arrivalPlayedRef.current) {
+          arrivalPlayedRef.current = true;
+          try {
+            arrivalPlayer.volume = 0.6;
+            arrivalPlayer.seekTo(0);
+            arrivalPlayer.play();
+          } catch (e) {
+            console.log('Arrival jingle not available:', e);
+          }
+        }
       }, 20000);
     } catch (error) {
       console.error('Failed to send request:', error);
@@ -124,11 +147,13 @@ export default function CustomerHomeScreen() {
   const handleCancelRequest = () => {
     setRequestStatus('idle');
     setEstimatedTime(null);
+    arrivalPlayedRef.current = false; // Reset for next order
   };
 
   const handleRatingClose = () => {
     setShowRating(false);
     setRequestStatus('idle');
+    arrivalPlayedRef.current = false; // Reset for next order
   };
 
   const getLocationDisplay = () => {
@@ -310,6 +335,11 @@ export default function CustomerHomeScreen() {
                     One tap brings the truck to your neighborhood!
                   </Text>
                 )}
+              </View>
+
+              {/* Fun Facts Ticker - rotates every 4 seconds */}
+              <View style={{ marginTop: 16 }}>
+                <FactTicker variant="card" />
               </View>
             </View>
           )}

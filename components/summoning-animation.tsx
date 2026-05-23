@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Animated, Easing, Platform } from 'react-native';
-import { useAudioPlayer } from 'expo-audio';
+import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 
 const ICE_CREAM_FACTS = [
   // Bizarre Flavor Failures
@@ -40,16 +40,14 @@ const ICE_CREAM_FACTS = [
   "❄️ Top-selling ice cream cities include Anchorage, Alaska - proving our cravings ignore the weather entirely!",
   "🌿 The industry uses seaweed extract (carrageenan) as a secret stabilizer to keep your ice cream from melting into sad soup.",
   // Hilarious Historical Disasters
-  "🩻 In Victorian London, 'penny lick' vendors sold ice cream in glass cups. Customers licked them clean and vendors refilled them WITHOUT washing - creating a citywide health disaster!",
-  "💰 George Washington loved ice cream so much he spent $200 in one summer (worth thousands today), leaving his accounting books looking absolutely ridiculous!",
-  "🎪 The ice cream cone was born from CHAOS at the 1904 World's Fair. A vendor ran out of dishes, panicked, and teamed up with a waffle vendor to save his business!",
-  "⚓ During WWII, the US Navy spent $1 MILLION converting a concrete barge into a floating ice cream parlor to lift sailor morale. Enemy intelligence was absolutely confused.",
+  "🩻 In Victorian London, 'penny lick' vendors sold ice cream in glass cups licked clean and refilled WITHOUT washing - a citywide health disaster!",
+  "💰 George Washington loved ice cream so much he spent $200 in one summer (worth thousands today)!",
+  "🎪 The ice cream cone was born from CHAOS at the 1904 World's Fair when a vendor ran out of dishes!",
+  "⚓ During WWII, the US Navy spent $1 MILLION converting a barge into a floating ice cream parlor!",
   // Wild Ice Cream Laws
-  "🐎 In several southern states, it's illegal to walk with an ice cream cone in your back pocket. Why? Horse thieves used it to lure horses away from farms!",
-  "🐎 The pocket-cone law exists because thieves would claim the horse 'just followed them.' Lawmakers banned the technique entirely!",
-  "🤫 Oregon urban legend: ice cream may not be eaten on Sundays in public. The loophole? This didn't apply to ice cream SUNDAES!",
-  "🎬 Clint Eastwood ran for mayor of Carmel, CA on a campaign promise to repeal the ban on eating ice cream on sidewalks. He won and immediately struck down the law!",
-  "🎬 In Carmel, CA it used to be illegal to eat ice cream while standing on a public sidewalk - to prevent sticky melted messes on city streets!",
+  "🐎 It's illegal to walk with an ice cream cone in your back pocket in some states - horse thieves used it to lure horses!",
+  "🤫 Oregon urban legend: ice cream may not be eaten on Sundays in public!",
+  "🎬 Clint Eastwood ran for mayor to repeal the ban on eating ice cream on sidewalks. He won!",
   // Funny Waiting Phrases
   "🚚 Summoning your local ice cream dealer...",
   "🚚 Still locating your local ice cream dealer...",
@@ -60,8 +58,8 @@ const ICE_CREAM_FACTS = [
   "🚚 Your neighborhood ice cream hero is suiting up...",
   "🚚 Activating ice cream bat signal... 🦇🍦",
   "🚚 Your ice cream man just cranked up the jingle...",
-  "🤰 Sorry if you're pregnant - you definitely shouldn't have to wait this long for ice cream! You deserve it delivered ASAP!",
-  "🤰 Pregnant? Don't worry, we're rushing your ice cream man to you! No one should wait when cravings hit!",
+  "🤰 Sorry if you're pregnant - you definitely shouldn't have to wait this long for ice cream!",
+  "🤰 Pregnant? Don't worry, we're rushing your ice cream man to you!",
   "🤰 Hey mama-to-be! Your cravings are valid and ice cream is on the way!",
   "🤰 Expecting moms get priority! (Not really, but we wish we could!)",
   "🍦 Fun fact: It takes about 50 licks to finish a single scoop cone!",
@@ -79,8 +77,8 @@ const SUMMONING_PHASES = [
   "🚚 Truck located! On the way...",
 ];
 
-// Use require for bundled asset
-const jingleSource = require('../assets/ice-cream-jingle.mp3');
+// Use the SHORT snippet (8 seconds with fade out) - not the full 21-second track
+const jingleSource = require('../assets/ice-cream-jingle-short.mp3');
 
 interface SummoningAnimationProps {
   isActive: boolean;
@@ -96,21 +94,34 @@ export function SummoningAnimation({ isActive, phase = 'summoning' }: SummoningA
   const truckAnim = useRef(new Animated.Value(-50)).current;
   const dotsAnim = useRef(new Animated.Value(0)).current;
 
-  // Audio player for the jingle
-  const player = useAudioPlayer(jingleSource);
+  // Track whether jingle has already played for THIS activation cycle
+  const hasPlayedRef = useRef(false);
+  const prevActiveRef = useRef(false);
 
-  // Play/stop jingle when animation activates
+  // Audio player - NO loop option
+  const player = useAudioPlayer(jingleSource);
+  const status = useAudioPlayerStatus(player);
+
+  // Play jingle ONCE when animation activates - prevents stacking
   useEffect(() => {
-    if (isActive && player) {
+    // Detect fresh activation (was inactive, now active)
+    if (isActive && !prevActiveRef.current) {
+      hasPlayedRef.current = false; // Reset for new order
+    }
+    prevActiveRef.current = isActive;
+
+    if (isActive && player && !hasPlayedRef.current) {
       try {
-        player.loop = true;
+        hasPlayedRef.current = true; // Mark immediately to prevent double-play
         player.volume = 0.5;
+        player.seekTo(0);
         player.play();
       } catch (e) {
-        // Audio may not be available on all platforms
         console.log('Audio playback not available:', e);
       }
-    } else if (!isActive && player) {
+    }
+
+    if (!isActive && player) {
       try {
         player.pause();
         player.seekTo(0);
@@ -241,31 +252,18 @@ export function SummoningAnimation({ isActive, phase = 'summoning' }: SummoningA
     return () => clearInterval(interval);
   }, [isActive]);
 
-  // Loading dots animation
-  useEffect(() => {
-    if (!isActive) return;
-    const dots = Animated.loop(
-      Animated.timing(dotsAnim, {
-        toValue: 3,
-        duration: 1500,
-        easing: Easing.linear,
-        useNativeDriver: false,
-      })
-    );
-    dots.start();
-    return () => dots.stop();
-  }, [isActive]);
-
   if (!isActive) return null;
 
   return (
-    <View className="items-center gap-4 py-4">
-      {/* Jingle Playing Indicator */}
-      <View className="flex-row items-center gap-2 bg-surface rounded-full px-4 py-2">
-        <Text style={{ fontSize: 16 }}>🎵</Text>
-        <Text className="text-xs text-muted font-medium">Ice cream jingle playing...</Text>
-        <Text style={{ fontSize: 16 }}>🎶</Text>
-      </View>
+    <View style={{ alignItems: 'center', gap: 16, paddingVertical: 16 }}>
+      {/* Jingle Playing Indicator - only shows while audio is actually playing */}
+      {status.playing && (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#FFF0F5', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 }}>
+          <Text style={{ fontSize: 16 }}>🎵</Text>
+          <Text style={{ fontSize: 12, color: '#A0826D', fontWeight: '500' }}>Ice cream jingle playing...</Text>
+          <Text style={{ fontSize: 16 }}>🎶</Text>
+        </View>
+      )}
 
       {/* Summoning Circle with Pulse */}
       <Animated.View
@@ -290,12 +288,12 @@ export function SummoningAnimation({ isActive, phase = 'summoning' }: SummoningA
       </Animated.View>
 
       {/* Summoning Phase Text */}
-      <Text className="text-lg font-bold text-primary text-center">
+      <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#FF69B4', textAlign: 'center' }}>
         {SUMMONING_PHASES[currentPhase]}
       </Text>
 
       {/* Animated Truck Driving Across */}
-      <View className="w-full h-10 overflow-hidden rounded-lg bg-surface">
+      <View style={{ width: '100%', height: 40, overflow: 'hidden', borderRadius: 8, backgroundColor: '#FFF0F5' }}>
         <Animated.View
           style={{
             transform: [{ translateX: truckAnim }],
@@ -327,8 +325,12 @@ export function SummoningAnimation({ isActive, phase = 'summoning' }: SummoningA
         }}
       >
         <View
-          className="bg-surface rounded-2xl p-4 border-2 border-primary"
           style={{
+            backgroundColor: '#FFF8DC',
+            borderRadius: 16,
+            padding: 16,
+            borderWidth: 2,
+            borderColor: '#FF69B4',
             shadowColor: '#FF69B4',
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.2,
@@ -336,19 +338,19 @@ export function SummoningAnimation({ isActive, phase = 'summoning' }: SummoningA
             elevation: 4,
           }}
         >
-          <Text className="text-sm text-foreground text-center leading-5">
+          <Text style={{ fontSize: 13, color: '#8B4513', textAlign: 'center', lineHeight: 20 }}>
             {ICE_CREAM_FACTS[currentFact]}
           </Text>
         </View>
       </Animated.View>
 
       {/* Ice cream emojis floating */}
-      <View className="flex-row justify-center gap-3">
-        <Text className="text-2xl">🍦</Text>
-        <Text className="text-2xl">🍨</Text>
-        <Text className="text-2xl">🍧</Text>
-        <Text className="text-2xl">🍫</Text>
-        <Text className="text-2xl">🍦</Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 12 }}>
+        <Text style={{ fontSize: 24 }}>🍦</Text>
+        <Text style={{ fontSize: 24 }}>🍨</Text>
+        <Text style={{ fontSize: 24 }}>🍧</Text>
+        <Text style={{ fontSize: 24 }}>🍫</Text>
+        <Text style={{ fontSize: 24 }}>🍦</Text>
       </View>
     </View>
   );

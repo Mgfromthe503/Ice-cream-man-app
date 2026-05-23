@@ -3,6 +3,7 @@ import { ScreenContainer } from '@/components/screen-container';
 import { trpc } from '@/lib/trpc';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { FactTicker } from '@/components/fact-ticker';
 
 interface HistoryItem {
   id: string;
@@ -75,6 +76,9 @@ export default function CustomerHistoryScreen() {
             <Text className="text-sm text-muted text-center px-8">
               Tap the big ice cream cone on the home screen to summon your first ice cream truck!
             </Text>
+            <View style={{ marginTop: 16, width: '100%', paddingHorizontal: 16 }}>
+              <FactTicker variant="card" />
+            </View>
           </View>
         )}
 

@@ -1,10 +1,11 @@
-import { View, Text, Pressable, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, ScrollView, TextInput, Alert, ActivityIndicator, Platform } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { useState, useEffect } from 'react';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
+import { FactTicker } from '@/components/fact-ticker';
 
 interface DriverRegistration {
   fullName: string;
@@ -25,6 +26,7 @@ export default function DriverRegisterScreen() {
   const colors = useColors();
   const router = useRouter();
   const [isRegistered, setIsRegistered] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState<DriverRegistration>({
@@ -36,23 +38,29 @@ export default function DriverRegisterScreen() {
     truckNumber: '',
   });
 
-  // Check if driver is already registered
+  // Check if driver is already registered AND has paid
   useEffect(() => {
-    const checkRegistration = async () => {
+    const checkStatus = async () => {
       try {
-        const saved = await AsyncStorage.getItem('driverRegistration');
+        const [saved, paidStatus] = await Promise.all([
+          AsyncStorage.getItem('driverRegistration'),
+          AsyncStorage.getItem('vendorRegistrationPaid'),
+        ]);
+        
         if (saved) {
           const data = JSON.parse(saved);
           setForm(data);
           setIsRegistered(true);
         }
+        
+        setIsPaid(paidStatus === 'true');
       } catch (error) {
         console.error('Error checking registration:', error);
       } finally {
         setIsLoading(false);
       }
     };
-    checkRegistration();
+    checkStatus();
   }, []);
 
   const handleRegister = async () => {
@@ -86,7 +94,9 @@ export default function DriverRegisterScreen() {
       await AsyncStorage.setItem('driverIsRegistered', 'true');
       await AsyncStorage.setItem('driverTruckNumber', truckNumber);
 
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (Platform.OS !== 'web') {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
       setForm(registrationData);
       setIsRegistered(true);
 
@@ -109,8 +119,60 @@ export default function DriverRegisterScreen() {
 
   if (isLoading) {
     return (
-      <ScreenContainer className="p-6 items-center justify-center">
-        <ActivityIndicator size="large" color={colors.primary} />
+      <ScreenContainer className="p-6">
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  // PAYMENT GATE - Must pay $25 before registering
+  if (!isPaid) {
+    return (
+      <ScreenContainer className="p-6">
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          <View style={{ flex: 1, gap: 24, justifyContent: 'center' }}>
+            <View style={{ alignItems: 'center', gap: 12 }}>
+              <Text style={{ fontSize: 60 }}>🔒💳</Text>
+              <Text style={{ fontSize: 24, fontWeight: '800', color: colors.foreground, textAlign: 'center' }}>
+                Payment Required
+              </Text>
+              <Text style={{ fontSize: 14, color: colors.muted, textAlign: 'center', lineHeight: 20 }}>
+                Before you can register your truck and start receiving customer requests, you need to complete the one-time $25 registration fee via Google Play.
+              </Text>
+            </View>
+
+            <View style={{ backgroundColor: colors.surface, borderRadius: 16, padding: 20, gap: 8 }}>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground }}>Why a registration fee?</Text>
+              <Text style={{ fontSize: 13, color: colors.muted, lineHeight: 20 }}>
+                The $25 one-time fee ensures only serious vendors join the platform. It helps maintain quality service for customers and keeps the app running. You'll never be charged again - no monthly fees, no hidden costs.
+              </Text>
+            </View>
+
+            <Pressable
+              onPress={() => router.push('/(driver)/payment')}
+              style={({ pressed }) => [{
+                backgroundColor: '#00C853',
+                paddingVertical: 18,
+                borderRadius: 14,
+                alignItems: 'center',
+                opacity: pressed ? 0.9 : 1,
+                transform: [{ scale: pressed ? 0.97 : 1 }],
+                shadowColor: '#00C853',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 6,
+              }]}
+            >
+              <Text style={{ color: '#fff', fontSize: 17, fontWeight: '700' }}>💳 Pay $25 to Register</Text>
+              <Text style={{ color: '#fff', fontSize: 12, opacity: 0.8, marginTop: 4 }}>
+                One-time fee via Google Play Billing
+              </Text>
+            </Pressable>
+          </View>
+        </ScrollView>
       </ScreenContainer>
     );
   }
@@ -120,18 +182,18 @@ export default function DriverRegisterScreen() {
     return (
       <ScreenContainer className="p-6">
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <View className="flex-1 gap-6">
-            <View className="items-center gap-3">
+          <View style={{ flex: 1, gap: 20 }}>
+            <View style={{ alignItems: 'center', gap: 8 }}>
               <Text style={{ fontSize: 60 }}>🚚✅</Text>
-              <Text className="text-2xl font-bold text-foreground text-center">
+              <Text style={{ fontSize: 24, fontWeight: '800', color: colors.foreground, textAlign: 'center' }}>
                 You're Registered!
               </Text>
-              <Text className="text-sm text-muted text-center">
+              <Text style={{ fontSize: 13, color: colors.muted, textAlign: 'center' }}>
                 Your truck is active and ready to receive requests
               </Text>
             </View>
 
-            {/* Truck Number Badge - Big and Prominent */}
+            {/* Truck Number Badge */}
             <View
               style={{
                 backgroundColor: '#FF1493',
@@ -147,63 +209,72 @@ export default function DriverRegisterScreen() {
                 elevation: 6,
               }}
             >
-              <Text style={{ fontSize: 14, color: '#FFF8E7', fontWeight: '600' }}>YOUR TRUCK NUMBER</Text>
+              <Text style={{ fontSize: 13, color: '#FFF8E7', fontWeight: '600' }}>YOUR TRUCK NUMBER</Text>
               <Text style={{ fontSize: 36, fontWeight: '900', color: '#FFFFFF', marginTop: 4 }}>
                 {form.truckNumber}
               </Text>
-              <Text style={{ fontSize: 12, color: '#FFF8E7', marginTop: 4 }}>
-                Customers will see this number when you accept their request
+              <Text style={{ fontSize: 11, color: '#FFF8E7', marginTop: 4 }}>
+                Customers see this when you accept their request
               </Text>
             </View>
 
             {/* Registration Card */}
-            <View className="bg-surface rounded-2xl p-5 border-2 border-success gap-4">
-              <View className="flex-row items-center gap-3">
-                <Text style={{ fontSize: 30 }}>👤</Text>
+            <View style={{ backgroundColor: colors.surface, borderRadius: 16, padding: 20, borderWidth: 2, borderColor: colors.success, gap: 16 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <Text style={{ fontSize: 28 }}>👤</Text>
                 <View>
-                  <Text className="text-xs text-muted">Driver Name</Text>
-                  <Text className="text-lg font-bold text-foreground">{form.fullName}</Text>
+                  <Text style={{ fontSize: 11, color: colors.muted }}>Driver Name</Text>
+                  <Text style={{ fontSize: 17, fontWeight: '700', color: colors.foreground }}>{form.fullName}</Text>
                 </View>
               </View>
 
-              <View className="flex-row items-center gap-3">
-                <Text style={{ fontSize: 30 }}>🚚</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <Text style={{ fontSize: 28 }}>🚚</Text>
                 <View>
-                  <Text className="text-xs text-muted">Truck Name</Text>
-                  <Text className="text-lg font-bold text-foreground">{form.truckName}</Text>
+                  <Text style={{ fontSize: 11, color: colors.muted }}>Truck Name</Text>
+                  <Text style={{ fontSize: 17, fontWeight: '700', color: colors.foreground }}>{form.truckName}</Text>
                 </View>
               </View>
 
               {form.truckDescription ? (
-                <View className="flex-row items-center gap-3">
-                  <Text style={{ fontSize: 30 }}>📝</Text>
-                  <View className="flex-1">
-                    <Text className="text-xs text-muted">Description</Text>
-                    <Text className="text-sm text-foreground">{form.truckDescription}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
+                  <Text style={{ fontSize: 28 }}>📝</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 11, color: colors.muted }}>Description</Text>
+                    <Text style={{ fontSize: 14, color: colors.foreground }}>{form.truckDescription}</Text>
                   </View>
                 </View>
               ) : null}
 
-              <View className="flex-row items-center gap-3">
-                <Text style={{ fontSize: 30 }}>📍</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <Text style={{ fontSize: 28 }}>📍</Text>
                 <View>
-                  <Text className="text-xs text-muted">Coverage Zone</Text>
-                  <Text className="text-lg font-bold text-foreground">{form.areaCode}</Text>
+                  <Text style={{ fontSize: 11, color: colors.muted }}>Coverage Zone</Text>
+                  <Text style={{ fontSize: 17, fontWeight: '700', color: colors.foreground }}>{form.areaCode}</Text>
                 </View>
               </View>
 
-              <View className="flex-row items-center gap-3">
-                <Text style={{ fontSize: 30 }}>📞</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <Text style={{ fontSize: 28 }}>📞</Text>
                 <View>
-                  <Text className="text-xs text-muted">Phone</Text>
-                  <Text className="text-sm text-foreground">{form.phoneNumber}</Text>
+                  <Text style={{ fontSize: 11, color: colors.muted }}>Phone</Text>
+                  <Text style={{ fontSize: 14, color: colors.foreground }}>{form.phoneNumber}</Text>
                 </View>
               </View>
             </View>
 
+            {/* Payment Status */}
+            <View style={{ backgroundColor: '#E8F5E9', borderRadius: 12, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <Text style={{ fontSize: 20 }}>✅</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: '#2E7D32' }}>Registration Fee Paid</Text>
+                <Text style={{ fontSize: 11, color: '#4CAF50' }}>$25.00 via Google Play • Lifetime access</Text>
+              </View>
+            </View>
+
             {/* Status Badge */}
-            <View className="bg-success rounded-xl p-4 items-center">
-              <Text className="text-white font-bold text-lg">🟢 Active & Receiving Requests</Text>
+            <View style={{ backgroundColor: colors.success, borderRadius: 14, padding: 16, alignItems: 'center' }}>
+              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 16 }}>🟢 Active & Receiving Requests</Text>
             </View>
 
             {/* Edit Button */}
@@ -211,8 +282,8 @@ export default function DriverRegisterScreen() {
               onPress={handleEditRegistration}
               style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
             >
-              <View className="bg-surface border border-border rounded-xl p-4">
-                <Text className="text-foreground font-semibold text-center">✏️ Edit Registration</Text>
+              <View style={{ backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 16 }}>
+                <Text style={{ color: colors.foreground, fontWeight: '600', textAlign: 'center' }}>✏️ Edit Registration</Text>
               </View>
             </Pressable>
           </View>
@@ -221,114 +292,163 @@ export default function DriverRegisterScreen() {
     );
   }
 
-  // Registration Form - Simple: Name, Truck Name, Phone, Area Code
+  // Registration Form - after payment is confirmed
   return (
-    <ScreenContainer className="p-6">
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="flex-1 gap-5">
+    <ScreenContainer className="p-5">
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+        <View style={{ flex: 1, gap: 18 }}>
           {/* Header */}
-          <View className="items-center gap-3">
+          <View style={{ alignItems: 'center', gap: 8 }}>
             <Text style={{ fontSize: 50 }}>🚚</Text>
-            <Text className="text-2xl font-bold text-foreground text-center">
+            <Text style={{ fontSize: 22, fontWeight: '800', color: colors.foreground, textAlign: 'center' }}>
               Register Your Ice Cream Truck
             </Text>
-            <Text className="text-sm text-muted text-center px-4">
-              Sign up to start receiving customer requests. You'll be assigned a unique truck number!
+            <Text style={{ fontSize: 13, color: colors.muted, textAlign: 'center' }}>
+              Fill in your details to start receiving customer requests
             </Text>
           </View>
 
+          {/* Payment Confirmed Badge */}
+          <View style={{ backgroundColor: '#E8F5E9', borderRadius: 12, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <Text style={{ fontSize: 18 }}>✅</Text>
+            <Text style={{ fontSize: 13, color: '#2E7D32', fontWeight: '600' }}>Payment confirmed - complete your registration below</Text>
+          </View>
+
           {/* Form Fields */}
-          <View className="gap-4">
+          <View style={{ gap: 14 }}>
             {/* Full Name */}
-            <View className="gap-1">
-              <Text className="text-sm font-semibold text-foreground">Your Full Name *</Text>
+            <View style={{ gap: 4 }}>
+              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground }}>Your Full Name *</Text>
               <TextInput
                 value={form.fullName}
                 onChangeText={(text) => setForm({ ...form, fullName: text })}
                 placeholder="Enter your full name"
-                className="bg-surface rounded-lg p-4 text-foreground border border-border"
+                returnKeyType="next"
+                style={{
+                  backgroundColor: colors.surface,
+                  borderRadius: 12,
+                  padding: 14,
+                  fontSize: 16,
+                  color: colors.foreground,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}
                 placeholderTextColor={colors.muted}
               />
             </View>
 
             {/* Truck Name */}
-            <View className="gap-1">
-              <Text className="text-sm font-semibold text-foreground">Truck/Business Name *</Text>
+            <View style={{ gap: 4 }}>
+              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground }}>Truck/Business Name *</Text>
               <TextInput
                 value={form.truckName}
                 onChangeText={(text) => setForm({ ...form, truckName: text })}
                 placeholder="e.g. Frosty's Ice Cream, Cool Treats Mobile"
-                className="bg-surface rounded-lg p-4 text-foreground border border-border"
+                returnKeyType="next"
+                style={{
+                  backgroundColor: colors.surface,
+                  borderRadius: 12,
+                  padding: 14,
+                  fontSize: 16,
+                  color: colors.foreground,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}
                 placeholderTextColor={colors.muted}
               />
             </View>
 
             {/* Truck Description */}
-            <View className="gap-1">
-              <Text className="text-sm font-semibold text-foreground">What Do You Sell?</Text>
+            <View style={{ gap: 4 }}>
+              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground }}>What Do You Sell?</Text>
               <TextInput
                 value={form.truckDescription}
                 onChangeText={(text) => setForm({ ...form, truckDescription: text })}
                 placeholder="e.g. Ice cream cones, popsicles, sundaes, milkshakes..."
                 multiline
                 numberOfLines={3}
-                className="bg-surface rounded-lg p-4 text-foreground border border-border"
+                style={{
+                  backgroundColor: colors.surface,
+                  borderRadius: 12,
+                  padding: 14,
+                  fontSize: 16,
+                  color: colors.foreground,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  minHeight: 80,
+                  textAlignVertical: 'top',
+                }}
                 placeholderTextColor={colors.muted}
-                style={{ minHeight: 80, textAlignVertical: 'top' }}
               />
             </View>
 
             {/* Phone Number */}
-            <View className="gap-1">
-              <Text className="text-sm font-semibold text-foreground">Phone Number *</Text>
+            <View style={{ gap: 4 }}>
+              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground }}>Phone Number *</Text>
               <TextInput
                 value={form.phoneNumber}
                 onChangeText={(text) => setForm({ ...form, phoneNumber: text })}
                 placeholder="(555) 123-4567"
                 keyboardType="phone-pad"
-                className="bg-surface rounded-lg p-4 text-foreground border border-border"
+                style={{
+                  backgroundColor: colors.surface,
+                  borderRadius: 12,
+                  padding: 14,
+                  fontSize: 16,
+                  color: colors.foreground,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}
                 placeholderTextColor={colors.muted}
               />
             </View>
 
             {/* Area/Zip Code */}
-            <View className="gap-1">
-              <Text className="text-sm font-semibold text-foreground">Your Coverage Area (Zip Code) *</Text>
+            <View style={{ gap: 4 }}>
+              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground }}>Your Coverage Area (Zip Code) *</Text>
               <TextInput
                 value={form.areaCode}
                 onChangeText={(text) => setForm({ ...form, areaCode: text })}
                 placeholder="e.g. 97201"
                 keyboardType="number-pad"
                 maxLength={5}
-                className="bg-surface rounded-lg p-4 text-foreground border border-border"
+                returnKeyType="done"
+                style={{
+                  backgroundColor: colors.surface,
+                  borderRadius: 12,
+                  padding: 14,
+                  fontSize: 16,
+                  color: colors.foreground,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}
                 placeholderTextColor={colors.muted}
               />
-              <Text className="text-xs text-muted">You'll receive requests from customers in this area</Text>
+              <Text style={{ fontSize: 11, color: colors.muted, marginTop: 2 }}>
+                You'll receive requests from customers in this area
+              </Text>
             </View>
           </View>
 
-          {/* What You Get Info */}
-          <View className="bg-surface rounded-xl p-4 gap-2 border border-primary">
-            <Text className="text-sm font-semibold text-foreground">🎁 What You Get:</Text>
-            <Text className="text-xs text-muted leading-5">
-              ✅ A unique truck number assigned to you{"\n"}
-              ✅ Customer requests sent directly to your phone{"\n"}
-              ✅ Daily reports showing gas & time saved{"\n"}
-              ✅ No more driving around aimlessly!
-            </Text>
-          </View>
+          {/* Fun Facts while you fill in the form */}
+          <FactTicker variant="card" />
 
           {/* Register Button */}
           <Pressable
             onPress={handleRegister}
             disabled={isSaving}
-            style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
+            style={({ pressed }) => [{
+              backgroundColor: isSaving ? colors.muted : colors.primary,
+              paddingVertical: 18,
+              borderRadius: 14,
+              alignItems: 'center',
+              opacity: pressed ? 0.9 : 1,
+              transform: [{ scale: pressed ? 0.97 : 1 }],
+            }]}
           >
-            <View className="bg-primary rounded-xl p-5 items-center">
-              <Text className="text-white font-bold text-lg">
-                {isSaving ? '⏳ Registering...' : '🚚 Register & Get My Truck Number'}
-              </Text>
-            </View>
+            <Text style={{ color: '#fff', fontSize: 17, fontWeight: '700' }}>
+              {isSaving ? '⏳ Registering...' : '🚚 Register & Get My Truck Number'}
+            </Text>
           </Pressable>
         </View>
       </ScrollView>
