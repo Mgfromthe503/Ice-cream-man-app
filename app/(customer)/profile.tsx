@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Alert } from 'react-native';
+import { View, Text, Pressable, ScrollView, Alert, Platform, Linking } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { useAuth } from '@/lib/auth-context';
@@ -86,6 +86,28 @@ export default function CustomerProfileScreen() {
           <View className="gap-3">
             <Text className="text-base font-semibold text-foreground">Share with Friends</Text>
             <ShareButton variant="primary" size="medium" showLabel={true} />
+          </View>
+
+          {/* Rate App */}
+          <View className="gap-3">
+            <Text className="text-base font-semibold text-foreground">Enjoying the App?</Text>
+            <Pressable
+              onPress={() => {
+                const url = Platform.OS === 'android'
+                  ? 'market://details?id=space.manus.the.ice.cream.man'
+                  : 'https://play.google.com/store/apps/details?id=space.manus.the.ice.cream.man';
+                Linking.openURL(url).catch(() => {
+                  Linking.openURL('https://play.google.com/store/apps/details?id=space.manus.the.ice.cream.man');
+                });
+              }}
+              style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
+            >
+              <View style={{ backgroundColor: '#FFD700', borderRadius: 12, padding: 16, alignItems: 'center' }}>
+                <Text style={{ fontSize: 24 }}>⭐</Text>
+                <Text style={{ fontWeight: 'bold', fontSize: 15, color: '#333', marginTop: 4 }}>Rate Us on Google Play</Text>
+                <Text style={{ fontSize: 12, color: '#666', marginTop: 2 }}>Help us grow - leave a review!</Text>
+              </View>
+            </Pressable>
           </View>
 
           {/* Settings */}

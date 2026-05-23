@@ -77,10 +77,10 @@ export function DriversWantedBanner({ registeredDrivers, activeCustomers, show }
       >
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, flexShrink: 1 }}>
-            <Text style={{ fontSize: 24 }}>🚚💨</Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FFFFFF', flexShrink: 1 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
-              DRIVERS WANTED!
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+            <Text style={{ fontSize: 22 }}>🚚</Text>
+            <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#FFFFFF' }}>
+              ICE CREAM TRUCK{"\n"}DRIVERS WANTED!
             </Text>
           </View>
           <Pressable
