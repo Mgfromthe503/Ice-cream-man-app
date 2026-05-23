@@ -16,20 +16,13 @@
     },
     "production": {
       "android": {
-        "buildType": "app-bundle",
-        "keystore": {
-          "keystorePath": "keystore.jks",
-          "keystorePassword": "env:KEYSTORE_PASSWORD",
-          "keyAlias": "ice-cream-man-key",
-          "keyPassword": "env:KEY_PASSWORD"
-        }
+        "buildType": "app-bundle"
       }
     }
   },
   "submit": {
     "production": {
       "android": {
-        "serviceAccountKeyPath": "google-play-key.json",
         "track": "internal",
         "releaseStatus": "draft"
       }

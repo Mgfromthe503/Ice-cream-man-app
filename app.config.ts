@@ -89,6 +89,13 @@ const config: ExpoConfig = {
     "expo-font",
     "expo-web-browser",
     [
+      "expo-location",
+      {
+        isAndroidBackgroundLocationEnabled: false,
+        isAndroidForegroundServiceEnabled: false,
+      },
+    ],
+    [
       "expo-audio",
       {
         microphonePermission: "Allow $(PRODUCT_NAME) to access your microphone.",
