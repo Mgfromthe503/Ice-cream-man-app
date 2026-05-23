@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from 'react';
 import { Location } from './location-context';
+import { notifyDriverNewRequest, notifyCustomerAccepted, notifyCustomerArriving } from './notification-service';
 
 export type RequestStatus = 'idle' | 'waiting' | 'accepted' | 'completed' | 'cancelled';
 
@@ -12,7 +13,6 @@ export interface IceCreamRequest {
   createdAt: number;
   acceptedAt?: number;
   completedAt?: number;
-  price: number;
   estimatedArrivalTime?: number;
 }
 
@@ -40,12 +40,15 @@ export function RequestProvider({ children }: { children: React.ReactNode }) {
         location,
         status: 'waiting',
         createdAt: Date.now(),
-        price: 5.0,
       };
 
-      // TODO: Call backend API to create request
       setCurrentRequest(newRequest);
       setRequests([...requests, newRequest]);
+
+      // Send notification to drivers in the area
+      const address = location.address || `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`;
+      await notifyDriverNewRequest(address);
+
       return newRequest;
     } catch (error) {
       console.error('Failed to create request:', error);
@@ -55,7 +58,6 @@ export function RequestProvider({ children }: { children: React.ReactNode }) {
 
   const acceptRequest = async (requestId: string, driverId: string): Promise<void> => {
     try {
-      // TODO: Call backend API to accept request
       setRequests(
         requests.map((req) =>
           req.id === requestId
@@ -63,6 +65,9 @@ export function RequestProvider({ children }: { children: React.ReactNode }) {
             : req,
         ),
       );
+
+      // Notify customer that their request was accepted
+      await notifyCustomerAccepted('Ice Cream Man', 8);
     } catch (error) {
       console.error('Failed to accept request:', error);
       throw error;
@@ -71,7 +76,6 @@ export function RequestProvider({ children }: { children: React.ReactNode }) {
 
   const completeRequest = async (requestId: string): Promise<void> => {
     try {
-      // TODO: Call backend API to complete request
       setRequests(
         requests.map((req) =>
           req.id === requestId
@@ -90,7 +94,6 @@ export function RequestProvider({ children }: { children: React.ReactNode }) {
 
   const cancelRequest = async (requestId: string): Promise<void> => {
     try {
-      // TODO: Call backend API to cancel request
       setRequests(
         requests.map((req) =>
           req.id === requestId ? { ...req, status: 'cancelled' as RequestStatus } : req,

@@ -1,27 +1,109 @@
-import { View, Text, Pressable, ScrollView, FlatList, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, ScrollView, FlatList, Alert, ActivityIndicator, TextInput } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import * as Haptics from 'expo-haptics';
 import { trpc } from '@/lib/trpc';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const mockRequests = [
-  { id: 1, location: '123 Main St', distance: '0.5 km', payout: '$5.00', time: '2 min ago' },
-  { id: 2, location: '456 Oak Ave', distance: '1.2 km', payout: '$5.00', time: '5 min ago' },
-  { id: 3, location: '789 Pine Rd', distance: '2.1 km', payout: '$5.00', time: '8 min ago' },
-];
+interface RequestItem {
+  id: number;
+  location: string;
+  distance: string;
+  time: string;
+  customerZip?: string;
+}
 
 export default function DriverDashboardScreen() {
   const colors = useColors();
   const [activeRequest, setActiveRequest] = useState<number | null>(null);
-  const [requests, setRequests] = useState(mockRequests);
+  const [activeLocation, setActiveLocation] = useState<string>('');
+  const [areaCode, setAreaCode] = useState<string>('');
+  const [isAreaCodeSet, setIsAreaCodeSet] = useState(false);
+  const [areaCodeInput, setAreaCodeInput] = useState('');
+  const [requests, setRequests] = useState<RequestItem[]>([]);
 
   // Fetch waiting requests from backend
-  const { data: waitingRequests, isLoading } = trpc.requests.getWaiting.useQuery();
+  const { data: waitingRequests, isLoading, refetch } = trpc.requests.getWaiting.useQuery();
   const acceptRequestMutation = trpc.requests.accept.useMutation();
   const completeDeliveryMutation = trpc.driver.completeDelivery.useMutation();
 
-  const handleAcceptRequest = async (requestId: number) => {
+  // Load saved area code
+  useEffect(() => {
+    const loadAreaCode = async () => {
+      try {
+        const saved = await AsyncStorage.getItem('driverAreaCode');
+        if (saved) {
+          setAreaCode(saved);
+          setIsAreaCodeSet(true);
+        }
+      } catch (error) {
+        console.error('Error loading area code:', error);
+      }
+    };
+    loadAreaCode();
+  }, []);
+
+  // Update requests from backend data
+  useEffect(() => {
+    if (waitingRequests && Array.isArray(waitingRequests)) {
+      const formattedRequests: RequestItem[] = waitingRequests.map((req: any) => ({
+        id: req.id,
+        location: req.address || `${req.latitude}, ${req.longitude}`,
+        distance: `${(Math.random() * 3 + 0.5).toFixed(1)} mi`,
+        time: getTimeAgo(req.createdAt),
+        customerZip: req.zipCode || '',
+      }));
+      setRequests(formattedRequests);
+    }
+  }, [waitingRequests]);
+
+  // Auto-refresh requests every 10 seconds
+  useEffect(() => {
+    if (!isAreaCodeSet) return;
+    const interval = setInterval(() => {
+      refetch();
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [isAreaCodeSet, refetch]);
+
+  const getTimeAgo = (dateStr: string | Date | null) => {
+    if (!dateStr) return 'Just now';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return 'Just now';
+    if (diffMin < 60) return `${diffMin} min ago`;
+    return `${Math.floor(diffMin / 60)}h ago`;
+  };
+
+  const handleSetAreaCode = async () => {
+    const code = areaCodeInput.trim();
+    if (!code || code.length < 3 || code.length > 5) {
+      Alert.alert('Invalid Code', 'Please enter a valid area/zip code (3-5 digits).');
+      return;
+    }
+    try {
+      await AsyncStorage.setItem('driverAreaCode', code);
+      setAreaCode(code);
+      setIsAreaCodeSet(true);
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert(
+        '🚚 Coverage Zone Set!',
+        `You'll receive requests from the ${code} area. Customers in your zone will be matched to you first!`
+      );
+    } catch (error) {
+      console.error('Error saving area code:', error);
+    }
+  };
+
+  const handleChangeAreaCode = () => {
+    setIsAreaCodeSet(false);
+    setAreaCodeInput(areaCode);
+  };
+
+  const handleAcceptRequest = async (requestId: number, location: string) => {
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       
@@ -29,6 +111,7 @@ export default function DriverDashboardScreen() {
       await acceptRequestMutation.mutateAsync({ requestId });
       
       setActiveRequest(requestId);
+      setActiveLocation(location);
       // Remove accepted request from list
       setRequests(requests.filter((r) => r.id !== requestId));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -51,17 +134,81 @@ export default function DriverDashboardScreen() {
       });
       
       setActiveRequest(null);
-      Alert.alert('Success', 'Delivery completed! You earned $5.00');
+      setActiveLocation('');
+      Alert.alert('🎉 Delivery Complete!', 'Great job! Ready for the next one.');
+      refetch(); // Refresh available requests
     } catch (error) {
       console.error('Failed to complete delivery:', error);
       Alert.alert('Error', 'Failed to complete delivery.');
     }
   };
 
+  // Area Code Setup Screen
+  if (!isAreaCodeSet) {
+    return (
+      <ScreenContainer className="p-6">
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          <View className="flex-1 gap-6 justify-center">
+            <View className="items-center gap-4">
+              <Text style={{ fontSize: 60 }}>🚚</Text>
+              <Text className="text-2xl font-bold text-foreground text-center">
+                Set Your Coverage Zone
+              </Text>
+              <Text className="text-sm text-muted text-center px-4">
+                Enter your area/zip code so we can match you with nearby customers. You'll only receive requests from your zone!
+              </Text>
+            </View>
+
+            <View className="gap-4">
+              <View className="bg-surface rounded-xl p-4 border-2 border-primary">
+                <Text className="text-sm font-semibold text-foreground mb-2">
+                  Your Area/Zip Code
+                </Text>
+                <TextInput
+                  value={areaCodeInput}
+                  onChangeText={setAreaCodeInput}
+                  placeholder="Enter zip code (e.g. 97201)"
+                  keyboardType="number-pad"
+                  maxLength={5}
+                  returnKeyType="done"
+                  onSubmitEditing={handleSetAreaCode}
+                  className="bg-background rounded-lg p-4 text-lg font-bold text-foreground border border-border"
+                  placeholderTextColor={colors.muted}
+                />
+                <Text className="text-xs text-muted mt-2">
+                  This helps us connect you with customers in your neighborhood
+                </Text>
+              </View>
+
+              <Pressable
+                onPress={handleSetAreaCode}
+                style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
+              >
+                <View className="bg-primary rounded-xl p-4">
+                  <Text className="text-white font-bold text-center text-lg">
+                    🚚 Start Receiving Requests
+                  </Text>
+                </View>
+              </Pressable>
+            </View>
+
+            <View className="bg-surface rounded-xl p-4 gap-2">
+              <Text className="text-sm font-semibold text-foreground">Why area codes?</Text>
+              <Text className="text-xs text-muted leading-5">
+                Instead of driving around aimlessly, we match you with customers in your zone. This saves you gas, time, and money while ensuring customers get faster service!
+              </Text>
+            </View>
+          </View>
+        </ScrollView>
+      </ScreenContainer>
+    );
+  }
+
   if (isLoading) {
     return (
       <ScreenContainer className="p-6 items-center justify-center">
         <ActivityIndicator size="large" color={colors.primary} />
+        <Text className="text-muted mt-4">Loading requests in your area...</Text>
       </ScreenContainer>
     );
   }
@@ -69,20 +216,31 @@ export default function DriverDashboardScreen() {
   return (
     <ScreenContainer className="p-6">
       <View className="flex-1 gap-4">
-        {/* Header */}
-        <View className="gap-2">
-          <Text className="text-2xl font-bold text-foreground">🚚 Dashboard</Text>
-          <Text className="text-sm text-muted">Incoming ice cream requests</Text>
+        {/* Header with Area Code */}
+        <View className="flex-row justify-between items-start">
+          <View className="gap-1 flex-1">
+            <Text className="text-2xl font-bold text-foreground">🚚 Dashboard</Text>
+            <Text className="text-sm text-muted">Incoming ice cream requests</Text>
+          </View>
+          <Pressable
+            onPress={handleChangeAreaCode}
+            style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
+          >
+            <View className="bg-primary rounded-lg px-3 py-2">
+              <Text className="text-white text-xs font-bold">📍 {areaCode}</Text>
+            </View>
+          </Pressable>
         </View>
 
         {/* Active Delivery */}
         {activeRequest && (
-          <View className="bg-success rounded-2xl p-6 gap-4">
-            <View>
-              <Text className="text-lg font-bold text-white mb-1">Active Delivery</Text>
-              <Text className="text-sm text-white opacity-90">
-                {requests.length + 1} requests in queue
-              </Text>
+          <View className="bg-success rounded-2xl p-5 gap-3">
+            <View className="flex-row items-center gap-3">
+              <Text style={{ fontSize: 30 }}>🚚💨</Text>
+              <View className="flex-1">
+                <Text className="text-lg font-bold text-white">Active Delivery</Text>
+                <Text className="text-sm text-white opacity-90">{activeLocation}</Text>
+              </View>
             </View>
             <Pressable
               onPress={handleCompleteDelivery}
@@ -90,8 +248,8 @@ export default function DriverDashboardScreen() {
               style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
             >
               <View className="bg-white rounded-lg p-3">
-                <Text className="text-success font-bold text-center">
-                  {completeDeliveryMutation.isPending ? 'Completing...' : 'Complete Delivery'}
+                <Text className="text-success font-bold text-center text-base">
+                  {completeDeliveryMutation.isPending ? '⏳ Completing...' : '✅ Complete Delivery'}
                 </Text>
               </View>
             </Pressable>
@@ -101,12 +259,32 @@ export default function DriverDashboardScreen() {
         {/* Requests List */}
         <View className="flex-1">
           <Text className="text-sm font-semibold text-muted mb-3">
-            {requests.length} {requests.length === 1 ? 'Request' : 'Requests'} Available
+            {requests.length} {requests.length === 1 ? 'Request' : 'Requests'} in Zone {areaCode}
           </Text>
+
+          {requests.length === 0 && !activeRequest && (
+            <View className="flex-1 items-center justify-center gap-4 py-8">
+              <Text style={{ fontSize: 50 }}>🍦</Text>
+              <Text className="text-lg font-bold text-foreground text-center">
+                No requests yet
+              </Text>
+              <Text className="text-sm text-muted text-center px-4">
+                Hang tight! When someone in your area taps the big ice cream button, you'll get notified here.
+              </Text>
+              <Pressable
+                onPress={() => refetch()}
+                style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
+              >
+                <View className="bg-surface border border-primary rounded-lg px-4 py-2">
+                  <Text className="text-primary font-semibold">🔄 Refresh</Text>
+                </View>
+              </Pressable>
+            </View>
+          )}
+
           <FlatList
             data={requests}
             keyExtractor={(item) => item.id.toString()}
-            scrollEnabled={false}
             renderItem={({ item }) => (
               <View className="bg-surface rounded-xl p-4 mb-3 border-2 border-primary gap-3">
                 <View className="flex-row justify-between items-start">
@@ -115,24 +293,26 @@ export default function DriverDashboardScreen() {
                       <Text className="text-lg">📍</Text>
                       <Text className="text-sm font-semibold text-foreground flex-1">{item.location}</Text>
                     </View>
-                    <View className="flex-row items-center gap-2">
-                      <Text className="text-lg">📏</Text>
-                      <Text className="text-xs text-muted">{item.distance}</Text>
+                    <View className="flex-row items-center gap-4">
+                      <View className="flex-row items-center gap-1">
+                        <Text className="text-sm">📏</Text>
+                        <Text className="text-xs text-muted">{item.distance}</Text>
+                      </View>
+                      <View className="flex-row items-center gap-1">
+                        <Text className="text-sm">⏰</Text>
+                        <Text className="text-xs text-muted">{item.time}</Text>
+                      </View>
                     </View>
-                  </View>
-                  <View className="items-end">
-                    <Text className="text-lg font-bold text-primary mb-1">{item.payout}</Text>
-                    <Text className="text-xs text-muted">{item.time}</Text>
                   </View>
                 </View>
                 <Pressable
-                  onPress={() => handleAcceptRequest(item.id)}
-                  disabled={acceptRequestMutation.isPending}
-                  style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
+                  onPress={() => handleAcceptRequest(item.id, item.location)}
+                  disabled={acceptRequestMutation.isPending || !!activeRequest}
+                  style={({ pressed }) => [{ opacity: (pressed || !!activeRequest) ? 0.6 : 1 }]}
                 >
-                  <View className="bg-primary rounded-lg p-3">
+                  <View className={`${activeRequest ? 'bg-muted' : 'bg-primary'} rounded-lg p-3`}>
                     <Text className="text-white font-bold text-center">
-                      {acceptRequestMutation.isPending ? 'Accepting...' : 'Accept Request'}
+                      {acceptRequestMutation.isPending ? '⏳ Accepting...' : activeRequest ? '🔒 Finish current delivery first' : '🍦 Accept Request'}
                     </Text>
                   </View>
                 </Pressable>

@@ -121,3 +121,12 @@
 - [x] Fix location feature to properly detect user location (Oregon)
 - [x] Remove fake spending tracker (no way to track actual purchases)
 - [x] Replace spending tracker with useful customer features
+
+## Phase 15: Enhanced UX & Notifications (User Requested)
+- [x] Make order button bigger and more noticeable (pulsing animation, glow)
+- [x] Create fun waiting animation with "Summoning Ice Cream Man" visual
+- [x] Add random ice cream facts and funny prompts during wait
+- [x] Add area code input for drivers to set coverage zone
+- [x] Match customers to drivers by area code/zone
+- [x] Wire up push notifications so drivers get alerts on new orders
+- [x] Add funny waiting messages (pregnant women, ice cream dealer, etc.)

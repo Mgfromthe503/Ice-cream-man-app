@@ -1,36 +1,84 @@
-import { View, Text, Pressable, ScrollView, Alert } from 'react-native';
+import { View, Text, Pressable, ScrollView, Alert, Animated, Easing } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { trpc } from '@/lib/trpc';
 import { useLocation } from '@/lib/location-context';
 import { RatingsPrompt } from '@/components/ratings-prompt';
+import { SummoningAnimation } from '@/components/summoning-animation';
 
 export default function CustomerHomeScreen() {
   const colors = useColors();
   const router = useRouter();
   const { userLocation, isLoadingLocation, locationError } = useLocation();
-  const [requestStatus, setRequestStatus] = useState<'idle' | 'waiting' | 'accepted' | 'arrived' | 'completed'>('idle');
+  const [requestStatus, setRequestStatus] = useState<'idle' | 'summoning' | 'searching' | 'accepted' | 'arrived' | 'completed'>('idle');
   const [estimatedTime, setEstimatedTime] = useState<number | null>(null);
   const [showRating, setShowRating] = useState(false);
   const [driverName, setDriverName] = useState('your Ice Cream Man');
   const createRequestMutation = trpc.requests.create.useMutation();
 
+  // Pulsing glow animation for the big button
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const glowAnim = useRef(new Animated.Value(0.3)).current;
+
+  useEffect(() => {
+    if (requestStatus !== 'idle') return;
+    // Continuous pulse to draw attention
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.08,
+          duration: 1200,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1200,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    const glow = Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, {
+          toValue: 0.8,
+          duration: 1200,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 0.3,
+          duration: 1200,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulse.start();
+    glow.start();
+    return () => {
+      pulse.stop();
+      glow.stop();
+    };
+  }, [requestStatus]);
+
   const handleBigIceCreamPress = async () => {
     try {
       if (!userLocation) {
         Alert.alert(
-          'Location Needed',
-          'We need your location to send an ice cream truck to you. Please enable location services and try again.',
+          'Location Needed 📍',
+          'We need your location to send an ice cream truck to you! Please enable location services.',
           [{ text: 'OK' }]
         );
         return;
       }
 
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-      setRequestStatus('waiting');
+      setRequestStatus('summoning');
 
       // Call backend API to create request
       await createRequestMutation.mutateAsync({
@@ -39,30 +87,35 @@ export default function CustomerHomeScreen() {
         address: userLocation.address || `${userLocation.latitude.toFixed(4)}, ${userLocation.longitude.toFixed(4)}`,
       });
 
-      // Simulate driver acceptance after 3 seconds (in production this would be a real-time update)
+      // Move to searching phase after 3 seconds
       setTimeout(() => {
-        setRequestStatus('accepted');
-        setEstimatedTime(12);
-        setDriverName('Ice Cream Mike');
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        setRequestStatus('searching');
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       }, 3000);
 
-      // Simulate arrival after 15 seconds
+      // Simulate driver acceptance after 8 seconds
+      setTimeout(() => {
+        setRequestStatus('accepted');
+        setEstimatedTime(8);
+        setDriverName('Ice Cream Mike');
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }, 8000);
+
+      // Simulate arrival after 20 seconds
       setTimeout(() => {
         setRequestStatus('arrived');
         setEstimatedTime(null);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }, 15000);
+      }, 20000);
     } catch (error) {
       console.error('Failed to send request:', error);
       setRequestStatus('idle');
-      Alert.alert('Error', 'Failed to send request. Please try again.');
+      Alert.alert('Oops! 🍦', 'Failed to summon the ice cream man. Please try again!');
     }
   };
 
   const handleDeliveryComplete = () => {
     setRequestStatus('completed');
-    // Show the rating prompt for the ICE CREAM MAN
     setShowRating(true);
   };
 
@@ -76,153 +129,193 @@ export default function CustomerHomeScreen() {
     setRequestStatus('idle');
   };
 
-  // Format location display
   const getLocationDisplay = () => {
     if (isLoadingLocation) return 'Finding your location...';
     if (locationError) return 'Location unavailable - tap to retry';
     if (userLocation?.address) return userLocation.address;
-    if (userLocation) return `${userLocation.latitude.toFixed(4)}°N, ${userLocation.longitude.toFixed(4)}°W`;
+    if (userLocation) return `${userLocation.latitude.toFixed(4)}°N, ${Math.abs(userLocation.longitude).toFixed(4)}°W`;
     return 'Enable location to order';
   };
 
+  const isSummoning = requestStatus === 'summoning' || requestStatus === 'searching';
+
   return (
-    <ScreenContainer className="p-6">
+    <ScreenContainer className="p-4">
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1">
-        <View className="flex-1 gap-6 justify-between">
+        <View className="flex-1 gap-4 justify-between">
           {/* Header */}
-          <View className="gap-2">
+          <View className="gap-1 items-center">
             <Text className="text-3xl font-bold text-foreground">🍦 Ice Cream Man</Text>
-            <Text className="text-sm text-muted">Tap the cone to summon your ice cream truck!</Text>
+            <Text className="text-sm text-muted">One tap. Ice cream delivered.</Text>
           </View>
 
           {/* Location Status */}
-          <View className="bg-surface rounded-xl p-4 flex-row items-center gap-3 border border-border">
-            <Text className="text-2xl">📍</Text>
+          <View className="bg-surface rounded-xl p-3 flex-row items-center gap-3 border border-border">
+            <Text className="text-xl">📍</Text>
             <View className="flex-1">
               <Text className="text-xs text-muted">Your Location</Text>
-              <Text className="text-sm font-semibold text-foreground">
+              <Text className="text-sm font-semibold text-foreground" numberOfLines={1}>
                 {getLocationDisplay()}
               </Text>
-              {userLocation?.accuracy && (
-                <Text className="text-xs text-success mt-1">
-                  GPS Active (±{Math.round(userLocation.accuracy)}m)
-                </Text>
-              )}
-              {locationError && (
-                <Text className="text-xs text-error mt-1">{locationError}</Text>
-              )}
             </View>
-            {isLoadingLocation && <Text className="text-lg">⏳</Text>}
             {userLocation && !isLoadingLocation && <Text className="text-lg">✅</Text>}
+            {isLoadingLocation && <Text className="text-lg">⏳</Text>}
           </View>
 
-          {/* Status Section - Only show when request is active */}
-          {requestStatus !== 'idle' && requestStatus !== 'completed' && (
-            <View className="bg-surface rounded-2xl p-6 border-2 border-primary">
-              <Text className="text-lg font-semibold text-foreground mb-2">
-                {requestStatus === 'waiting' && '⏳ Finding an ice cream truck...'}
-                {requestStatus === 'accepted' && '🚚 Ice Cream Man is on the way!'}
-                {requestStatus === 'arrived' && '🎉 Ice Cream Man is HERE!'}
-              </Text>
-              {estimatedTime && (
-                <Text className="text-sm text-muted mb-2">
-                  Estimated arrival: {estimatedTime} minutes
+          {/* Summoning Animation - Shows during waiting */}
+          {isSummoning && (
+            <SummoningAnimation
+              isActive={isSummoning}
+              phase={requestStatus === 'summoning' ? 'summoning' : 'searching'}
+            />
+          )}
+
+          {/* Driver Accepted / Arrived Status */}
+          {requestStatus === 'accepted' && (
+            <View className="bg-surface rounded-2xl p-6 border-2 border-success">
+              <View className="items-center gap-3">
+                <Text style={{ fontSize: 50 }}>🚚💨</Text>
+                <Text className="text-xl font-bold text-foreground text-center">
+                  {driverName} is on the way!
                 </Text>
-              )}
-              {requestStatus === 'accepted' && (
-                <Text className="text-sm text-primary font-semibold mb-4">
-                  Driver: {driverName}
-                </Text>
-              )}
-              {requestStatus === 'arrived' && (
+                {estimatedTime && (
+                  <View className="bg-primary rounded-full px-6 py-2">
+                    <Text className="text-white font-bold text-lg">
+                      {estimatedTime} min away
+                    </Text>
+                  </View>
+                )}
                 <Pressable
-                  onPress={handleDeliveryComplete}
+                  onPress={() => router.push('/(customer)/map')}
                   style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
                 >
-                  <View className="bg-success rounded-lg p-3 mb-3">
-                    <Text className="text-white font-semibold text-center">Got My Ice Cream! 🍦</Text>
+                  <View className="bg-surface border-2 border-primary rounded-lg px-4 py-2 mt-2">
+                    <Text className="text-primary font-semibold">🗺️ Track on Map</Text>
                   </View>
                 </Pressable>
-              )}
-              {requestStatus !== 'arrived' && (
                 <Pressable
                   onPress={handleCancelRequest}
                   style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
                 >
-                  <View className="bg-error rounded-lg p-3">
-                    <Text className="text-white font-semibold text-center">Cancel Request</Text>
-                  </View>
+                  <Text className="text-error text-sm mt-2">Cancel Request</Text>
                 </Pressable>
-              )}
+              </View>
             </View>
           )}
 
-          {/* Big Ice Cream Button - MASSIVE and centered */}
-          <View className="flex-1 justify-center items-center py-4">
-            <Pressable
-              onPress={handleBigIceCreamPress}
-              disabled={requestStatus !== 'idle' || createRequestMutation.isPending || !userLocation}
-              style={({ pressed }) => [
-                {
-                  opacity: (requestStatus !== 'idle' || !userLocation) ? 0.4 : pressed ? 0.85 : 1,
-                  transform: [{ scale: pressed && requestStatus === 'idle' ? 0.92 : 1 }],
-                },
-              ]}
-            >
-              <View
+          {requestStatus === 'arrived' && (
+            <View className="bg-surface rounded-2xl p-6 border-2 border-success">
+              <View className="items-center gap-3">
+                <Text style={{ fontSize: 60 }}>🎉🍦🚚</Text>
+                <Text className="text-2xl font-bold text-foreground text-center">
+                  Your Ice Cream Man is HERE!
+                </Text>
+                <Text className="text-sm text-muted text-center">
+                  Go grab your ice cream! 🏃‍♂️
+                </Text>
+                <Pressable
+                  onPress={handleDeliveryComplete}
+                  style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.95 : 1 }] }]}
+                >
+                  <View className="bg-success rounded-xl px-8 py-4 mt-2">
+                    <Text className="text-white font-bold text-lg text-center">
+                      🍦 Got My Ice Cream!
+                    </Text>
+                  </View>
+                </Pressable>
+              </View>
+            </View>
+          )}
+
+          {/* BIG ICE CREAM ORDER BUTTON - Only show when idle */}
+          {requestStatus === 'idle' && (
+            <View className="flex-1 justify-center items-center py-2">
+              {/* Outer glow ring */}
+              <Animated.View
                 style={{
-                  width: 240,
-                  height: 240,
-                  borderRadius: 120,
+                  opacity: glowAnim,
+                  position: 'absolute',
+                  width: 300,
+                  height: 300,
+                  borderRadius: 150,
                   backgroundColor: '#FF69B4',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderWidth: 6,
-                  borderColor: '#FF1493',
-                  shadowColor: '#FF69B4',
-                  shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 0.4,
-                  shadowRadius: 16,
-                  elevation: 12,
                 }}
-              >
-                <Text style={{ fontSize: 100 }}>🍦</Text>
+              />
+              {/* Main button */}
+              <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+                <Pressable
+                  onPress={handleBigIceCreamPress}
+                  disabled={createRequestMutation.isPending || !userLocation}
+                  style={({ pressed }) => [
+                    {
+                      opacity: !userLocation ? 0.4 : pressed ? 0.85 : 1,
+                      transform: [{ scale: pressed ? 0.9 : 1 }],
+                    },
+                  ]}
+                >
+                  <View
+                    style={{
+                      width: 260,
+                      height: 260,
+                      borderRadius: 130,
+                      backgroundColor: '#FF1493',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderWidth: 8,
+                      borderColor: '#FF69B4',
+                      shadowColor: '#FF1493',
+                      shadowOffset: { width: 0, height: 10 },
+                      shadowOpacity: 0.5,
+                      shadowRadius: 20,
+                      elevation: 15,
+                    }}
+                  >
+                    <Text style={{ fontSize: 90 }}>🍦</Text>
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontWeight: '900',
+                        color: 'white',
+                        marginTop: 4,
+                        textAlign: 'center',
+                      }}
+                    >
+                      TAP TO ORDER!
+                    </Text>
+                  </View>
+                </Pressable>
+              </Animated.View>
+
+              {/* Call to action text */}
+              <View className="mt-6 items-center">
+                <Text className="text-xl font-bold text-foreground text-center">
+                  🎉 Summon the Ice Cream Man!
+                </Text>
+                {!userLocation && (
+                  <Text className="text-sm text-error text-center mt-2">
+                    📍 Enable location to order
+                  </Text>
+                )}
+                {userLocation && (
+                  <Text className="text-sm text-muted text-center mt-2">
+                    One tap brings the truck to your neighborhood!
+                  </Text>
+                )}
+              </View>
+            </View>
+          )}
+
+          {/* Cancel button during summoning */}
+          {isSummoning && (
+            <Pressable
+              onPress={handleCancelRequest}
+              style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
+            >
+              <View className="bg-error rounded-xl p-4">
+                <Text className="text-white font-bold text-center">Cancel Request</Text>
               </View>
             </Pressable>
-            <Text className="text-center mt-6 text-2xl font-bold text-foreground">
-              {requestStatus === 'idle' ? '🎉 TAP TO ORDER!' : ''}
-              {requestStatus === 'waiting' ? '🔍 Searching...' : ''}
-              {requestStatus === 'accepted' ? '🚚 On the way!' : ''}
-              {requestStatus === 'arrived' ? '🎊 They\'re here!' : ''}
-            </Text>
-            {requestStatus === 'idle' && !userLocation && (
-              <Text className="text-center mt-2 text-sm text-error">
-                Enable location to order ice cream
-              </Text>
-            )}
-            {requestStatus === 'idle' && userLocation && (
-              <Text className="text-center mt-2 text-sm text-muted">
-                One tap brings the ice cream truck to you!
-              </Text>
-            )}
-          </View>
-
-          {/* View Map Button */}
-          <Pressable
-            onPress={() => router.push('/(customer)/map')}
-            style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
-          >
-            <View className="bg-primary rounded-lg p-4 flex-row items-center justify-between">
-              <View className="flex-row items-center gap-3">
-                <Text className="text-2xl">🗺️</Text>
-                <View>
-                  <Text className="text-xs text-white opacity-80">View Live Map</Text>
-                  <Text className="text-sm font-semibold text-white">Track your ice cream truck</Text>
-                </View>
-              </View>
-              <Text className="text-xl text-white">→</Text>
-            </View>
-          </Pressable>
+          )}
         </View>
       </ScrollView>
 
