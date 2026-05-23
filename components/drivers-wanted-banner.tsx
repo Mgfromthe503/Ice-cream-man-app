@@ -77,15 +77,15 @@ export function DriversWantedBanner({ registeredDrivers, activeCustomers, show }
       >
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text style={{ fontSize: 28 }}>🚚💨</Text>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, flexShrink: 1 }}>
+            <Text style={{ fontSize: 24 }}>🚚💨</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FFFFFF', flexShrink: 1 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
               DRIVERS WANTED!
             </Text>
           </View>
           <Pressable
             onPress={() => setDismissed(true)}
-            style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1 }]}
+            style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1, paddingLeft: 8 }]}
           >
             <Text style={{ fontSize: 18, color: '#FFFFFF' }}>✕</Text>
           </Pressable>
@@ -122,7 +122,7 @@ export function DriversWantedBanner({ registeredDrivers, activeCustomers, show }
             alignItems: 'center',
           }]}
         >
-          <Text style={{ color: '#333', fontWeight: 'bold', fontSize: 14 }}>
+          <Text style={{ color: '#333', fontWeight: 'bold', fontSize: 13 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
             📢 Share - Help Recruit Drivers!
           </Text>
         </Pressable>

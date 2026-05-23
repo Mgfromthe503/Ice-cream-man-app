@@ -200,3 +200,4 @@
 - [x] Profile screen shows real driver registration data
 - [x] Map screen shows real active delivery with navigate button
 - [x] All 78 tests passing (5 test files)
+- [x] Fix DriversWantedBanner text overflow (letters going off screen)
