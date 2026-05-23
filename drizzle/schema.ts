@@ -91,3 +91,41 @@ export type InsertDriverProfile = typeof driverProfiles.$inferInsert;
 
 export type DriverLocationHistory = typeof driverLocationHistory.$inferSelect;
 export type InsertDriverLocationHistory = typeof driverLocationHistory.$inferInsert;
+
+/**
+ * Payments Table
+ * Tracks vendor registration fees and commission payments
+ */
+export const payments = mysqlTable("payments", {
+  id: int("id").autoincrement().primaryKey(),
+  driverId: int("driverId").notNull(),
+  type: varchar("type", { length: 50 }).notNull(), // 'registration_fee', 'sales_commission'
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  transactionId: varchar("transactionId", { length: 191 }),
+  status: varchar("status", { length: 50 }).default("pending"), // 'pending', 'completed', 'failed'
+  metadata: text("metadata"), // JSON string
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+/**
+ * Daily Sales Table
+ * Tracks daily sales and driver performance metrics
+ */
+export const dailySales = mysqlTable("daily_sales", {
+  id: int("id").autoincrement().primaryKey(),
+  driverId: int("driverId").notNull(),
+  date: varchar("date", { length: 10 }).notNull(), // YYYY-MM-DD
+  totalSales: decimal("totalSales", { precision: 10, scale: 2 }).default("0"),
+  totalOrders: int("totalOrders").default(0),
+  totalMiles: decimal("totalMiles", { precision: 8, scale: 2 }).default("0"),
+  gasSavedDollars: decimal("gasSavedDollars", { precision: 8, scale: 2 }).default("0"),
+  timeSavedHours: decimal("timeSavedHours", { precision: 8, scale: 2 }).default("0"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+// Export types
+export type Payment = typeof payments.$inferSelect;
+export type InsertPayment = typeof payments.$inferInsert;
+
+export type DailySales = typeof dailySales.$inferSelect;
+export type InsertDailySales = typeof dailySales.$inferInsert;

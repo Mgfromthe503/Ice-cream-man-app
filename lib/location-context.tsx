@@ -1,16 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 
-// Try to import expo-location, but provide fallback for web
-let Location: any = null;
-try {
-  if (Platform.OS !== 'web') {
-    Location = require('expo-location');
-  }
-} catch (e) {
-  // expo-location not available on web
-}
-
 export interface LocationData {
   latitude: number;
   longitude: number;
@@ -21,7 +11,7 @@ export interface LocationData {
 }
 
 // Export as Location for backward compatibility
-export type Location = LocationData;
+export type { LocationData as Location };
 
 export interface DriverLocation extends LocationData {
   driverId: string;
@@ -47,14 +37,13 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const [driverLocation, setDriverLocation] = useState<DriverLocation | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
-  const locationSubscriptionRef = useRef<any>(null);
   const trackingIntervalRef = useRef<any>(null);
+  const locationSubRef = useRef<any>(null);
 
   // Request location permission
   const requestLocationPermission = async (): Promise<boolean> => {
     try {
       if (Platform.OS === 'web') {
-        // Web uses browser geolocation API
         return new Promise((resolve) => {
           if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -67,11 +56,9 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         });
       }
 
-      if (!Location) {
-        return false;
-      }
-
-      const { status } = await Location.requestForegroundPermissionsAsync();
+      // Native: use expo-location
+      const ExpoLocation = require('expo-location');
+      const { status } = await ExpoLocation.requestForegroundPermissionsAsync();
       return status === 'granted';
     } catch (error) {
       console.error('Failed to request location permission:', error);
@@ -81,53 +68,44 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Get current location once
-  const getCurrentLocation = async () => {
-    try {
-      setIsLoadingLocation(true);
-      setLocationError(null);
+  const getCurrentLocation = async (): Promise<LocationData> => {
+    setIsLoadingLocation(true);
+    setLocationError(null);
 
+    try {
       if (Platform.OS === 'web') {
-        // Use browser geolocation API for web
         return new Promise<LocationData>((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(
             (position) => {
-              const { latitude, longitude, accuracy } = position.coords;
               resolve({
-                latitude,
-                longitude,
-                accuracy,
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                accuracy: position.coords.accuracy ?? undefined,
+                heading: position.coords.heading ?? undefined,
+                speed: position.coords.speed ?? undefined,
               });
             },
             (error) => {
-              console.error('Geolocation error:', error);
               reject(error);
-            }
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
           );
         });
       }
 
-      if (!Location) {
-        throw new Error('Location module not available');
-      }
-
-      // Use expo-location for native
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
+      // Native: use expo-location
+      const ExpoLocation = require('expo-location');
+      const location = await ExpoLocation.getCurrentPositionAsync({
+        accuracy: ExpoLocation.Accuracy.High,
       });
 
-      const { latitude, longitude, accuracy, heading, speed } = location.coords;
-
       return {
-        latitude,
-        longitude,
-        accuracy,
-        heading,
-        speed,
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        accuracy: location.coords.accuracy ?? undefined,
+        heading: location.coords.heading ?? undefined,
+        speed: location.coords.speed ?? undefined,
       };
-    } catch (error) {
-      console.error('Failed to get current location:', error);
-      setLocationError('Failed to get current location');
-      throw error;
     } finally {
       setIsLoadingLocation(false);
     }
@@ -153,31 +131,30 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
             const location = await getCurrentLocation();
             setUserLocation(location);
           } catch (error) {
-            console.error('Error updating location:', error);
+            // Silently fail on polling errors
           }
         }, 5000);
-      } else if (Location) {
-        // For native, use location subscription for real-time updates
-        const subscription = await Location.watchPositionAsync(
+      } else {
+        // For native, use expo-location subscription
+        const ExpoLocation = require('expo-location');
+        const subscription = await ExpoLocation.watchPositionAsync(
           {
-            accuracy: Location.Accuracy.High,
-            timeInterval: 5000, // Update every 5 seconds
-            distanceInterval: 10, // Or when moved 10 meters
+            accuracy: ExpoLocation.Accuracy.High,
+            timeInterval: 5000,
+            distanceInterval: 10,
           },
           (location: any) => {
-            const { latitude, longitude, accuracy, heading, speed } = location.coords;
             setUserLocation({
-              latitude,
-              longitude,
-              accuracy,
-              heading,
-              speed,
+              latitude: location.coords.latitude,
+              longitude: location.coords.longitude,
+              accuracy: location.coords.accuracy ?? undefined,
+              heading: location.coords.heading ?? undefined,
+              speed: location.coords.speed ?? undefined,
             });
             setLocationError(null);
           }
         );
-
-        locationSubscriptionRef.current = subscription;
+        locationSubRef.current = subscription;
       }
     } catch (error) {
       console.error('Failed to start location tracking:', error);
@@ -187,11 +164,10 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
 
   // Stop location tracking
   const stopLocationTracking = () => {
-    if (locationSubscriptionRef.current) {
-      locationSubscriptionRef.current.remove();
-      locationSubscriptionRef.current = null;
+    if (locationSubRef.current) {
+      locationSubRef.current.remove();
+      locationSubRef.current = null;
     }
-
     if (trackingIntervalRef.current) {
       clearInterval(trackingIntervalRef.current);
       trackingIntervalRef.current = null;
@@ -201,7 +177,6 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   // Start tracking on mount
   useEffect(() => {
     startLocationTracking();
-
     return () => {
       stopLocationTracking();
     };

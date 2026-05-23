@@ -3,6 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { requestsRouter, driverRouter } from "./routers-requests";
+import { paymentRouter, reportsRouter } from "./routers-payment";
 
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -21,6 +22,12 @@ export const appRouter = router({
   // Ice Cream Request API
   requests: requestsRouter,
   driver: driverRouter,
+
+  // Payment & Monetization
+  payment: paymentRouter,
+
+  // Daily Reports & Analytics
+  reports: reportsRouter,
 });
 
 export type AppRouter = typeof appRouter;

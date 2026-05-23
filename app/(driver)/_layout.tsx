@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Platform } from 'react-native';
+import { Platform, Text } from 'react-native';
 import { useColors } from '@/hooks/use-colors';
 
 export default function DriverTabLayout() {
@@ -31,7 +31,6 @@ export default function DriverTabLayout() {
         name="index"
         options={{
           title: 'Dashboard',
-          tabBarLabel: '📊',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
@@ -39,24 +38,34 @@ export default function DriverTabLayout() {
         name="map"
         options={{
           title: 'Map',
-          tabBarLabel: '🗺️',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="map.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="daily-report"
+        options={{
+          title: 'Report',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="chart.bar.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="earnings"
         options={{
           title: 'Earnings',
-          tabBarLabel: '💰',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="chart.bar.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="dollarsign.circle.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarLabel: '👤',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="payment"
+        options={{
+          href: null, // Hidden from tab bar, accessed via navigation
         }}
       />
     </Tabs>
