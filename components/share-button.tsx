@@ -1,22 +1,5 @@
 import React from 'react';
-import { Pressable, Text, View, Alert } from 'react-native';
-import { useColors } from '@/hooks/use-colors';
-
-// Try to import optional modules
-let Sharing: any = null;
-let Clipboard: any = null;
-
-try {
-  Sharing = require('expo-sharing');
-} catch (e) {
-  // Module not available
-}
-
-try {
-  Clipboard = require('expo-clipboard');
-} catch (e) {
-  // Module not available
-}
+import { Pressable, Text, View, Share, Platform } from 'react-native';
 
 interface ShareButtonProps {
   variant?: 'primary' | 'secondary' | 'minimal';
@@ -31,68 +14,79 @@ export function ShareButton({
   showLabel = true,
   onShare,
 }: ShareButtonProps) {
-  const colors = useColors();
 
   const handleShare = async () => {
     try {
       const appStoreUrl = 'https://play.google.com/store/apps/details?id=space.manus.the.ice.cream.man';
-      const message = `🍦 Download The Ice Cream Man! Order ice cream to your neighborhood with one tap.\n\nGet it on Google Play:\n${appStoreUrl}`;
+      const message = '🍦 Download The Ice Cream Man! Order ice cream to your neighborhood with one tap. Get it on Google Play:';
 
-      if (Sharing && await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(message, {
-          dialogTitle: 'Share The Ice Cream Man',
-          mimeType: 'text/plain',
-        });
-      } else if (Clipboard) {
-        // Fallback: Copy to clipboard
-        await Clipboard.setStringAsync(message);
-        Alert.alert('Copied!', 'App link copied to clipboard. Share it with your friends!');
-      } else {
-        Alert.alert('Share', 'Share The Ice Cream Man with your friends!');
-      }
+      const result = await Share.share(
+        Platform.OS === 'android'
+          ? { message: `${message}\n${appStoreUrl}` }
+          : { message, url: appStoreUrl }
+      );
 
-      if (onShare) {
+      if (result.action === Share.sharedAction && onShare) {
         onShare();
       }
     } catch (error) {
       console.error('Error sharing app:', error);
-      Alert.alert('Error', 'Failed to share app. Please try again.');
     }
   };
 
-  const sizeClasses = {
-    small: 'p-2',
-    medium: 'p-3',
-    large: 'p-4',
+  const sizeStyles = {
+    small: { paddingVertical: 8, paddingHorizontal: 12 },
+    medium: { paddingVertical: 12, paddingHorizontal: 16 },
+    large: { paddingVertical: 16, paddingHorizontal: 20 },
   };
 
-  const variantClasses = {
-    primary: 'bg-primary',
-    secondary: 'bg-surface border border-border',
-    minimal: 'bg-transparent',
+  const bgColors = {
+    primary: '#FF69B4',
+    secondary: '#f5f5f5',
+    minimal: 'transparent',
   };
 
-  const textSizeClasses = {
-    small: 'text-sm',
-    medium: 'text-base',
-    large: 'text-lg',
+  const textColors = {
+    primary: '#fff',
+    secondary: '#333',
+    minimal: '#333',
+  };
+
+  const textSizes = {
+    small: 13,
+    medium: 15,
+    large: 17,
   };
 
   return (
     <Pressable
       onPress={handleShare}
-      style={({ pressed }) => [
-        {
-          opacity: pressed ? 0.8 : 1,
-          transform: [{ scale: pressed ? 0.95 : 1 }],
-        },
-      ]}
+      style={({ pressed }) => [{
+        opacity: pressed ? 0.8 : 1,
+        transform: [{ scale: pressed ? 0.95 : 1 }],
+      }]}
     >
-      <View className={`rounded-lg flex-row items-center justify-center gap-2 ${sizeClasses[size]} ${variantClasses[variant]}`}>
-        <Text className="text-xl">📤</Text>
+      <View style={[
+        sizeStyles[size],
+        {
+          backgroundColor: bgColors[variant],
+          borderRadius: 12,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+          borderWidth: variant === 'secondary' ? 1 : 0,
+          borderColor: '#E5E7EB',
+        }
+      ]}>
+        <Text style={{ fontSize: 20 }}>📤</Text>
         {showLabel && (
-          <Text className={`font-semibold ${textSizeClasses[size]} ${variant === 'primary' ? 'text-white' : 'text-foreground'}`}>
-            Share
+          <Text style={{
+            fontWeight: '600',
+            fontSize: textSizes[size],
+            color: textColors[variant],
+          }}>
+            Share with Friends
           </Text>
         )}
       </View>

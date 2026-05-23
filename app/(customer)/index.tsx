@@ -12,6 +12,7 @@ import { DriversWantedBanner } from '@/components/drivers-wanted-banner';
 import { ETADisplay } from '@/components/eta-messaging';
 import { useAudioPlayer } from 'expo-audio';
 import { FactTicker } from '@/components/fact-ticker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Short jingle snippet for arrival notification
 const arrivalJingleSource = require('../../assets/ice-cream-jingle-short.mp3');
@@ -20,7 +21,8 @@ export default function CustomerHomeScreen() {
   const colors = useColors();
   const router = useRouter();
   const { userLocation, isLoadingLocation, locationError } = useLocation();
-  const [requestStatus, setRequestStatus] = useState<'idle' | 'summoning' | 'searching' | 'accepted' | 'arrived' | 'completed'>('idle');
+  const [requestStatus, setRequestStatus] = useState<'idle' | 'summoning' | 'searching' | 'accepted' | 'nearby' | 'arrived' | 'completed'>('idle');
+  const [driverCheckpoint, setDriverCheckpoint] = useState<string>('');
   const [estimatedTime, setEstimatedTime] = useState<number | null>(null);
   const [showRating, setShowRating] = useState(false);
 
@@ -92,6 +94,18 @@ export default function CustomerHomeScreen() {
       }
 
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+
+      // Safety reminder on first order
+      const hasSeenSafety = await AsyncStorage.getItem('has_seen_safety_prompt');
+      if (!hasSeenSafety) {
+        await AsyncStorage.setItem('has_seen_safety_prompt', 'true');
+        Alert.alert(
+          '⚠️ Safety Reminder',
+          'Stay aware of your surroundings when meeting the ice cream truck. If you\'re in an unfamiliar neighborhood, meet at a well-lit public area. Never share personal information with drivers.',
+          [{ text: 'Got it!' }]
+        );
+      }
+
       setRequestStatus('summoning');
 
       // Call backend API to create request
@@ -112,13 +126,23 @@ export default function CustomerHomeScreen() {
         setRequestStatus('accepted');
         setEstimatedTime(8);
         setDriverName('Ice Cream Mike');
+        setDriverCheckpoint('🚚 On the way to your neighborhood!');
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }, 8000);
+
+      // Simulate driver nearby after 15 seconds
+      setTimeout(() => {
+        setRequestStatus('nearby');
+        setEstimatedTime(2);
+        setDriverCheckpoint('📍 Almost there! About 2 minutes away');
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }, 15000);
 
       // Simulate arrival after 20 seconds
       setTimeout(() => {
         setRequestStatus('arrived');
         setEstimatedTime(null);
+        setDriverCheckpoint('🎉 Your Ice Cream Man has ARRIVED!');
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         // Play arrival jingle once
         if (arrivalPlayer && !arrivalPlayedRef.current) {
@@ -234,6 +258,39 @@ export default function CustomerHomeScreen() {
                   <Text className="text-error text-sm mt-2">Cancel Request</Text>
                 </Pressable>
               </View>
+            </View>
+          )}
+
+          {/* Driver Nearby - Almost There */}
+          {requestStatus === 'nearby' && (
+            <View className="bg-surface rounded-2xl p-6 border-2 border-warning">
+              <View className="items-center gap-3">
+                <Text style={{ fontSize: 50 }}>🚚📍</Text>
+                <Text className="text-xl font-bold text-foreground text-center">
+                  {driverName} is almost there!
+                </Text>
+                <View style={{ backgroundColor: '#FF9800', borderRadius: 20, paddingHorizontal: 20, paddingVertical: 8 }}>
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>
+                    ~2 min away
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 13, color: '#666', textAlign: 'center', marginTop: 4 }}>
+                  Head outside and look for the ice cream truck!
+                </Text>
+                <Pressable
+                  onPress={handleCancelRequest}
+                  style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
+                >
+                  <Text className="text-error text-sm mt-2">Cancel Request</Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
+
+          {/* Driver Checkpoint Banner */}
+          {driverCheckpoint && (requestStatus === 'accepted' || requestStatus === 'nearby') && (
+            <View style={{ backgroundColor: '#E8F5E9', borderRadius: 8, padding: 10, borderLeftWidth: 4, borderLeftColor: '#4CAF50' }}>
+              <Text style={{ fontSize: 13, color: '#2E7D32', fontWeight: '600' }}>{driverCheckpoint}</Text>
             </View>
           )}
 

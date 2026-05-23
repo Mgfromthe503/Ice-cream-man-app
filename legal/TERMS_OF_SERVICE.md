@@ -119,9 +119,36 @@ We do not guarantee that a vendor will be available to fulfill every customer re
 
 ### 8.2 Independent Contractors
 
-Vendors using the App are independent business operators, not employees of The Ice Cream Man. We are not responsible for the quality, safety, or legality of products sold by vendors.
+Vendors using the App are **independent business operators**, not employees, agents, or representatives of The Ice Cream Man or its developer. The Ice Cream Man platform is solely a technology service that facilitates connections between customers and vendors. We do not employ, supervise, direct, or control any vendor.
 
-### 8.3 As-Is Service
+### 8.3 No Background Checks
+
+**THE ICE CREAM MAN DOES NOT CONDUCT BACKGROUND CHECKS, CRIMINAL HISTORY CHECKS, DRIVING RECORD CHECKS, OR ANY OTHER FORM OF SCREENING ON VENDORS.** Registration as a vendor requires only payment of the registration fee and completion of the registration form. The Ice Cream Man makes no representations or warranties regarding the identity, background, character, reliability, or safety of any vendor.
+
+### 8.4 No Liability for Vendor Conduct
+
+The Ice Cream Man and its developer (Mindy Gaines) are **NOT liable** for any actions, omissions, conduct, or behavior of any vendor, including but not limited to:
+
+- Traffic accidents, vehicle collisions, or property damage
+- Personal injury, assault, harassment, or any criminal activity
+- Theft, fraud, or misrepresentation
+- Food safety violations, allergic reactions, or illness
+- Interactions with minors or vulnerable persons
+- Any harm whatsoever arising from interactions with vendors
+
+### 8.5 User Safety Responsibility
+
+By using this App, you acknowledge and agree that:
+
+- **YOU USE THIS SERVICE AT YOUR OWN RISK**
+- You are solely responsible for your personal safety when interacting with vendors
+- You should always be aware of your surroundings, especially in unfamiliar neighborhoods
+- You should meet vendors in well-lit, public areas when possible
+- Minors should be supervised by a parent or guardian when interacting with vendors
+- You should never share personal information (home address, phone number) directly with vendors
+- You should report any suspicious or unsafe behavior immediately to local authorities
+
+### 8.6 As-Is Service
 
 THE APP IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
 
@@ -129,13 +156,28 @@ THE APP IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, E
 
 ## 9. Limitation of Liability
 
-TO THE MAXIMUM EXTENT PERMITTED BY LAW, MINDY GAINES AND THE ICE CREAM MAN SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, DATA, OR USE, ARISING OUT OF OR IN CONNECTION WITH THE APP.
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, MINDY GAINES AND THE ICE CREAM MAN SHALL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS, DATA, USE, PERSONAL INJURY, PROPERTY DAMAGE, OR DEATH, ARISING OUT OF OR IN CONNECTION WITH:
+
+- YOUR USE OF OR INABILITY TO USE THE APP
+- ANY CONDUCT OR CONTENT OF ANY VENDOR OR OTHER USER
+- ANY INTERACTIONS BETWEEN CUSTOMERS AND VENDORS, WHETHER ONLINE OR OFFLINE
+- UNAUTHORIZED ACCESS TO OR ALTERATION OF YOUR DATA
+- ANY OTHER MATTER RELATING TO THE APP
+
+IN NO EVENT SHALL OUR TOTAL LIABILITY EXCEED THE AMOUNT YOU PAID TO US IN THE TWELVE (12) MONTHS PRIOR TO THE CLAIM.
 
 ---
 
 ## 10. Indemnification
 
-You agree to indemnify and hold harmless Mindy Gaines, The Ice Cream Man, and its affiliates from any claims, damages, losses, or expenses arising from your use of the App or violation of these Terms.
+You agree to indemnify, defend, and hold harmless Mindy Gaines, The Ice Cream Man, and its affiliates, officers, agents, and employees from and against any and all claims, damages, obligations, losses, liabilities, costs, or expenses (including attorney's fees) arising from:
+
+- Your use of the App
+- Your violation of these Terms
+- Your violation of any third-party rights
+- Any interaction between you and any other user of the App
+- Any products sold or purchased through the App
+- Any accident, injury, death, or property damage related to your use of the App or interactions facilitated by the App
 
 ---
 

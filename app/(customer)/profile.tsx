@@ -115,6 +115,7 @@ export default function CustomerProfileScreen() {
             <Text className="text-base font-semibold text-foreground">Settings</Text>
 
             <Pressable
+              onPress={() => router.push('/(customer)/notifications')}
               style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
             >
               <View className="bg-surface rounded-lg p-4 flex-row items-center justify-between border border-border">
@@ -127,24 +128,13 @@ export default function CustomerProfileScreen() {
             </Pressable>
 
             <Pressable
+              onPress={() => router.push('/(customer)/location-settings')}
               style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
             >
               <View className="bg-surface rounded-lg p-4 flex-row items-center justify-between border border-border">
                 <View className="flex-row items-center gap-3">
                   <Text className="text-xl">📍</Text>
                   <Text className="font-semibold text-foreground">Location Settings</Text>
-                </View>
-                <Text className="text-muted">→</Text>
-              </View>
-            </Pressable>
-
-            <Pressable
-              style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
-            >
-              <View className="bg-surface rounded-lg p-4 flex-row items-center justify-between border border-border">
-                <View className="flex-row items-center gap-3">
-                  <Text className="text-xl">⚙️</Text>
-                  <Text className="font-semibold text-foreground">App Settings</Text>
                 </View>
                 <Text className="text-muted">→</Text>
               </View>

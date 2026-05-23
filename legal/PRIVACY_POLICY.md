@@ -153,19 +153,38 @@ The Ice Cream Man is designed for use by all ages. However, we do not knowingly 
 
 ---
 
-## 9. Third-Party Links and Services
+## 9. Vendor Screening Disclosure
+
+**IMPORTANT: The Ice Cream Man does NOT perform background checks, criminal history checks, driving record checks, sex offender registry checks, or any other form of screening on vendors who register through the App.** Vendor registration requires only payment of the registration fee and completion of the registration form. Users interact with vendors at their own risk.
+
+---
+
+## 10. Safety Information
+
+We encourage all users to exercise caution and common sense when using the App:
+
+- Always be aware of your surroundings when meeting a vendor
+- If you are in an unfamiliar neighborhood, meet at a well-lit, public location
+- Minors should always be accompanied by a parent or guardian
+- Never share your exact home address, phone number, or personal information directly with vendors
+- Report any suspicious or unsafe behavior to local law enforcement immediately
+- The App shares only your approximate neighborhood location with vendors, not your exact address
+
+---
+
+## 11. Third-Party Links and Services
 
 The App may contain links to third-party websites or services that are not operated by us. We have no control over, and assume no responsibility for, the content, privacy policies, or practices of any third-party sites or services.
 
 ---
 
-## 10. Changes to This Privacy Policy
+## 12. Changes to This Privacy Policy
 
 We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date. You are advised to review this Privacy Policy periodically for any changes.
 
 ---
 
-## 11. California Residents (CCPA)
+## 13. California Residents (CCPA)
 
 If you are a California resident, you have additional rights under the California Consumer Privacy Act (CCPA):
 
@@ -178,7 +197,7 @@ We do not sell personal information to third parties.
 
 ---
 
-## 12. Contact Us
+## 14. Contact Us
 
 If you have any questions about this Privacy Policy, please contact us:
 
