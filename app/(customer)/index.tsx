@@ -82,36 +82,42 @@ export default function CustomerHomeScreen() {
             </View>
           )}
 
-          {/* Big Ice Cream Button */}
+          {/* Big Ice Cream Button - MASSIVE */}
           <View className="flex-1 justify-center items-center">
             <Pressable
               onPress={handleBigIceCreamPress}
               disabled={requestStatus !== 'idle' || createRequestMutation.isPending}
               style={({ pressed }) => [
                 {
-                  opacity: requestStatus !== 'idle' ? 0.5 : pressed ? 0.9 : 1,
-                  transform: [{ scale: pressed && requestStatus === 'idle' ? 0.95 : 1 }],
+                  opacity: requestStatus !== 'idle' ? 0.5 : pressed ? 0.85 : 1,
+                  transform: [{ scale: pressed && requestStatus === 'idle' ? 0.92 : 1 }],
                 },
               ]}
             >
-              <View className="w-32 h-32 rounded-full bg-primary items-center justify-center shadow-lg">
-                <Text className="text-7xl">🍦</Text>
+              <View className="w-56 h-56 rounded-full bg-gradient-to-b from-pink-300 to-pink-400 items-center justify-center shadow-2xl border-4 border-pink-500">
+                <Text className="text-9xl">🍦</Text>
               </View>
             </Pressable>
-            <Text className="text-center mt-6 text-base font-semibold text-foreground">
-              {requestStatus === 'idle' ? 'Tap to order ice cream!' : 'Request sent'}
+            <Text className="text-center mt-8 text-2xl font-bold text-foreground">
+              {requestStatus === 'idle' ? '🎉 TAP TO ORDER!' : '✅ Request sent'}
+            </Text>
+            <Text className="text-center mt-2 text-sm text-muted">
+              {requestStatus === 'idle' ? 'Ice cream coming to you' : 'Finding drivers near you...'}
             </Text>
           </View>
 
           {/* Quick Info */}
           <View className="gap-3">
-            <View className="bg-surface rounded-lg p-4 flex-row items-center gap-3">
+            <View className="bg-surface rounded-lg p-4 flex-row items-center gap-3 border border-border">
               <Text className="text-2xl">📍</Text>
               <View className="flex-1">
                 <Text className="text-xs text-muted">Current Location</Text>
                 <Text className="text-sm font-semibold text-foreground">
                   {userLocation?.address || 'Your Neighborhood'}
                 </Text>
+                {userLocation?.accuracy && (
+                  <Text className="text-xs text-muted mt-1">Accuracy: ±{Math.round(userLocation.accuracy)}m</Text>
+                )}
               </View>
             </View>
             <Pressable

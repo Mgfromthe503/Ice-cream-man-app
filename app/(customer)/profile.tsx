@@ -3,6 +3,7 @@ import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'expo-router';
+import { ShareButton } from '@/components/share-button';
 
 export default function CustomerProfileScreen() {
   const colors = useColors();
@@ -57,8 +58,10 @@ export default function CustomerProfileScreen() {
             </View>
           </View>
 
-          {/* Settings */}
+          {/* Share & Settings */}
           <View className="gap-3">
+            <ShareButton variant="primary" size="medium" showLabel={true} />
+
             <Pressable
               style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
             >
@@ -97,7 +100,7 @@ export default function CustomerProfileScreen() {
           </View>
 
           {/* Logout Button */}
-          <View className="flex-1 justify-end">
+          <View className="flex-1 justify-end gap-3">
             <Pressable
               onPress={handleLogout}
               style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
@@ -106,6 +109,7 @@ export default function CustomerProfileScreen() {
                 <Text className="text-white font-semibold text-center">Logout</Text>
               </View>
             </Pressable>
+            <Text className="text-xs text-muted text-center">v1.0.0 | Made with ❤️ by Mindy Gaines</Text>
           </View>
         </View>
       </ScrollView>

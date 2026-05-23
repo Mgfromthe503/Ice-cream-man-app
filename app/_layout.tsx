@@ -21,6 +21,7 @@ import type { EdgeInsets, Metrics, Rect } from "react-native-safe-area-context";
 
 import { trpc, createTRPCClient } from "@/lib/trpc";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-runtime";
+import { RatingsPrompt } from "@/components/ratings-prompt";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -51,13 +52,17 @@ function RootLayoutNav() {
   }, [userRole, segments, isLoading]);
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="role-select" />
-      <Stack.Screen name="(customer)" />
-      <Stack.Screen name="(driver)" />
-      <Stack.Screen name="oauth/callback" />
-    </Stack>
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="role-select" />
+        <Stack.Screen name="(customer)" />
+        <Stack.Screen name="(driver)" />
+        <Stack.Screen name="oauth/callback" />
+      </Stack>
+      {/* Show ratings prompt to customers after deliveries */}
+      {userRole === "customer" && <RatingsPrompt triggerAfterDeliveries={3} />}
+    </>
   );
 }
 
