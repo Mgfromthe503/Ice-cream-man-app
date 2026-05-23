@@ -122,8 +122,8 @@ export function DriversWantedBanner({ registeredDrivers, activeCustomers, show }
             alignItems: 'center',
           }]}
         >
-          <Text style={{ color: '#333', fontWeight: 'bold', fontSize: 13 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
-            📢 Share - Help Recruit Drivers!
+          <Text style={{ color: '#333', fontWeight: 'bold', fontSize: 14, textAlign: 'center' }}>
+            📢 Share & Recruit
           </Text>
         </Pressable>
       </View>
