@@ -13,6 +13,7 @@ import { ETADisplay } from '@/components/eta-messaging';
 import { useAudioPlayer } from 'expo-audio';
 import { FactTicker } from '@/components/fact-ticker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { isWithinSafetyZone, calculateDistance, formatDistance } from '@/lib/gps-safety';
 
 // Short jingle snippet for arrival notification
 const arrivalJingleSource = require('../../assets/ice-cream-jingle-short.mp3');
@@ -30,6 +31,8 @@ export default function CustomerHomeScreen() {
   const arrivalPlayer = useAudioPlayer(arrivalJingleSource);
   const arrivalPlayedRef = useRef(false);
   const [driverName, setDriverName] = useState('your Ice Cream Man');
+  const [driverLocation, setDriverLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [distanceToCustomer, setDistanceToCustomer] = useState<number | null>(null);
   const createRequestMutation = trpc.requests.create.useMutation();
 
   // Pulsing glow animation for the big button
