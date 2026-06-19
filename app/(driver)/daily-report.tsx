@@ -66,6 +66,11 @@ export default function DailyReportScreen() {
       return;
     }
 
+    if (milesDriven < 0 || hoursDriven < 0 || gasPricePerGallon < 0) {
+      Alert.alert('Invalid Input', 'Please enter positive numbers only. Miles, hours, and gas price cannot be negative.');
+      return;
+    }
+
     // Without app: estimate driver would drive 3x more to find customers randomly
     const milesWithoutApp = milesDriven * 3;
     const milesSaved = milesWithoutApp - milesDriven;
