@@ -44,7 +44,7 @@
 - ✅ Added: Terms of Service liability limitations (Section 6)
 - ✅ Added: Safety warnings in Privacy Policy (Section 10)
 - ✅ Added: Safety prompt before first customer order
-- ✅ Added: "Report Driver" functionality for customers
+
 - ✅ Added: Independent contractor language in Terms
 
 **Status:** RESOLVED

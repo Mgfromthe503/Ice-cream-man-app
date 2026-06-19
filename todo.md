@@ -201,3 +201,9 @@
 - [x] Map screen shows real active delivery with navigate button
 - [x] All 78 tests passing (5 test files)
 - [x] Fix DriversWantedBanner text overflow (letters going off screen)
+
+## Phase 24: Professional Legal Disclosures (Non-Intrusive)
+- [ ] Add Terms acceptance checkbox to driver registration (before payment)
+- [ ] Add Privacy Policy link to customer and driver profiles
+- [ ] Add Help/Safety Tips section with professional guidance
+- [ ] Ensure all disclosures are legally compliant but not alarming

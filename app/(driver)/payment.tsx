@@ -23,6 +23,7 @@ export default function VendorPaymentScreen() {
   const [billingReady, setBillingReady] = useState(false);
   const [paid, setPaid] = useState(false);
   const [checkingPurchase, setCheckingPurchase] = useState(true);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   // Initialize billing and check for existing purchase
   useEffect(() => {
@@ -66,6 +67,11 @@ export default function VendorPaymentScreen() {
   }, []);
 
   const handlePayment = async () => {
+    if (!termsAccepted) {
+      Alert.alert('Terms Required', 'Please accept the Terms of Service to continue.');
+      return;
+    }
+
     setLoading(true);
     try {
       if (Platform.OS !== 'web') {
@@ -265,10 +271,33 @@ export default function VendorPaymentScreen() {
             ))}
           </View>
 
+          {/* Terms Acceptance */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.surface, borderRadius: 12, padding: 12 }}>
+            <Pressable
+              onPress={() => setTermsAccepted(!termsAccepted)}
+              style={({ pressed }) => [{
+                width: 24,
+                height: 24,
+                borderRadius: 6,
+                borderWidth: 2,
+                borderColor: colors.primary,
+                backgroundColor: termsAccepted ? colors.primary : 'transparent',
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: pressed ? 0.8 : 1,
+              }]}
+            >
+              {termsAccepted && <Text style={{ color: '#fff', fontSize: 14, fontWeight: '800' }}>✓</Text>}
+            </Pressable>
+            <Text style={{ flex: 1, color: colors.foreground, fontSize: 13, lineHeight: 18 }}>
+              I agree to the Terms of Service and acknowledge the Privacy Policy
+            </Text>
+          </View>
+
           {/* Payment Button */}
           <Pressable
             onPress={handlePayment}
-            disabled={loading}
+            disabled={loading || !termsAccepted}
             style={({ pressed }) => [{
               backgroundColor: loading ? colors.muted : '#00C853',
               paddingVertical: 20,
