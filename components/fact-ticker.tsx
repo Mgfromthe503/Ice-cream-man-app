@@ -13,65 +13,53 @@ import { View, Text, Animated, Easing } from 'react-native';
  */
 
 const ICE_CREAM_FACTS = [
-  // Bizarre Flavor Failures
-  "🇯🇵 Garlic and squid ink ice cream flavors actually exist in Japan!",
-  "🌭 Hot dog flavored ice cream was once trialed by a major brand. Yes, really.",
-  "🦗 Cicada-flavored ice cream sold out in Missouri after using real bugs!",
-  "🐴 Horseradish ice cream is a real gourmet flavor served with steak!",
-  // Brain Freeze & Bodily Reactions
-  "🧠 Brain freeze happens because blood vessels in your mouth panic!",
-  "🤓 'Sphenopalatine ganglioneuralgia' is the scientific name for brain freeze.",
-  "🐱 Cats get brain freeze too, which results in hilarious viral videos!",
-  "🥄 Ice cream testers use gold spoons because plastic taints the flavor!",
-  // Ridiculous Historical Trivia
-  "🇺🇸 George Washington spent $200 on ice cream in a single summer!",
-  "🏛️ Roman Emperor Nero sent slaves to fetch snow just for flavoring!",
-  "🎪 Ice cream cones were invented entirely by accident at a World's Fair!",
-  "👑 Charles I of England paid his chef to keep ice cream a royal secret!",
-  // Strange Laws & Myths
-  "🍌 Hawaii has a 'Banana Apple' fruit that tastes exactly like ice cream!",
-  "🤮 Industrial ice cream tasters swallow nothing - they spit it ALL out!",
-  "⚰️ Ben & Jerry's has a physical 'Flavor Graveyard' for dead flavors!",
-  "👖 In Kentucky, it is illegal to carry an ice cream cone in your pocket!",
-  // Marketing & Media Madness
-  "🎵 Ice cream trucks originally played music to drown out engine noise!",
-  "🥔 Food stylists use mashed potatoes in commercials because real ice cream melts!",
-  "🏔️ The world's tallest cone was over nine feet high in Norway!",
-  "⛪ Sunday became 'Sundae' because religious laws banned selling soda on Sundays!",
-  // Mind-Boggling Statistics
-  "📊 The average American eats about 20 quarts of ice cream a year!",
-  "💨 Air makes up 50% of the volume in cheap ice cream!",
-  "👅 Brain freeze cure: press your tongue to the roof of your mouth!",
-  "🇺🇸 July is National Ice Cream Month thanks to President Ronald Reagan!",
-  "🍦 Vanilla is the most popular flavor, proving humans are deeply predictable.",
-  // Ice Cream Science & Cravings
-  "🧠 Eating ice cream lights up the SAME pleasure centers as winning the lottery!",
-  "💨 Cheap ice cream is pumped with up to 50% air. You're paying to eat frozen air!",
-  "❄️ Anchorage, Alaska is a top ice cream city - cravings ignore the weather!",
-  "🌿 Seaweed extract keeps your ice cream from melting into sad soup.",
-  // Hilarious Historical Disasters
-  "🩻 Victorian 'penny lick' vendors reused glass cups WITHOUT washing - a health disaster!",
-  "💰 George Washington's ice cream habit cost thousands in today's dollars!",
-  "🎪 The ice cream cone was born from CHAOS at the 1904 World's Fair!",
-  "⚓ During WWII, the US Navy spent $1 MILLION on a floating ice cream parlor!",
-  // Wild Ice Cream Laws
-  "🐎 Ice cream in your back pocket? Illegal - horse thieves used it to lure horses!",
-  "🎬 Clint Eastwood ran for mayor to repeal a ban on eating ice cream on sidewalks!",
-  // Funny Waiting Phrases
-  "🚚 Your ice cream man is putting on his cool shades...",
-  "🚚 Beep beep! The truck is warming up...",
-  "🚚 Your ice cream man is loading up the good stuff...",
-  "🚚 Activating ice cream bat signal... 🦇🍦",
-  "🍦 Fun fact: It takes about 50 licks to finish a single scoop cone!",
+  // WILD & BIZARRE FACTS
+  "🚀 NASA astronauts eat freeze-dried ice cream in space! It's the only dessert that survives zero gravity!",
+  "🇯🇵 In Japan, you can get squid ink, garlic, and wasabi ice cream - and people actually love it!",
+  "🐴 Horseradish ice cream is a real thing served at fancy steakhouses. Sounds weird, tastes amazing!",
+  "🌭 Hot dog-flavored ice cream was created by a major brand. The internet had OPINIONS.",
+  "🦗 Cicada-flavored ice cream sold out in Missouri. Yes, it had real bugs in it!",
+  "🍌 There's a fruit called 'Banana Apple' in Hawaii that tastes exactly like vanilla ice cream!",
+  "🥔 Food stylists in commercials use mashed potatoes instead of real ice cream because it doesn't melt!",
+  "🤮 Professional ice cream tasters spit out EVERYTHING - they never swallow. It's all about the taste!",
+  "⚰️ Ben & Jerry's has an actual 'Flavor Graveyard' where discontinued flavors get a proper funeral!",
+  "🏔️ The world's tallest ice cream cone was over 9 feet high in Norway. It took a crane to eat it!",
+  
+  // MIND-BLOWING HISTORY
+  "🇺🇸 George Washington spent $200 on ice cream in ONE summer in 1790. That's $5,000+ in today's money!",
+  "👑 King Charles I of England paid his chef a fortune to keep ice cream a royal secret!",
+  "🏛️ Roman Emperor Nero sent slaves to the mountains to fetch snow just to flavor his desserts!",
+  "🎪 The ice cream cone was invented by ACCIDENT at the 1904 World's Fair when a waffle vendor ran out of dishes!",
+  "⚓ During WWII, the US Navy built a FLOATING ICE CREAM PARLOR and spent $1 MILLION on it!",
+  "🎬 Clint Eastwood actually ran for mayor to repeal a ban on eating ice cream on sidewalks!",
+  "🩻 Victorian 'penny lick' vendors reused the same glass cup for every customer WITHOUT WASHING. Gross!",
+  "⛪ 'Sundae' got its name because religious laws banned selling soda on Sundays, so they renamed it!",
+  "🎵 Ice cream truck music was originally played to DROWN OUT the loud engine noise!",
+  "👖 In Kentucky, it's literally ILLEGAL to carry an ice cream cone in your back pocket. (Horse thieves used it to lure horses!)",
+  
+  // SCIENCE STUFF THAT'S ACTUALLY COOL
+  "🧠 Eating ice cream triggers the EXACT SAME pleasure centers in your brain as winning the lottery!",
+  "💨 Cheap ice cream is 50% AIR. You're literally paying to eat frozen air!",
+  "🥄 Professional ice cream tasters use GOLD SPOONS because plastic taints the flavor!",
+  "🧠 Brain freeze happens when blood vessels in your mouth suddenly constrict. The scientific name is 'Sphenopalatine ganglioneuralgia'!",
+  "👅 Quick brain freeze fix: Press your tongue hard against the roof of your mouth!",
+  "🐱 Cats get brain freeze too - that's why you see viral videos of them freaking out!",
+  "🌿 Seaweed extract is in most ice cream to keep it from melting into sad soup!",
+  "❄️ Anchorage, Alaska is one of the top ice cream-consuming cities in the US. Cold weather = MORE ice cream!",
+  "🍦 It takes 3 gallons of milk to make just 1 gallon of ice cream!",
+  "🐄 One cow produces enough milk in her lifetime to make 9,000 gallons of ice cream!",
+  
+  // WILD STATISTICS
+  "📊 Americans eat about 20 quarts of ice cream per person PER YEAR!",
+  "🌍 New Zealand eats more ice cream per capita than ANY other country in the world!",
+  "🍦 Vanilla is the #1 flavor worldwide - humans really ARE predictable!",
   "🍫 Rocky Road was invented during the Great Depression to cheer people up!",
-  "🍦 NASA astronauts eat freeze-dried ice cream in space!",
-  "🐄 One cow gives enough milk for 9,000 gallons of ice cream in her lifetime!",
-  "🍦 It takes 3 gallons of milk to make 1 gallon of ice cream!",
-  "🤰 Pregnant? Your cravings are valid and ice cream is always the answer!",
-  "🧊 The first ice cream truck appeared in 1920 in the United States!",
-  "🌍 New Zealand eats more ice cream per capita than any other country!",
-  "🎂 Ice cream cake was invented because people couldn't choose between the two!",
-  "🏭 The largest ice cream factory in the world makes 100 million gallons a year!",
+  "🎂 Ice cream cake was invented because people couldn't choose between cake and ice cream!",
+  "🏭 The world's largest ice cream factory makes 100 MILLION gallons per year!",
+  "🇺🇸 July is National Ice Cream Month thanks to President Ronald Reagan!",
+  "🧊 The first ice cream truck in America appeared in 1920!",
+  "🍦 It takes about 50 licks to finish a single scoop cone!",
+  "🤰 Pregnant women crave ice cream more than any other food - it's totally valid!",
 ];
 
 interface FactTickerProps {
@@ -99,8 +87,8 @@ export function FactTicker({ variant = 'card', intervalMs = 4000 }: FactTickerPr
           useNativeDriver: true,
         }),
       ]).start(() => {
-        // Change fact
-        setCurrentIndex((prev) => (prev + 1) % ICE_CREAM_FACTS.length);
+        // Change fact - pick a random one instead of sequential
+        setCurrentIndex(Math.floor(Math.random() * ICE_CREAM_FACTS.length));
         slideAnim.setValue(20);
         // Fade in + slide down
         Animated.parallel([
