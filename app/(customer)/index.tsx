@@ -198,10 +198,9 @@ export default function CustomerHomeScreen() {
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1">
         <View className="flex-1 gap-4 justify-between">
           {/* Header */}
-          <View className="gap-2 items-center mb-2">
-            <Text className="text-4xl font-bold text-foreground">🍦</Text>
-            <Text className="text-2xl font-bold text-foreground">Ice Cream Man</Text>
-            <Text className="text-xs text-muted font-medium">One tap. Ice cream delivered.</Text>
+          <View className="gap-3 items-center mb-4">
+            <Text className="text-5xl font-black text-foreground" style={{ letterSpacing: 1 }}>ICE CREAM MAN</Text>
+            <Text className="text-sm text-muted font-semibold">One tap. Ice cream delivered.</Text>
           </View>
 
           {/* Drivers Wanted Banner - shows when no drivers available */}

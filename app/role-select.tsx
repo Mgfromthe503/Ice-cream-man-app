@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Platform } from 'react-native';
+import { View, Text, Pressable, ScrollView, Platform, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { useAuth } from '@/lib/auth-context';
@@ -37,20 +37,23 @@ export default function RoleSelectScreen() {
         <ScreenContainer containerClassName="bg-transparent" className="p-6">
           <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1">
             <View style={{ flex: 1, gap: 28, justifyContent: 'center' }}>
-              {/* Header */}
-              <View style={{ alignItems: 'center', gap: 8 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <Text style={{ fontSize: 44 }}>🍦</Text>
-                  <Text style={{ fontSize: 32, fontWeight: '900', color: '#8B4513' }}>
-                    Ice Cream Man
+              {/* Premium Header with Logo */}
+              <View style={{ alignItems: 'center', gap: 12 }}>
+                <Image
+                  source={require('@/assets/images/ice-cream-man-logo.png')}
+                  style={{ width: 100, height: 100, resizeMode: 'contain' }}
+                />
+                <View style={{ alignItems: 'center', gap: 4 }}>
+                  <Text style={{ fontSize: 36, fontWeight: '900', color: '#8B4513', letterSpacing: 1 }}>
+                    ICE CREAM MAN
+                  </Text>
+                  <Text style={{ fontSize: 14, color: '#A0826D', textAlign: 'center', fontWeight: '600' }}>
+                    Choose your role to get started
                   </Text>
                 </View>
-                <Text style={{ fontSize: 15, color: '#A0826D', textAlign: 'center' }}>
-                  Choose your role to get started
-                </Text>
               </View>
 
-              {/* Customer Card */}
+              {/* Customer Card with Premium Graphics */}
               <Pressable
                 onPress={() => handleRoleSelect('customer')}
                 style={({ pressed }) => [{
@@ -64,7 +67,7 @@ export default function RoleSelectScreen() {
                   end={{ x: 1, y: 1 }}
                   style={{
                     borderRadius: 24,
-                    padding: 28,
+                    padding: 24,
                     shadowColor: '#FF1493',
                     shadowOffset: { width: 0, height: 8 },
                     shadowOpacity: 0.4,
@@ -73,7 +76,10 @@ export default function RoleSelectScreen() {
                   }}
                 >
                   <View style={{ alignItems: 'center', gap: 12 }}>
-                    <Text style={{ fontSize: 56 }}>👨‍👧‍👦</Text>
+                    <Image
+                      source={require('@/assets/images/customer-character.png')}
+                      style={{ width: 120, height: 120, resizeMode: 'contain' }}
+                    />
                     <Text style={{ fontSize: 24, fontWeight: '800', color: '#FFFFFF' }}>
                       Customer
                     </Text>
@@ -95,7 +101,7 @@ export default function RoleSelectScreen() {
                 </LinearGradient>
               </Pressable>
 
-              {/* Driver Card */}
+              {/* Driver Card with Premium Graphics */}
               <Pressable
                 onPress={() => handleRoleSelect('driver')}
                 style={({ pressed }) => [{
@@ -109,7 +115,7 @@ export default function RoleSelectScreen() {
                   end={{ x: 1, y: 1 }}
                   style={{
                     borderRadius: 24,
-                    padding: 28,
+                    padding: 24,
                     shadowColor: '#FF8C00',
                     shadowOffset: { width: 0, height: 8 },
                     shadowOpacity: 0.4,
@@ -118,7 +124,10 @@ export default function RoleSelectScreen() {
                   }}
                 >
                   <View style={{ alignItems: 'center', gap: 12 }}>
-                    <Text style={{ fontSize: 56 }}>🚚</Text>
+                    <Image
+                      source={require('@/assets/images/driver-character.png')}
+                      style={{ width: 120, height: 120, resizeMode: 'contain' }}
+                    />
                     <Text style={{ fontSize: 24, fontWeight: '800', color: '#FFFFFF' }}>
                       Ice Cream Vendor
                     </Text>
