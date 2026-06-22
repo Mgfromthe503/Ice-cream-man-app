@@ -35,7 +35,7 @@ const ICE_CREAM_FACTS = [
   "🩻 Victorian 'penny lick' vendors reused the same glass cup for every customer WITHOUT WASHING. Gross!",
   "⛪ 'Sundae' got its name because religious laws banned selling soda on Sundays, so they renamed it!",
   "🎵 Ice cream truck music was originally played to DROWN OUT the loud engine noise!",
-  "👖 In Kentucky, it's literally ILLEGAL to carry an ice cream cone in your back pocket. (Horse thieves used it to lure horses!)",
+
   
   // SCIENCE STUFF THAT'S ACTUALLY COOL
   "🧠 Eating ice cream triggers the EXACT SAME pleasure centers in your brain as winning the lottery!",
