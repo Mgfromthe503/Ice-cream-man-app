@@ -21,7 +21,7 @@ const ICE_CREAM_FACTS = [
   "🦗 Cicada-flavored ice cream sold out in Missouri. Yes, it had real bugs in it!",
   "🍌 There's a fruit called 'Banana Apple' in Hawaii that tastes exactly like vanilla ice cream!",
   "🥔 Food stylists in commercials use mashed potatoes instead of real ice cream because it doesn't melt!",
-  "🤮 Professional ice cream tasters spit out EVERYTHING - they never swallow. It's all about the taste!",
+
   "⚰️ Ben & Jerry's has an actual 'Flavor Graveyard' where discontinued flavors get a proper funeral!",
   "🏔️ The world's tallest ice cream cone was over 9 feet high in Norway. It took a crane to eat it!",
   
@@ -32,7 +32,7 @@ const ICE_CREAM_FACTS = [
   "🎪 The ice cream cone was invented by ACCIDENT at the 1904 World's Fair when a waffle vendor ran out of dishes!",
   "⚓ During WWII, the US Navy built a FLOATING ICE CREAM PARLOR and spent $1 MILLION on it!",
   "🎬 Clint Eastwood actually ran for mayor to repeal a ban on eating ice cream on sidewalks!",
-  "🩻 Victorian 'penny lick' vendors reused the same glass cup for every customer WITHOUT WASHING. Gross!",
+
   "⛪ 'Sundae' got its name because religious laws banned selling soda on Sundays, so they renamed it!",
   "🎵 Ice cream truck music was originally played to DROWN OUT the loud engine noise!",
 
