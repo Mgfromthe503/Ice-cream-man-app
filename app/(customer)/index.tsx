@@ -198,9 +198,10 @@ export default function CustomerHomeScreen() {
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1">
         <View className="flex-1 gap-4 justify-between">
           {/* Header */}
-          <View className="gap-1 items-center">
-            <Text className="text-3xl font-bold text-foreground">🍦 Ice Cream Man</Text>
-            <Text className="text-sm text-muted">One tap. Ice cream delivered.</Text>
+          <View className="gap-2 items-center mb-2">
+            <Text className="text-4xl font-bold text-foreground">🍦</Text>
+            <Text className="text-2xl font-bold text-foreground">Ice Cream Man</Text>
+            <Text className="text-xs text-muted font-medium">One tap. Ice cream delivered.</Text>
           </View>
 
           {/* Drivers Wanted Banner - shows when no drivers available */}
@@ -209,10 +210,10 @@ export default function CustomerHomeScreen() {
           )}
 
           {/* Location Status */}
-          <View className="bg-surface rounded-xl p-3 flex-row items-center gap-3 border border-border">
-            <Text className="text-xl">📍</Text>
+          <View className="bg-surface rounded-lg p-3 flex-row items-center gap-3 border border-border">
+            <Text className="text-lg">📍</Text>
             <View className="flex-1">
-              <Text className="text-xs text-muted">Your Location</Text>
+              <Text className="text-xs text-muted font-medium">Your Location</Text>
               <Text className="text-sm font-semibold text-foreground" numberOfLines={1}>
                 {getLocationDisplay()}
               </Text>
@@ -231,16 +232,16 @@ export default function CustomerHomeScreen() {
 
           {/* Driver Accepted / Arrived Status */}
           {requestStatus === 'accepted' && (
-            <View className="bg-surface rounded-2xl p-6 border-2 border-success">
+            <View className="bg-surface rounded-xl p-5 border border-border shadow-sm">
               <View className="items-center gap-3">
-                <Text style={{ fontSize: 50 }}>🚚💨</Text>
-                <Text className="text-xl font-bold text-foreground text-center">
+                <Text style={{ fontSize: 48 }}>🚚</Text>
+                <Text className="text-lg font-bold text-foreground text-center">
                   {driverName} is on the way!
                 </Text>
                 {estimatedTime && (
                   <View className="bg-primary rounded-full px-6 py-2">
-                    <Text className="text-white font-bold text-lg">
-                      {estimatedTime} min away
+                    <Text className="text-white font-bold text-base">
+                      {estimatedTime} min
                     </Text>
                   </View>
                 )}
@@ -250,15 +251,15 @@ export default function CustomerHomeScreen() {
                   onPress={() => router.push('/(customer)/map')}
                   style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
                 >
-                  <View className="bg-surface border-2 border-primary rounded-lg px-4 py-2 mt-2">
-                    <Text className="text-primary font-semibold">🗺️ Track on Map</Text>
+                  <View className="bg-primary rounded-lg px-4 py-2 mt-2">
+                    <Text className="text-white font-semibold text-sm">🗺️ Track on Map</Text>
                   </View>
                 </Pressable>
                 <Pressable
                   onPress={handleCancelRequest}
                   style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
                 >
-                  <Text className="text-error text-sm mt-2">Cancel Request</Text>
+                  <Text className="text-error text-xs font-medium mt-2">Cancel</Text>
                 </Pressable>
               </View>
             </View>
@@ -266,25 +267,25 @@ export default function CustomerHomeScreen() {
 
           {/* Driver Nearby - Almost There */}
           {requestStatus === 'nearby' && (
-            <View className="bg-surface rounded-2xl p-6 border-2 border-warning">
+            <View className="bg-surface rounded-xl p-5 border border-border shadow-sm">
               <View className="items-center gap-3">
-                <Text style={{ fontSize: 50 }}>🚚📍</Text>
-                <Text className="text-xl font-bold text-foreground text-center">
-                  {driverName} is almost there!
+                <Text style={{ fontSize: 48 }}>🚚</Text>
+                <Text className="text-lg font-bold text-foreground text-center">
+                  {driverName} is almost here!
                 </Text>
-                <View style={{ backgroundColor: '#FF9800', borderRadius: 20, paddingHorizontal: 20, paddingVertical: 8 }}>
-                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>
-                    ~2 min away
+                <View className="bg-warning rounded-full px-6 py-2">
+                  <Text className="text-white font-bold text-base">
+                    ~2 min
                   </Text>
                 </View>
-                <Text style={{ fontSize: 13, color: '#666', textAlign: 'center', marginTop: 4 }}>
-                  Head outside and look for the ice cream truck!
+                <Text className="text-sm text-muted text-center">
+                  Head outside and look for the truck!
                 </Text>
                 <Pressable
                   onPress={handleCancelRequest}
                   style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
                 >
-                  <Text className="text-error text-sm mt-2">Cancel Request</Text>
+                  <Text className="text-error text-xs font-medium mt-2">Cancel</Text>
                 </Pressable>
               </View>
             </View>
@@ -292,28 +293,28 @@ export default function CustomerHomeScreen() {
 
           {/* Driver Checkpoint Banner */}
           {driverCheckpoint && (requestStatus === 'accepted' || requestStatus === 'nearby') && (
-            <View style={{ backgroundColor: '#E8F5E9', borderRadius: 8, padding: 10, borderLeftWidth: 4, borderLeftColor: '#4CAF50' }}>
-              <Text style={{ fontSize: 13, color: '#2E7D32', fontWeight: '600' }}>{driverCheckpoint}</Text>
+            <View className="bg-success bg-opacity-10 rounded-lg p-3 border border-success border-opacity-30">
+              <Text className="text-xs text-success font-semibold">{driverCheckpoint}</Text>
             </View>
           )}
 
           {requestStatus === 'arrived' && (
-            <View className="bg-surface rounded-2xl p-6 border-2 border-success">
+            <View className="bg-surface rounded-xl p-5 border border-border shadow-sm">
               <View className="items-center gap-3">
-                <Text style={{ fontSize: 60 }}>🎉🍦🚚</Text>
-                <Text className="text-2xl font-bold text-foreground text-center">
+                <Text style={{ fontSize: 56 }}>🎉🍦</Text>
+                <Text className="text-xl font-bold text-foreground text-center">
                   Your Ice Cream Man is HERE!
                 </Text>
                 <Text className="text-sm text-muted text-center">
-                  Go grab your ice cream! 🏃‍♂️
+                  Go grab your ice cream!
                 </Text>
                 <Pressable
                   onPress={handleDeliveryComplete}
                   style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.95 : 1 }] }]}
                 >
-                  <View className="bg-success rounded-xl px-8 py-4 mt-2">
-                    <Text className="text-white font-bold text-lg text-center">
-                      🍦 Got My Ice Cream!
+                  <View className="bg-success rounded-lg px-8 py-3 mt-2">
+                    <Text className="text-white font-bold text-base text-center">
+                      Got My Ice Cream!
                     </Text>
                   </View>
                 </Pressable>
@@ -381,18 +382,18 @@ export default function CustomerHomeScreen() {
               </Animated.View>
 
               {/* Call to action text */}
-              <View className="mt-6 items-center">
-                <Text className="text-xl font-bold text-foreground text-center">
-                  🎉 Summon the Ice Cream Man!
+              <View className="mt-4 items-center">
+                <Text className="text-lg font-bold text-foreground text-center">
+                  Summon the Ice Cream Man
                 </Text>
                 {!userLocation && (
-                  <Text className="text-sm text-error text-center mt-2">
+                  <Text className="text-xs text-error text-center mt-2 font-medium">
                     📍 Enable location to order
                   </Text>
                 )}
                 {userLocation && (
-                  <Text className="text-sm text-muted text-center mt-2">
-                    One tap brings the truck to your neighborhood!
+                  <Text className="text-xs text-muted text-center mt-2">
+                    One tap brings the truck to your neighborhood
                   </Text>
                 )}
               </View>

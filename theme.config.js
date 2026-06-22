@@ -1,14 +1,31 @@
 /** @type {const} */
 const themeColors = {
-  primary: { light: '#FF69B4', dark: '#FF69B4' },        // Candy Pink
-  background: { light: '#FFF8DC', dark: '#1a1a1a' },    // Cream / Dark
-  surface: { light: '#FFE4E1', dark: '#2d2d2d' },       // Misty Rose / Dark
-  foreground: { light: '#8B4513', dark: '#FFE4E1' },    // Chocolate Brown / Light
-  muted: { light: '#A0826D', dark: '#B8956A' },         // Muted Brown
-  border: { light: '#FFB6C1', dark: '#4a4a4a' },        // Light Pink / Dark
-  success: { light: '#00D9A3', dark: '#00D9A3' },       // Mint Green
-  warning: { light: '#FFD700', dark: '#FFD700' },       // Sunny Yellow
-  error: { light: '#FF6B6B', dark: '#FF8787' },         // Coral Red
+  // Modern, clean primary - vibrant but professional
+  primary: { light: '#E91E63', dark: '#FF1493' },        // Vibrant Magenta
+  
+  // Clean, minimal backgrounds
+  background: { light: '#FFFFFF', dark: '#0F0F0F' },    // Pure White / Deep Black
+  
+  // Subtle surface for cards and containers
+  surface: { light: '#F5F5F5', dark: '#1A1A1A' },       // Light Gray / Dark Gray
+  
+  // Strong, readable text
+  foreground: { light: '#1A1A1A', dark: '#FFFFFF' },    // Near Black / Pure White
+  
+  // Secondary text - subtle but readable
+  muted: { light: '#666666', dark: '#AAAAAA' },         // Medium Gray
+  
+  // Clean borders
+  border: { light: '#E0E0E0', dark: '#333333' },        // Light Border / Dark Border
+  
+  // Status colors - clean and clear
+  success: { light: '#10B981', dark: '#34D399' },       // Emerald Green
+  warning: { light: '#F59E0B', dark: '#FBBF24' },       // Amber Orange
+  error: { light: '#EF4444', dark: '#F87171' },         // Red
+  
+  // Additional utility colors for modern design
+  secondary: { light: '#6366F1', dark: '#818CF8' },     // Indigo
+  accent: { light: '#EC4899', dark: '#F472B6' },        // Pink Accent
 };
 
 module.exports = { themeColors };

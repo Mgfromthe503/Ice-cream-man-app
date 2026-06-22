@@ -37,47 +37,47 @@ export default function CustomerProfileScreen() {
   };
 
   return (
-    <ScreenContainer className="p-6">
+    <ScreenContainer className="p-4">
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1">
-        <View className="flex-1 gap-6">
+        <View className="flex-1 gap-5">
           {/* Header */}
-          <View className="gap-2">
+          <View className="gap-1">
             <Text className="text-2xl font-bold text-foreground">Profile</Text>
-            <Text className="text-sm text-muted">Your account settings</Text>
+            <Text className="text-xs text-muted font-medium">Your account settings</Text>
           </View>
 
           {/* Profile Card */}
-          <View className="bg-surface rounded-2xl p-6 border-2 border-primary">
-            <View className="items-center gap-4">
+          <View className="bg-surface rounded-lg p-5 border border-border">
+            <View className="items-center gap-3">
               <View
                 style={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: 32,
-                  backgroundColor: '#FF69B4',
+                  width: 56,
+                  height: 56,
+                  borderRadius: 28,
+                  backgroundColor: colors.primary,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <Text className="text-4xl">🍦</Text>
+                <Text className="text-3xl">🍦</Text>
               </View>
               <View className="items-center">
-                <Text className="text-xl font-bold text-foreground">Ice Cream Lover</Text>
-                <Text className="text-sm text-muted">Customer</Text>
+                <Text className="text-lg font-bold text-foreground">Ice Cream Lover</Text>
+                <Text className="text-xs text-muted">Customer</Text>
               </View>
             </View>
           </View>
 
           {/* Stats - Only show real data */}
           <View className="flex-row gap-3">
-            <View className="flex-1 bg-surface rounded-xl p-4 items-center">
+            <View className="flex-1 bg-surface rounded-lg p-4 items-center border border-border">
               <Text className="text-2xl font-bold text-primary">{totalOrders}</Text>
-              <Text className="text-xs text-muted text-center">Orders Made</Text>
+              <Text className="text-xs text-muted text-center mt-1">Orders</Text>
             </View>
-            <View className="flex-1 bg-surface rounded-xl p-4 items-center">
-              <Text className="text-2xl">📍</Text>
-              <Text className="text-xs text-muted text-center">
-                {userLocation ? 'Location Active' : 'Location Off'}
+            <View className="flex-1 bg-surface rounded-lg p-4 items-center border border-border">
+              <Text className="text-lg">📍</Text>
+              <Text className="text-xs text-muted text-center mt-1">
+                {userLocation ? 'Active' : 'Off'}
               </Text>
             </View>
           </View>
@@ -89,8 +89,8 @@ export default function CustomerProfileScreen() {
           </View>
 
           {/* Rate App */}
-          <View className="gap-3">
-            <Text className="text-base font-semibold text-foreground">Enjoying the App?</Text>
+          <View className="gap-2">
+            <Text className="text-sm font-semibold text-foreground">Enjoying the App?</Text>
             <Pressable
               onPress={() => {
                 const url = Platform.OS === 'android'
@@ -102,28 +102,28 @@ export default function CustomerProfileScreen() {
               }}
               style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
             >
-              <View style={{ backgroundColor: '#FFD700', borderRadius: 12, padding: 16, alignItems: 'center' }}>
-                <Text style={{ fontSize: 24 }}>⭐</Text>
-                <Text style={{ fontWeight: 'bold', fontSize: 15, color: '#333', marginTop: 4 }}>Rate Us on Google Play</Text>
-                <Text style={{ fontSize: 12, color: '#666', marginTop: 2 }}>Help us grow - leave a review!</Text>
+              <View className="bg-warning rounded-lg p-4 items-center border border-border">
+                <Text className="text-2xl">⭐</Text>
+                <Text className="font-semibold text-sm text-foreground mt-2">Rate Us on Google Play</Text>
+                <Text className="text-xs text-muted mt-1">Help us grow</Text>
               </View>
             </Pressable>
           </View>
 
           {/* Settings */}
-          <View className="gap-3">
-            <Text className="text-base font-semibold text-foreground">Settings</Text>
+          <View className="gap-2">
+            <Text className="text-sm font-semibold text-foreground">Settings</Text>
 
             <Pressable
               onPress={() => router.push('/(customer)/notifications')}
               style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
             >
-              <View className="bg-surface rounded-lg p-4 flex-row items-center justify-between border border-border">
+              <View className="bg-surface rounded-lg p-3 flex-row items-center justify-between border border-border">
                 <View className="flex-row items-center gap-3">
-                  <Text className="text-xl">🔔</Text>
-                  <Text className="font-semibold text-foreground">Notifications</Text>
+                  <Text className="text-lg">🔔</Text>
+                  <Text className="font-semibold text-sm text-foreground">Notifications</Text>
                 </View>
-                <Text className="text-muted">→</Text>
+                <Text className="text-muted text-sm">→</Text>
               </View>
             </Pressable>
 
@@ -131,12 +131,12 @@ export default function CustomerProfileScreen() {
               onPress={() => router.push('/(customer)/location-settings')}
               style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
             >
-              <View className="bg-surface rounded-lg p-4 flex-row items-center justify-between border border-border">
+              <View className="bg-surface rounded-lg p-3 flex-row items-center justify-between border border-border">
                 <View className="flex-row items-center gap-3">
-                  <Text className="text-xl">📍</Text>
-                  <Text className="font-semibold text-foreground">Location Settings</Text>
+                  <Text className="text-lg">📍</Text>
+                  <Text className="font-semibold text-sm text-foreground">Location Settings</Text>
                 </View>
-                <Text className="text-muted">→</Text>
+                <Text className="text-muted text-sm">→</Text>
               </View>
             </Pressable>
           </View>
@@ -145,10 +145,10 @@ export default function CustomerProfileScreen() {
           <View className="flex-1 justify-end gap-3">
             <Pressable
               onPress={handleLogout}
-              style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
+              style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] }]}
             >
-              <View className="bg-error rounded-lg p-4">
-                <Text className="text-white font-semibold text-center">Logout</Text>
+              <View className="bg-error rounded-lg p-3">
+                <Text className="text-white font-semibold text-center text-sm">Logout</Text>
               </View>
             </Pressable>
             <Text className="text-xs text-muted text-center">v1.0.0 | Made with ❤️ by Mindy Gaines</Text>
