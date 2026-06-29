@@ -30,7 +30,7 @@ export default function CustomerProfileScreen() {
   const handleLogout = async () => {
     try {
       await logout();
-      router.replace('/');
+      router.replace('/role-select');
     } catch (error) {
       console.error('Logout failed:', error);
     }
