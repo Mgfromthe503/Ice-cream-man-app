@@ -1,10 +1,11 @@
 # Privacy Policy
 
-**The Ice Cream Man**
-**Effective Date:** May 23, 2026
-**Last Updated:** May 23, 2026
-**Developer:** Mindy Gaines
-**Contact:** mindy.gaines1@gmail.com
+**The Ice Cream Man**  
+**Effective Date:** June 29, 2026  
+**Last Updated:** June 29, 2026  
+**Developer:** Mindy Gaines  
+**Contact:** icecreammanapp@gmail.com  
+**Package:** com.icecreamman.app
 
 ---
 
@@ -16,198 +17,191 @@ By downloading, installing, or using the App, you agree to the collection and us
 
 ---
 
-## 2. Information We Collect
+## 2. Dual-Marketplace Architecture
 
-### 2.1 Personal Information
+The Ice Cream Man operates as a **dual-marketplace platform** connecting two distinct user roles within a single application:
 
-We collect the following personal information when you create an account or use our services:
+| Role | Description | Key Data Interactions |
+|------|-------------|----------------------|
+| **Customer** | Orders ice cream delivery to their location | Shares location data (at their chosen precision) with assigned Driver |
+| **Driver/Vendor** | Receives and fulfills customer delivery requests | Shares real-time GPS location for proximity verification and navigation |
+
+Each role has different data collection requirements, retention periods, and privacy controls as described below.
+
+---
+
+## 3. Information We Collect
+
+### 3.1 Location Data — Customer Explicit Choice
+
+Customers have **explicit control** over what location information is shared with Drivers. Before each order, Customers choose one of three sharing modes:
+
+| Sharing Mode | What Driver Receives | GPS Coordinates Shared? |
+|--------------|---------------------|------------------------|
+| **Exact Address** | Full street address from GPS reverse geocoding | Yes — precise coordinates shared with assigned Driver |
+| **Street Name Only** | Street name without house number | Partial — coordinates used for proximity only, exact address withheld |
+| **Custom Meetup Point** | Customer-written text description (e.g., "the stop sign on Oak St") | No — Driver receives only the text landmark description |
+
+Customers may also provide optional **delivery instructions** (free-text, e.g., "Blue house with white fence" or "I'll be at the park bench"). These instructions are visible only to the assigned Driver during the active delivery.
+
+### 3.2 Location Data — Driver
+
+Drivers share their GPS location with the system for:
+- Receiving requests from Customers in their registered coverage area (zip code)
+- Enabling the **1000-foot proximity verification** required to mark a delivery as complete
+- Providing real-time ETA estimates to waiting Customers
+
+### 3.3 Location Data — Temporary Caching and Immediate Destruction
+
+**Critical Privacy Safeguard:** Customer location data is temporarily cached locally on the Driver's device (via AsyncStorage) **solely for the duration of active navigation** to the delivery point. The moment a delivery is marked as complete (or cancelled), **all customer location data is automatically and permanently destroyed** from the Driver's device. This includes:
+- Delivery address/coordinates
+- Delivery instructions text
+- Customer meetup point descriptions
+- Any cached navigation data
+
+No customer location history is retained on any device or server after delivery completion. There is no "order history" that reveals past customer locations to Drivers.
+
+### 3.4 Payment Information
+
+The App uses **Google Play Billing** exclusively for the one-time $25 Driver registration fee. We do not collect, store, or process any credit card numbers, bank account details, or financial credentials directly. All payment processing is handled entirely by Google Play's secure infrastructure. We store only:
+- Transaction ID (for receipt verification)
+- Purchase verification token (encrypted in device Keychain/Keystore)
+
+### 3.5 Account Information
 
 | Data Type | Purpose | Required |
 |-----------|---------|----------|
-| Name | Account identification and display | Yes |
-| Email address | Account authentication and communication | Yes |
-| Phone number | Optional contact for delivery coordination | No |
-| Profile photo | Account personalization | No |
+| Name | Account identification and display to other party during delivery | Yes |
+| Email address | Account authentication (via OAuth) | Yes |
+| Area/Zip code (Drivers) | Coverage zone matching | Yes |
+| Truck registration info (Drivers) | Service verification | Yes |
 
-### 2.2 Location Data
-
-Our App requires location data to function properly:
-
-| Location Type | Purpose | When Collected |
-|---------------|---------|----------------|
-| Precise location (GPS) | Connect customers with nearby ice cream vendors | While app is in use |
-| Background location (vendors only) | Allow customers to track vendor in real-time | While vendor is active/online |
-| Address information | Display delivery destination | When request is created |
-
-### 2.3 Transaction Data
+### 3.6 Device Information
 
 | Data Type | Purpose |
 |-----------|---------|
-| Purchase history | Order tracking and history |
-| Payment information | Processing vendor registration fees |
-| Sales reports | Daily analytics for vendors |
-
-### 2.4 Device Information
-
-| Data Type | Purpose |
-|-----------|---------|
-| Device type and model | App optimization |
-| Operating system version | Compatibility and updates |
-| Unique device identifiers | Analytics and fraud prevention |
-| IP address | Security and approximate location |
-
-### 2.5 Usage Data
-
-| Data Type | Purpose |
-|-----------|---------|
-| App interaction data | Improve user experience |
-| Feature usage patterns | Product development |
-| Crash reports | Bug fixing and stability |
-| Session duration | Performance optimization |
+| Device platform (Android/iOS/Web) | UI rendering and feature compatibility |
+| App state (foreground/background) | Battery-efficient polling management |
+| Push notification token | Delivery alerts and order notifications |
 
 ---
 
-## 3. How We Use Your Information
+## 4. How We Use Your Information
 
-We use the information we collect for the following purposes:
-
-1. **Service Delivery:** To connect customers with ice cream vendors, process requests, and enable real-time tracking.
-2. **Account Management:** To create and manage your user account, authenticate your identity, and maintain security.
-3. **Payment Processing:** To process vendor registration fees through Google Play Billing and track transaction history.
-4. **Analytics and Reports:** To generate daily reports for vendors showing gas savings, time saved, and economic impact.
-5. **Communication:** To send notifications about incoming requests, order updates, and important service announcements.
-6. **Advertising:** To display relevant advertisements through Google AdMob to support the free customer experience.
-7. **Improvement:** To analyze usage patterns and improve app features, performance, and user experience.
-8. **Legal Compliance:** To comply with applicable laws, regulations, and legal processes.
+| Data Type | Usage | Retention |
+|-----------|-------|-----------|
+| Customer GPS coordinates | Route Driver to delivery location | **Deleted immediately upon delivery completion** |
+| Customer delivery instructions | Display to Driver during active delivery | **Deleted immediately upon delivery completion** |
+| Customer share mode choice | Determine what info Driver sees | Session-only; not stored permanently |
+| Driver GPS coordinates | Calculate proximity to Customer (1000ft zone) | Session-only; not stored permanently |
+| Driver area/zip code | Match Drivers with nearby Customer requests | Stored locally on Driver's device until changed |
+| Registration payment token | Verify one-time $25 fee was paid | Stored in device Keychain/Keystore |
+| Account information | Authentication and display | Until account deletion |
 
 ---
 
-## 4. Information Sharing and Disclosure
+## 5. Information Sharing and Disclosure
 
-We may share your information in the following circumstances:
+We do **not** sell, rent, or share your personal data with any third parties for advertising, analytics, or marketing purposes.
 
-### 4.1 With Other Users
+### 5.1 Between Users (During Active Delivery Only)
 
-| Shared With | Data Shared | Purpose |
-|-------------|-------------|---------|
-| Customers | Vendor's first name, vehicle type, real-time location | Enable tracking and identification |
-| Vendors | Customer's approximate location, neighborhood | Enable navigation to customer |
+| Shared With | Data Shared | Duration |
+|-------------|-------------|----------|
+| Driver | Customer's location (per chosen sharing mode) + delivery instructions | Active delivery only — destroyed on completion |
+| Customer | Driver's first name + real-time ETA | Active delivery only |
 
-### 4.2 With Third-Party Service Providers
+### 5.2 With Service Providers
 
 | Provider | Purpose | Data Shared |
 |----------|---------|-------------|
-| Google (AdMob) | Advertising | Device ID, usage data |
-| Google (Play Billing) | Payment processing | Transaction data |
-| Google (Maps) | Navigation and mapping | Location data |
-| Google (Analytics) | App analytics | Usage data, device info |
+| Google Play Billing | Process $25 registration fee | Transaction metadata (no card details) |
+| OpenStreetMap Nominatim | Reverse geocoding (coordinates → address) | GPS coordinates (no user identity) |
 
-### 4.3 Legal Requirements
+### 5.3 Legal Requirements
 
-We may disclose your information if required to do so by law or in response to valid requests by public authorities (e.g., a court or government agency).
-
----
-
-## 5. Data Retention
-
-| Data Type | Retention Period |
-|-----------|-----------------|
-| Account information | Until account deletion |
-| Location history | 90 days |
-| Transaction records | 7 years (legal requirement) |
-| Usage analytics | 26 months |
-| Crash reports | 90 days |
+We may disclose your information if required by law or in response to valid requests by public authorities (e.g., a court or government agency).
 
 ---
 
 ## 6. Data Security
 
-We implement appropriate technical and organizational security measures to protect your personal information, including:
+We implement industry-standard security measures including:
 
-- Encryption of data in transit (TLS/HTTPS)
-- Encryption of sensitive data at rest
-- Regular security audits and updates
-- Access controls and authentication
-- Secure cloud infrastructure
+- **OWASP-compliant security headers** on all server responses (HSTS, CSP, X-Frame-Options, etc.)
+- **Rate limiting** to prevent abuse (100 requests/minute general; 5 requests/minute for payment endpoints)
+- **Input sanitization** to prevent XSS, SQL injection, and command injection attacks
+- **Purchase token validation** and tamper-detection for payment receipts
+- **Device Keychain/Keystore encryption** for sensitive data (iOS Keychain, Android Keystore)
+- **Coordinate validation** to prevent GPS spoofing
+- **Automatic data destruction** upon delivery completion
+- **Lifecycle-aware polling** that pauses all network activity when app is backgrounded
 
 ---
 
-## 7. Your Rights and Choices
+## 7. Background Location Disclosure
 
-You have the following rights regarding your personal information:
+**This app collects location data to enable real-time tracking for ice cream deliveries even when the app is closed or not in use.**
 
-| Right | Description | How to Exercise |
-|-------|-------------|-----------------|
-| Access | View your personal data | In-app profile settings |
-| Correction | Update inaccurate data | In-app profile settings |
-| Deletion | Request account and data deletion | Email mindy.gaines1@gmail.com |
-| Opt-out of ads | Disable personalized advertising | Device settings > Google > Ads |
-| Location control | Disable location services | Device settings > App permissions |
-| Data portability | Export your data | Email mindy.gaines1@gmail.com |
+This applies specifically to:
+- **Drivers** who have an active delivery in progress (background location enables continued navigation)
+- **Customers** — location is collected only while the app is in the foreground during order placement
 
 ---
 
 ## 8. Children's Privacy
 
-The Ice Cream Man is designed for use by all ages. However, we do not knowingly collect personal information from children under 13 without parental consent. If you are a parent or guardian and believe your child has provided us with personal information, please contact us at mindy.gaines1@gmail.com and we will take steps to delete such information.
+The Ice Cream Man is designed for use by all ages. However, we do not knowingly collect personal information from children under 13 without parental consent. If you are a parent or guardian and believe your child has provided us with personal information, please contact us at icecreammanapp@gmail.com and we will take steps to delete such information.
 
 ---
 
 ## 9. Vendor Screening Disclosure
 
-**IMPORTANT: The Ice Cream Man does NOT perform background checks, criminal history checks, driving record checks, sex offender registry checks, or any other form of screening on vendors who register through the App.** Vendor registration requires only payment of the registration fee and completion of the registration form. Users interact with vendors at their own risk.
+The Ice Cream Man does NOT perform background checks, criminal history checks, driving record checks, or any other form of screening on vendors who register through the App. Vendor registration requires only payment of the registration fee and completion of the registration form. Users interact with vendors at their own discretion.
 
 ---
 
-## 10. Safety Information
+## 10. Your Rights and Choices
 
-We encourage all users to exercise caution and common sense when using the App:
-
-- Always be aware of your surroundings when meeting a vendor
-- If you are in an unfamiliar neighborhood, meet at a well-lit, public location
-- Minors should always be accompanied by a parent or guardian
-- Never share your exact home address, phone number, or personal information directly with vendors
-- Report any suspicious or unsafe behavior to local law enforcement immediately
-- The App shares only your approximate neighborhood location with vendors, not your exact address
-
----
-
-## 11. Third-Party Links and Services
-
-The App may contain links to third-party websites or services that are not operated by us. We have no control over, and assume no responsibility for, the content, privacy policies, or practices of any third-party sites or services.
+| Right | Description | How to Exercise |
+|-------|-------------|-----------------|
+| Access | View your personal data | In-app profile settings |
+| Correction | Update inaccurate data | In-app profile settings |
+| Deletion | Request account and data deletion | Email icecreammanapp@gmail.com |
+| Location control | Change sharing mode per order, or disable location entirely | In-app delivery options / device settings |
+| Data portability | Export your data | Email icecreammanapp@gmail.com |
 
 ---
 
-## 12. Changes to This Privacy Policy
+## 11. California Residents (CCPA)
 
-We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date. You are advised to review this Privacy Policy periodically for any changes.
-
----
-
-## 13. California Residents (CCPA)
-
-If you are a California resident, you have additional rights under the California Consumer Privacy Act (CCPA):
-
+If you are a California resident, you have additional rights under the California Consumer Privacy Act:
 - Right to know what personal information is collected
 - Right to know whether personal information is sold or disclosed
 - Right to opt-out of the sale of personal information
 - Right to non-discrimination for exercising your rights
 
-We do not sell personal information to third parties.
+**We do not sell personal information to third parties.**
 
 ---
 
-## 14. Contact Us
+## 12. Changes to This Privacy Policy
 
-If you have any questions about this Privacy Policy, please contact us:
+We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy within the App and updating the "Last Updated" date above.
+
+---
+
+## 13. Contact Us
 
 | Method | Details |
 |--------|---------|
-| Email | mindy.gaines1@gmail.com |
+| Email | icecreammanapp@gmail.com |
 | Developer | Mindy Gaines |
 | App | The Ice Cream Man |
-| Address | Portland, OR, United States |
+| Location | Beaverton, Oregon, United States |
 
 ---
 
 **By using The Ice Cream Man app, you acknowledge that you have read and understood this Privacy Policy and agree to its terms.**
+
+*Sweetly yours, ❤️ -Mindy Gaines*

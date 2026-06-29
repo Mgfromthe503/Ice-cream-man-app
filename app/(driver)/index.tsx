@@ -1,7 +1,8 @@
 import { View, Text, Pressable, ScrollView, FlatList, Alert, ActivityIndicator, TextInput, Linking, Platform } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { trpc } from '@/lib/trpc';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -75,14 +76,51 @@ export default function DriverDashboardScreen() {
     }
   }, [waitingRequests]);
 
-  // Auto-refresh requests every 10 seconds
-  useEffect(() => {
-    if (!isAreaCodeSet) return;
-    const interval = setInterval(() => {
+  // Lifecycle-aware polling: pause when app is backgrounded to save battery
+  // Google Play pre-launch testing penalizes battery drain from background polling
+  const appState = useRef(AppState.currentState);
+  const pollingInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startPolling = useCallback(() => {
+    if (pollingInterval.current) return; // Already polling
+    pollingInterval.current = setInterval(() => {
       refetch();
     }, 10000);
-    return () => clearInterval(interval);
-  }, [isAreaCodeSet, refetch]);
+  }, [refetch]);
+
+  const stopPolling = useCallback(() => {
+    if (pollingInterval.current) {
+      clearInterval(pollingInterval.current);
+      pollingInterval.current = null;
+    }
+  }, []);
+
+  // Start/stop polling based on area code
+  useEffect(() => {
+    if (!isAreaCodeSet) return;
+    startPolling();
+    return () => stopPolling();
+  }, [isAreaCodeSet, startPolling, stopPolling]);
+
+  // Pause polling when app goes to background, resume when active
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (appState.current.match(/active/) && nextAppState.match(/inactive|background/)) {
+        // App going to background — stop polling to save battery
+        stopPolling();
+      } else if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+        // App coming to foreground — resume polling
+        if (isAreaCodeSet) {
+          startPolling();
+          refetch(); // Immediate refresh on return
+        }
+      }
+      appState.current = nextAppState;
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription.remove();
+  }, [isAreaCodeSet, startPolling, stopPolling, refetch]);
 
   const getTimeAgo = (dateStr: string | Date | null) => {
     if (!dateStr) return 'Just now';
@@ -206,8 +244,14 @@ export default function DriverDashboardScreen() {
       
       setActiveRequest(null);
       setActiveLocation('');
-      // Clear from AsyncStorage so map tab shows empty state
-      await AsyncStorage.removeItem('activeDeliveryLocation');
+      // PRIVACY: Immediately wipe ALL customer location data from device storage
+      // Required by Google Play privacy policy — no customer data persists after delivery
+      await Promise.all([
+        AsyncStorage.removeItem('activeDeliveryLocation'),
+        AsyncStorage.removeItem('activeDeliveryCoords'),
+        AsyncStorage.removeItem('activeCustomerAddress'),
+        AsyncStorage.removeItem('activeDeliveryInstructions'),
+      ]);
       Alert.alert('🎉 Delivery Complete!', 'Great job! Ready for the next one.');
       refetch(); // Refresh available requests
     } catch (error) {

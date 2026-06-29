@@ -260,3 +260,12 @@
 - [x] Add data obfuscation helpers for sensitive storage
 - [x] Write 32 unit tests for security module (all passing)
 - [x] Secure storage using device Keychain/Keystore (expo-secure-store)
+
+## Phase 29: Google Play Store Compliance (4 Modules)
+- [x] Verify Google Play Billing gates driver registration (already done, confirmed)
+- [x] Add Android manifest queries block for google.navigation scheme (Android 11+)
+- [x] Wipe customer location from AsyncStorage on delivery completion
+- [x] Make driver polling lifecycle-aware (pause in background, resume in foreground)
+- [x] Create hosted privacy policy with dual-marketplace disclosure
+- [x] Create Prominent In-App Location Disclosure modal component
+- [x] Draft App Access review text for Google Play Console

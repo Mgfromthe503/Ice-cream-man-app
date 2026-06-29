@@ -64,7 +64,18 @@ const config: ExpoConfig = {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: env.androidPackage,
-    permissions: ["POST_NOTIFICATIONS"],
+    permissions: [
+      "POST_NOTIFICATIONS",
+      "com.android.vending.BILLING",
+      "ACCESS_FINE_LOCATION",
+      "ACCESS_COARSE_LOCATION",
+    ],
+    // Queries block for Android 11+ (API 30+) package visibility
+    // Required for Linking.openURL() to work with external maps apps
+    queries: {
+      schemes: ["google.navigation", "geo", "comgooglemaps"],
+      packages: ["com.google.android.apps.maps"],
+    },
     intentFilters: [
       {
         action: "VIEW",
