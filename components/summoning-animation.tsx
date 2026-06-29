@@ -15,7 +15,7 @@ const ICE_CREAM_FACTS = [
   "🧊 87% of all Americans claim to have ice cream in their freezer at any given time!",
   "🚀 NASA reports that ice cream is one of the top three foods astronauts miss most in space!",
   "⚓ In 1945, the US Military built the first floating ice cream parlor for WWII sailors!",
-  "🇯🇵 In Tokyo, you can find ice cream flavored with octopus, shrimp, horseflesh, and cow tongue!",
+  "🍦 In Tokyo, you can find ice cream flavored with octopus, shrimp, horseflesh, and cow tongue!",
   "✨ There is ice cream that glows in the dark using synthesized jellyfish proteins!",
   "🔬 Ice cream exists as a solid, liquid, and gas simultaneously!",
   "🥄 A heavy spoon makes cheap ice cream taste richer and creamier to your brain!",

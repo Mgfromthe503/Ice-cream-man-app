@@ -27,7 +27,7 @@ const ICE_CREAM_FACTS = [
   "🧊 87% of all Americans claim to have ice cream in their freezer at any given time!",
   "🚀 NASA reports that ice cream ranks as one of the top three food items that astronauts miss the most in space!",
   "⚓ In 1945, the US Military built the first floating ice cream parlor for sailors serving in the Pacific during WWII!",
-  "🇯🇵 In Tokyo, Japan, you can find ice cream flavored with octopus, shrimp, horseflesh, and cow tongue!",
+  "🍦 In Tokyo, Japan, you can find ice cream flavored with octopus, shrimp, horseflesh, and cow tongue!",
   "🐋 Ambergris Flavor: In 18th-century Europe, a popular premium ice cream flavor was ambergris — a rare substance from the digestive system of sperm whales!",
   "🌋 In Iceland, there's an ice cream shop built next to a geothermal area that serves 'volcano ice cream' topped with active ash and lava dust minerals!",
   "✨ There is a type of ice cream designed by gastrophysicists that glows in the dark — it uses synthesized jellyfish proteins that light up when your warm tongue licks it!",
