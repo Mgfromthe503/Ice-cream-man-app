@@ -13,52 +13,28 @@ import { View, Text, Animated, Easing } from 'react-native';
  */
 
 const ICE_CREAM_FACTS = [
-  // WILD & BIZARRE FACTS
-  "🚀 NASA astronauts eat freeze-dried ice cream in space! It's the only dessert that survives zero gravity!",
-  "🇯🇵 In Japan, you can get squid ink, garlic, and wasabi ice cream - and people actually love it!",
-  "🐴 Horseradish ice cream is a real thing served at fancy steakhouses. Sounds weird, tastes amazing!",
-  "🌭 Hot dog-flavored ice cream was created by a major brand. The internet had OPINIONS.",
-  "🦗 Cicada-flavored ice cream sold out in Missouri. Yes, it had real bugs in it!",
-  "🍌 There's a fruit called 'Banana Apple' in Hawaii that tastes exactly like vanilla ice cream!",
-
-  "⚰️ Ben & Jerry's has an actual 'Flavor Graveyard' where discontinued flavors get a proper funeral!",
-  "🏔️ The world's tallest ice cream cone was over 9 feet high in Norway. It took a crane to eat it!",
-  
-  // MIND-BLOWING HISTORY
-  "🇺🇸 George Washington spent $200 on ice cream in ONE summer in 1790. That's $5,000+ in today's money!",
-  "👑 King Charles I of England paid his chef a fortune to keep ice cream a royal secret!",
-  "🏛️ Roman Emperor Nero sent slaves to the mountains to fetch snow just to flavor his desserts!",
-  "🎪 The ice cream cone was invented by ACCIDENT at the 1904 World's Fair when a waffle vendor ran out of dishes!",
-  "⚓ During WWII, the US Navy built a FLOATING ICE CREAM PARLOR and spent $1 MILLION on it!",
-  "🎬 Clint Eastwood actually ran for mayor to repeal a ban on eating ice cream on sidewalks!",
-
-  "⛪ 'Sundae' got its name because religious laws banned selling soda on Sundays, so they renamed it!",
-  "🎵 Ice cream truck music was originally played to DROWN OUT the loud engine noise!",
-
-  
-  // SCIENCE STUFF THAT'S ACTUALLY COOL
-  "🧠 Eating ice cream triggers the EXACT SAME pleasure centers in your brain as winning the lottery!",
-  "💨 Cheap ice cream is 50% AIR. You're literally paying to eat frozen air!",
-  "🥄 Professional ice cream tasters use GOLD SPOONS because plastic taints the flavor!",
-  "🧠 Brain freeze happens when blood vessels in your mouth suddenly constrict. The scientific name is 'Sphenopalatine ganglioneuralgia'!",
-  "👅 Quick brain freeze fix: Press your tongue hard against the roof of your mouth!",
-  "🐱 Cats get brain freeze too - that's why you see viral videos of them freaking out!",
-  "🌿 Seaweed extract is in most ice cream to keep it from melting into sad soup!",
-  "❄️ Anchorage, Alaska is one of the top ice cream-consuming cities in the US. Cold weather = MORE ice cream!",
-  "🍦 It takes 3 gallons of milk to make just 1 gallon of ice cream!",
-  "🐄 One cow produces enough milk in her lifetime to make 9,000 gallons of ice cream!",
-  
-  // WILD STATISTICS
-  "📊 Americans eat about 20 quarts of ice cream per person PER YEAR!",
-  "🌍 New Zealand eats more ice cream per capita than ANY other country in the world!",
-  "🍦 Vanilla is the #1 flavor worldwide - humans really ARE predictable!",
-  "🍫 Rocky Road was invented during the Great Depression to cheer people up!",
-  "🎂 Ice cream cake was invented because people couldn't choose between cake and ice cream!",
-  "🏭 The world's largest ice cream factory makes 100 MILLION gallons per year!",
-  "🇺🇸 July is National Ice Cream Month thanks to President Ronald Reagan!",
-  "🧊 The first ice cream truck in America appeared in 1920!",
-  "🍦 It takes about 50 licks to finish a single scoop cone!",
-  "🤰 Pregnant women crave ice cream more than any other food - it's totally valid!",
+  // USER-CURATED FACTS
+  "🏠 90% of American households eat ice cream!",
+  "🌭 One of the most unusual ice cream flavors is hot dog flavored ice cream, created in Arizona, US!",
+  "👅 One cone of ice cream can be finished off in 50 licks!",
+  "🥛 It takes 12 gallons of milk to create one gallon of ice cream!",
+  "🔢 There are 273 calories in one cup of vanilla ice cream.",
+  "🥥 Coconut milk ice cream is traditional in Indonesia!",
+  "🍫 Chocolate ice cream was invented before vanilla!",
+  "👑 When ice cream was first brought to the Americas, it was only enjoyed by the elite!",
+  "🔧 In 1843, Nancy Johnson received the first US patent for the hand-cranked ice cream freezer.",
+  "🐾 20% of people will admit to sharing their ice cream with a pet!",
+  "🧊 87% of all Americans claim to have ice cream in their freezer at any given time!",
+  "🚀 NASA reports that ice cream ranks as one of the top three food items that astronauts miss the most in space!",
+  "⚓ In 1945, the US Military built the first floating ice cream parlor for sailors serving in the Pacific during WWII!",
+  "🇯🇵 In Tokyo, Japan, you can find ice cream flavored with octopus, shrimp, horseflesh, and cow tongue!",
+  "🐋 Ambergris Flavor: In 18th-century Europe, a popular premium ice cream flavor was ambergris — a rare substance from the digestive system of sperm whales!",
+  "🌋 In Iceland, there's an ice cream shop built next to a geothermal area that serves 'volcano ice cream' topped with active ash and lava dust minerals!",
+  "✨ There is a type of ice cream designed by gastrophysicists that glows in the dark — it uses synthesized jellyfish proteins that light up when your warm tongue licks it!",
+  "🔬 Ice cream is one of the only foods that exists as a solid, liquid, and gas simultaneously — ice crystals are solid, the sugary syrup is liquid, and trapped air cells are gas!",
+  "🥄 The physical weight of the spoon changes how you perceive ice cream — eating cheap ice cream with a heavy, high-quality spoon makes your brain register it as tasting richer and creamier!",
+  "🎵 Playing high-pitched, twinkling piano music while eating vanilla ice cream makes your brain perceive it as roughly 10% sweeter without adding any sugar!",
+  "🎺 Listening to low-pitched, heavy brass instruments causes dark chocolate or coffee ice cream to taste much more intense and bitter!",
 ];
 
 interface FactTickerProps {

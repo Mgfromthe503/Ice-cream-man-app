@@ -35,18 +35,17 @@ export default function RoleSelectScreen() {
         end={{ x: 1, y: 1 }}
         style={{ flex: 1 }}
       >
-        <ScreenContainer containerClassName="bg-transparent" className="p-6">
+        <ScreenContainer containerClassName="bg-transparent" className="p-5">
           <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1">
-            <View style={{ flex: 1, gap: 28, justifyContent: 'center' }}>
-              {/* Header */}
-              <View style={{ alignItems: 'center', gap: 8 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <Text style={{ fontSize: 44 }}>🍦</Text>
-                  <Text style={{ fontSize: 32, fontWeight: '900', color: '#8B4513' }}>
-                    Ice Cream Man
-                  </Text>
-                </View>
-                <Text style={{ fontSize: 15, color: '#A0826D', textAlign: 'center' }}>
+            <View style={{ flex: 1, gap: 20, justifyContent: 'center' }}>
+              {/* App Icon Logo - same as Play Store icon */}
+              <View style={{ alignItems: 'center', gap: 4 }}>
+                <ExpoImage
+                  source={require('@/assets/images/icon.png')}
+                  style={{ width: 140, height: 140, borderRadius: 28 }}
+                  contentFit="cover"
+                />
+                <Text style={{ fontSize: 14, color: '#A0826D', textAlign: 'center', marginTop: 6 }}>
                   Choose your role to get started
                 </Text>
               </View>
@@ -65,7 +64,7 @@ export default function RoleSelectScreen() {
                   end={{ x: 1, y: 1 }}
                   style={{
                     borderRadius: 24,
-                    padding: 28,
+                    padding: 24,
                     shadowColor: '#FF1493',
                     shadowOffset: { width: 0, height: 8 },
                     shadowOpacity: 0.4,
@@ -73,28 +72,31 @@ export default function RoleSelectScreen() {
                     elevation: 10,
                   }}
                 >
-                  <View style={{ alignItems: 'center', gap: 12 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
                     <ExpoImage
                       source={require('@/assets/images/customer-character.png')}
-                      style={{ width: 100, height: 100, borderRadius: 50 }}
+                      style={{ width: 90, height: 90, borderRadius: 45, borderWidth: 3, borderColor: 'rgba(255,255,255,0.5)' }}
                       contentFit="cover"
                     />
-                    <Text style={{ fontSize: 24, fontWeight: '800', color: '#FFFFFF' }}>
-                      Customer
-                    </Text>
-                    <Text style={{ fontSize: 14, color: '#FFE4E1', textAlign: 'center', lineHeight: 20 }}>
-                      Order ice cream to your neighborhood with one tap.{'\n'}Track the ice cream truck in real-time.
-                    </Text>
-                    <View style={{
-                      backgroundColor: 'rgba(255,255,255,0.25)',
-                      borderRadius: 20,
-                      paddingHorizontal: 20,
-                      paddingVertical: 8,
-                      marginTop: 4,
-                    }}>
-                      <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 13 }}>
-                        Tap to Order Ice Cream →
+                    <View style={{ flex: 1, gap: 6 }}>
+                      <Text style={{ fontSize: 22, fontWeight: '800', color: '#FFFFFF' }}>
+                        Customer
                       </Text>
+                      <Text style={{ fontSize: 13, color: '#FFE4E1', lineHeight: 18 }}>
+                        Order ice cream to your neighborhood with one tap. Track the truck in real-time.
+                      </Text>
+                      <View style={{
+                        backgroundColor: 'rgba(255,255,255,0.25)',
+                        borderRadius: 16,
+                        paddingHorizontal: 14,
+                        paddingVertical: 6,
+                        alignSelf: 'flex-start',
+                        marginTop: 4,
+                      }}>
+                        <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 12 }}>
+                          Tap to Order Ice Cream →
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 </LinearGradient>
@@ -114,7 +116,7 @@ export default function RoleSelectScreen() {
                   end={{ x: 1, y: 1 }}
                   style={{
                     borderRadius: 24,
-                    padding: 28,
+                    padding: 24,
                     shadowColor: '#FF8C00',
                     shadowOffset: { width: 0, height: 8 },
                     shadowOpacity: 0.4,
@@ -122,28 +124,31 @@ export default function RoleSelectScreen() {
                     elevation: 10,
                   }}
                 >
-                  <View style={{ alignItems: 'center', gap: 12 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
                     <ExpoImage
                       source={require('@/assets/images/driver-character.png')}
-                      style={{ width: 100, height: 100, borderRadius: 50 }}
+                      style={{ width: 90, height: 90, borderRadius: 45, borderWidth: 3, borderColor: 'rgba(255,255,255,0.5)' }}
                       contentFit="cover"
                     />
-                    <Text style={{ fontSize: 24, fontWeight: '800', color: '#FFFFFF' }}>
-                      Ice Cream Vendor
-                    </Text>
-                    <Text style={{ fontSize: 14, color: '#FFF8E7', textAlign: 'center', lineHeight: 20 }}>
-                      Receive customer requests and earn money.{'\n'}Get alerts for neighborhoods requesting service.
-                    </Text>
-                    <View style={{
-                      backgroundColor: 'rgba(255,255,255,0.25)',
-                      borderRadius: 20,
-                      paddingHorizontal: 20,
-                      paddingVertical: 8,
-                      marginTop: 4,
-                    }}>
-                      <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 13 }}>
-                        Start Earning Money →
+                    <View style={{ flex: 1, gap: 6 }}>
+                      <Text style={{ fontSize: 22, fontWeight: '800', color: '#FFFFFF' }}>
+                        Ice Cream Vendor
                       </Text>
+                      <Text style={{ fontSize: 13, color: '#FFF8E7', lineHeight: 18 }}>
+                        Receive customer requests and earn money. Get alerts for neighborhoods requesting service.
+                      </Text>
+                      <View style={{
+                        backgroundColor: 'rgba(255,255,255,0.25)',
+                        borderRadius: 16,
+                        paddingHorizontal: 14,
+                        paddingVertical: 6,
+                        alignSelf: 'flex-start',
+                        marginTop: 4,
+                      }}>
+                        <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 12 }}>
+                          Start Earning Money →
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 </LinearGradient>
@@ -153,7 +158,7 @@ export default function RoleSelectScreen() {
               <FactTicker variant="banner" />
 
               {/* Footer tagline */}
-              <View style={{ alignItems: 'center', gap: 4, marginTop: 8 }}>
+              <View style={{ alignItems: 'center', gap: 4 }}>
                 <Text style={{ fontSize: 12, color: '#A0826D', textAlign: 'center' }}>
                   Connecting neighborhoods with ice cream trucks
                 </Text>

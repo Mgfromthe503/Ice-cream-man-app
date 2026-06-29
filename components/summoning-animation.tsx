@@ -3,54 +3,25 @@ import { View, Text, Animated, Easing, Platform } from 'react-native';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 
 const ICE_CREAM_FACTS = [
-  // Bizarre Flavor Failures
-  "🇯🇵 Garlic and squid ink ice cream flavors actually exist in Japan!",
-  "🌭 Hot dog flavored ice cream was once trialed by a major brand. Yes, really.",
-  "🦗 Cicada-flavored ice cream sold out in Missouri after using real bugs!",
-  "🐴 Horseradish ice cream is a real gourmet flavor served with steak!",
-  // Brain Freeze & Bodily Reactions
-  "🧠 Brain freeze happens because blood vessels in your mouth panic!",
-  "🤓 'Sphenopalatine ganglioneuralgia' is the overly dramatic scientific name for brain freeze.",
-  "🐱 Cats get brain freeze too, which results in hilarious viral videos!",
-  "🥄 Ice cream testers use gold spoons because plastic taints the flavor!",
-  // Ridiculous Historical Trivia
-  "🇺🇸 George Washington spent $200 on ice cream in a single summer!",
-  "🏛️ Roman Emperor Nero sent slaves to fetch snow just for flavoring!",
-  "🎪 Ice cream cones were invented entirely by accident at a World's Fair!",
-  "👑 Charles I of England paid his chef to keep ice cream a royal secret!",
-  // Strange Laws & Myths
-  "🍌 Hawaii has a 'Banana Apple' fruit that tastes exactly like ice cream!",
-  "🤮 Industrial ice cream tasters swallow nothing - they spit it ALL out!",
-  "⚰️ Ben & Jerry's has a physical 'Flavor Graveyard' for dead flavors!",
-  "👖 In Kentucky, it is illegal to carry an ice cream cone in your pocket!",
-  // Marketing & Media Madness
-  "🎵 Ice cream trucks originally played music to drown out engine noise!",
-  "🥔 Food stylists use mashed potatoes in commercials because real ice cream melts!",
-  "🏔️ The world's tallest cone was over nine feet high in Norway!",
-  "⛪ Sunday became 'Sundae' because religious laws banned selling soda on Sundays!",
-  // Mind-Boggling Statistics
-  "📊 The average American eats about 20 quarts of ice cream a year!",
-  "💨 Air makes up 50% of the volume in cheap ice cream!",
-  "👅 Brain freeze cure: press your tongue to the roof of your mouth!",
-  "🇺🇸 July is National Ice Cream Month thanks to President Ronald Reagan!",
-  "🍦 Vanilla is the most popular flavor, proving humans are deeply predictable.",
-  // Ice Cream Science & Cravings
-  "🧠 Brain scans show eating ice cream lights up the SAME pleasure centers as winning the lottery!",
-  "💨 Cheap ice cream is pumped with up to 50% air (called 'overrun'). You're literally paying to eat sweetened frozen air!",
-  "❄️ Top-selling ice cream cities include Anchorage, Alaska - proving our cravings ignore the weather entirely!",
-  "🌿 The industry uses seaweed extract (carrageenan) as a secret stabilizer to keep your ice cream from melting into sad soup.",
-  // Hilarious Historical Disasters
-  "🩻 In Victorian London, 'penny lick' vendors sold ice cream in glass cups licked clean and refilled WITHOUT washing - a citywide health disaster!",
-  "💰 George Washington loved ice cream so much he spent $200 in one summer (worth thousands today)!",
-  "🎪 The ice cream cone was born from CHAOS at the 1904 World's Fair when a vendor ran out of dishes!",
-  "⚓ During WWII, the US Navy spent $1 MILLION converting a barge into a floating ice cream parlor!",
-  // Wild Ice Cream Laws
-  "🐎 It's illegal to walk with an ice cream cone in your back pocket in some states - horse thieves used it to lure horses!",
-  "🤫 Oregon urban legend: ice cream may not be eaten on Sundays in public!",
-  "🎬 Clint Eastwood ran for mayor to repeal the ban on eating ice cream on sidewalks. He won!",
-  // Funny Waiting Phrases
+  // User-curated facts
+  "🏠 90% of American households eat ice cream!",
+  "🌭 One of the most unusual ice cream flavors is hot dog flavored ice cream, created in Arizona!",
+  "👅 One cone of ice cream can be finished off in 50 licks!",
+  "🥛 It takes 12 gallons of milk to create one gallon of ice cream!",
+  "🥥 Coconut milk ice cream is traditional in Indonesia!",
+  "🍫 Chocolate ice cream was invented before vanilla!",
+  "👑 When ice cream was first brought to the Americas, it was only enjoyed by the elite!",
+  "🐾 20% of people will admit to sharing their ice cream with a pet!",
+  "🧊 87% of all Americans claim to have ice cream in their freezer at any given time!",
+  "🚀 NASA reports that ice cream is one of the top three foods astronauts miss most in space!",
+  "⚓ In 1945, the US Military built the first floating ice cream parlor for WWII sailors!",
+  "🇯🇵 In Tokyo, you can find ice cream flavored with octopus, shrimp, horseflesh, and cow tongue!",
+  "✨ There is ice cream that glows in the dark using synthesized jellyfish proteins!",
+  "🔬 Ice cream exists as a solid, liquid, and gas simultaneously!",
+  "🥄 A heavy spoon makes cheap ice cream taste richer and creamier to your brain!",
+  "🎵 High-pitched piano music makes vanilla ice cream taste 10% sweeter!",
+  // Funny waiting phrases
   "🚚 Summoning your local ice cream dealer...",
-  "🚚 Still locating your local ice cream dealer...",
   "🚚 Your ice cream man is putting on his cool shades...",
   "🚚 Beep beep! The truck is warming up...",
   "🚚 Your ice cream man is loading up the good stuff...",
@@ -58,15 +29,6 @@ const ICE_CREAM_FACTS = [
   "🚚 Your neighborhood ice cream hero is suiting up...",
   "🚚 Activating ice cream bat signal... 🦇🍦",
   "🚚 Your ice cream man just cranked up the jingle...",
-  "🤰 Sorry if you're pregnant - you definitely shouldn't have to wait this long for ice cream!",
-  "🤰 Pregnant? Don't worry, we're rushing your ice cream man to you!",
-  "🤰 Hey mama-to-be! Your cravings are valid and ice cream is on the way!",
-  "🤰 Expecting moms get priority! (Not really, but we wish we could!)",
-  "🍦 Fun fact: It takes about 50 licks to finish a single scoop cone!",
-  "🍫 Rocky Road was invented during the Great Depression to cheer people up!",
-  "🍦 NASA astronauts eat freeze-dried ice cream in space!",
-  "🐄 One cow gives enough milk for 9,000 gallons of ice cream in her lifetime!",
-  "🍦 It takes 3 gallons of milk to make 1 gallon of ice cream!",
 ];
 
 const SUMMONING_PHASES = [

@@ -12,6 +12,7 @@ import { DriversWantedBanner } from '@/components/drivers-wanted-banner';
 import { ETADisplay } from '@/components/eta-messaging';
 import { useAudioPlayer } from 'expo-audio';
 import { FactTicker } from '@/components/fact-ticker';
+import { Image as ExpoImage } from 'expo-image';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { isWithinSafetyZone, calculateDistance, formatDistance } from '@/lib/gps-safety';
 
@@ -209,10 +210,13 @@ export default function CustomerHomeScreen() {
     <ScreenContainer className="p-4">
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1">
         <View className="flex-1 gap-4 justify-between">
-          {/* Header */}
-          <View className="gap-2 items-center mb-2">
-            <Text className="text-4xl font-bold text-foreground">🍦</Text>
-            <Text className="text-2xl font-bold text-foreground">Ice Cream Man</Text>
+          {/* Header - App Icon Logo */}
+          <View className="gap-1 items-center mb-2">
+            <ExpoImage
+              source={require('@/assets/images/icon.png')}
+              style={{ width: 80, height: 80, borderRadius: 16 }}
+              contentFit="cover"
+            />
             <Text className="text-xs text-muted font-medium">One tap. Ice cream delivered.</Text>
           </View>
 
