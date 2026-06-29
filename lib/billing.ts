@@ -25,6 +25,7 @@
  */
 
 import { Platform } from 'react-native';
+import { validatePurchaseToken, createSecureReceipt, isRateLimited, generateTransactionFingerprint } from './security';
 
 // Product ID - must match what you create in Google Play Console
 export const VENDOR_REGISTRATION_PRODUCT_ID = 'icm_vendor_registration';
@@ -111,13 +112,29 @@ export async function getRegistrationProduct() {
  * - Developer (85%): $21.25 → deposited to your Google Play Developer account
  */
 export async function purchaseRegistration(): Promise<PurchaseResult> {
+  // Rate limit: prevent rapid purchase attempts (max 3 per minute)
+  if (isRateLimited('purchase_registration', 3, 60000)) {
+    return {
+      success: false,
+      transactionId: null,
+      purchaseToken: null,
+      error: 'Too many purchase attempts. Please wait a moment and try again.',
+    };
+  }
+
   if (Platform.OS === 'web') {
     // Simulate purchase on web for development/testing
     console.log('[Billing] Web platform - simulating purchase');
+    const simTransactionId = `web_sim_${Date.now()}`;
+    const simToken = `web_token_${Date.now()}_${generateTransactionFingerprint()}`;
+    
+    // Create secure receipt even for simulated purchases
+    await createSecureReceipt(simTransactionId, VENDOR_REGISTRATION_PRODUCT_ID, simToken);
+    
     return {
       success: true,
-      transactionId: `web_sim_${Date.now()}`,
-      purchaseToken: `web_token_${Date.now()}`,
+      transactionId: simTransactionId,
+      purchaseToken: simToken,
     };
   }
 
@@ -131,15 +148,36 @@ export async function purchaseRegistration(): Promise<PurchaseResult> {
     });
 
     if (purchase) {
+      // SECURITY: Validate purchase token format before acknowledging
+      if (!validatePurchaseToken(purchase.purchaseToken)) {
+        console.error('[Billing] Invalid purchase token detected - possible tampering');
+        return {
+          success: false,
+          transactionId: null,
+          purchaseToken: null,
+          error: 'Purchase verification failed. Please try again.',
+        };
+      }
+
       // Acknowledge the purchase (required by Google)
       await RNIap.acknowledgePurchaseAndroid({
         token: purchase.purchaseToken,
         developerPayload: '',
       });
 
+      // SECURITY: Create secure receipt and store in device secure storage
+      const transactionId = purchase.transactionId || purchase.orderId;
+      await createSecureReceipt(
+        transactionId,
+        VENDOR_REGISTRATION_PRODUCT_ID,
+        purchase.purchaseToken
+      );
+
+      console.log('[Billing] Purchase verified and receipt stored securely');
+
       return {
         success: true,
-        transactionId: purchase.transactionId || purchase.orderId,
+        transactionId,
         purchaseToken: purchase.purchaseToken,
       };
     }

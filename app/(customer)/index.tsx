@@ -15,6 +15,7 @@ import { FactTicker } from '@/components/fact-ticker';
 import { Image as ExpoImage } from 'expo-image';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { isWithinSafetyZone, calculateDistance, formatDistance } from '@/lib/gps-safety';
+import { sanitizeInput, sanitizeAddress, isRateLimited, validateCoordinates } from '@/lib/security';
 
 // Short jingle snippet for arrival notification
 const arrivalJingleSource = require('../../assets/ice-cream-jingle-short.mp3');
@@ -113,6 +114,18 @@ export default function CustomerHomeScreen() {
 
   const handleConfirmOrder = async () => {
     try {
+      // SECURITY: Rate limit order placement (max 3 per minute)
+      if (isRateLimited('place_order', 3, 60000)) {
+        Alert.alert('Hold on! 🍦', 'You\'re ordering too fast. Please wait a moment and try again.');
+        return;
+      }
+
+      // SECURITY: Validate coordinates to prevent GPS spoofing
+      if (!validateCoordinates(userLocation.latitude, userLocation.longitude)) {
+        Alert.alert('Location Error', 'Invalid location detected. Please enable GPS and try again.');
+        return;
+      }
+
       setShowDeliveryOptions(false);
       setRequestStatus('summoning');
 
@@ -128,13 +141,17 @@ export default function CustomerHomeScreen() {
         sharedAddress = deliveryInstructions || sharedAddress;
       }
 
+      // SECURITY: Sanitize all user inputs before sending to server
+      const sanitizedAddress = sanitizeAddress(sharedAddress);
+      const sanitizedInstructions = deliveryInstructions ? sanitizeInput(deliveryInstructions) : undefined;
+
       // Call backend API to create request
       await createRequestMutation.mutateAsync({
         latitude: userLocation.latitude,
         longitude: userLocation.longitude,
-        address: sharedAddress,
+        address: sanitizedAddress,
         shareMode,
-        deliveryInstructions: deliveryInstructions || undefined,
+        deliveryInstructions: sanitizedInstructions,
       });
 
       // Notify nearby drivers of new request

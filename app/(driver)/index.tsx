@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { ETAMessaging } from '@/components/eta-messaging';
 import { FactTicker } from '@/components/fact-ticker';
+import { sanitizeInput, isRateLimited } from '@/lib/security';
 
 interface RequestItem {
   id: number;
@@ -95,7 +96,8 @@ export default function DriverDashboardScreen() {
   };
 
   const handleSetAreaCode = async () => {
-    const code = areaCodeInput.trim();
+    // SECURITY: Sanitize area code input (only allow digits)
+    const code = areaCodeInput.trim().replace(/[^0-9]/g, '');
     if (!code || code.length < 3 || code.length > 5) {
       Alert.alert('Invalid Code', 'Please enter a valid area/zip code (3-5 digits).');
       return;
@@ -121,6 +123,11 @@ export default function DriverDashboardScreen() {
 
   const handleAcceptRequest = async (requestId: number, location: string) => {
     try {
+      // SECURITY: Rate limit request acceptance (max 10 per minute)
+      if (isRateLimited('accept_request', 10, 60000)) {
+        Alert.alert('Slow down!', 'Too many actions. Please wait a moment.');
+        return;
+      }
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       
       // Call backend to accept request
