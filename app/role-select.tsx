@@ -162,9 +162,14 @@ export default function RoleSelectScreen() {
                 <Text style={{ fontSize: 12, color: '#A0826D', textAlign: 'center' }}>
                   Sweetly yours, ❤️ -Mindy Gaines
                 </Text>
-                <Text style={{ fontSize: 11, color: '#C4A882' }}>
-                  v1.0.0
-                </Text>
+                <Pressable
+                  onPress={() => router.push('/login')}
+                  style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1 }]}
+                >
+                  <Text style={{ fontSize: 11, color: '#C4A882' }}>
+                    v1.0.0
+                  </Text>
+                </Pressable>
               </View>
             </View>
           </ScrollView>

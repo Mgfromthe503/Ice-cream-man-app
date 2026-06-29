@@ -41,10 +41,10 @@ function RootLayoutNav() {
     const inAuthGroup = segments[0] === "(customer)" || segments[0] === "(driver)";
 
     if (!userRole && inAuthGroup) {
-      router.replace("/login");
+      router.replace("/role-select");
     } else if (!userRole && segments[0] === "(tabs)") {
-      // First app open — show login screen
-      router.replace("/login");
+      // First app open — show role selection (no login required)
+      router.replace("/role-select");
     } else if (userRole && !inAuthGroup && segments[0] !== "oauth") {
       if (userRole === "customer") {
         router.replace("/(customer)");

@@ -280,3 +280,8 @@
 - [x] Add Terms of Service acceptance checkbox to driver registration (before $25 payment)
 - [x] Create Terms of Service content/screen
 - [x] Implement SSL certificate pinning for production API endpoint
+
+## Phase 32: Revert to Role-Select (No Login Required)
+- [x] Remove email/password login as default entry point
+- [x] Restore role-select screen as initial app screen (tap Customer or Driver)
+- [x] Hide reviewer login behind version number tap (accessible but not visible)
