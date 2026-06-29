@@ -271,27 +271,52 @@ export default function VendorPaymentScreen() {
             ))}
           </View>
 
-          {/* Terms Acceptance */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.surface, borderRadius: 12, padding: 12 }}>
+          {/* Terms Acceptance — REQUIRED before payment (Google Play compliance) */}
+          <View style={{ backgroundColor: colors.surface, borderRadius: 12, padding: 16, gap: 12, borderWidth: termsAccepted ? 1 : 2, borderColor: termsAccepted ? colors.border : colors.warning }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <Pressable
+                onPress={() => {
+                  setTermsAccepted(!termsAccepted);
+                  if (Platform.OS !== 'web') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                }}
+                style={({ pressed }) => [{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 6,
+                  borderWidth: 2,
+                  borderColor: termsAccepted ? '#00C853' : colors.primary,
+                  backgroundColor: termsAccepted ? '#00C853' : 'transparent',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: pressed ? 0.8 : 1,
+                }]}
+              >
+                {termsAccepted && <Text style={{ color: '#fff', fontSize: 16, fontWeight: '800' }}>✓</Text>}
+              </Pressable>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: colors.foreground, fontSize: 14, fontWeight: '600', lineHeight: 20 }}>
+                  I accept the Terms of Service
+                </Text>
+                <Text style={{ color: colors.muted, fontSize: 12, lineHeight: 16, marginTop: 2 }}>
+                  I have read and agree to the Terms of Service, Privacy Policy, and Vendor Agreement.
+                </Text>
+              </View>
+            </View>
             <Pressable
-              onPress={() => setTermsAccepted(!termsAccepted)}
-              style={({ pressed }) => [{
-                width: 24,
-                height: 24,
-                borderRadius: 6,
-                borderWidth: 2,
-                borderColor: colors.primary,
-                backgroundColor: termsAccepted ? colors.primary : 'transparent',
-                alignItems: 'center',
-                justifyContent: 'center',
-                opacity: pressed ? 0.8 : 1,
-              }]}
+              onPress={() => router.push('/(driver)/terms')}
+              style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
             >
-              {termsAccepted && <Text style={{ color: '#fff', fontSize: 14, fontWeight: '800' }}>✓</Text>}
+              <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '600', textDecorationLine: 'underline' }}>
+                Read full Terms of Service →
+              </Text>
             </Pressable>
-            <Text style={{ flex: 1, color: colors.foreground, fontSize: 13, lineHeight: 18 }}>
-              I agree to the Terms of Service and acknowledge the Privacy Policy
-            </Text>
+            {!termsAccepted && (
+              <Text style={{ color: colors.warning, fontSize: 11, fontStyle: 'italic' }}>
+                You must accept the Terms of Service before proceeding with payment.
+              </Text>
+            )}
           </View>
 
           {/* Payment Button */}

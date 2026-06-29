@@ -275,3 +275,8 @@
 - [x] Bypass email verification for test accounts
 - [x] Force Driver test account to Paid/Active/Approved status (skip $25 paywall)
 - [x] Pre-seed dashboard states so reviewer sees functional UI immediately
+
+## Phase 31: ToS Checkbox & SSL Certificate Pinning
+- [x] Add Terms of Service acceptance checkbox to driver registration (before $25 payment)
+- [x] Create Terms of Service content/screen
+- [x] Implement SSL certificate pinning for production API endpoint

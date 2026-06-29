@@ -4,6 +4,7 @@ import superjson from "superjson";
 import type { AppRouter } from "@/server/routers";
 import { getApiBaseUrl } from "@/constants/oauth";
 import * as Auth from "@/lib/_core/auth";
+import { secureFetch } from "@/lib/ssl-pinning";
 
 /**
  * tRPC React client for type-safe API calls.
@@ -29,9 +30,9 @@ export function createTRPCClient() {
           const token = await Auth.getSessionToken();
           return token ? { Authorization: `Bearer ${token}` } : {};
         },
-        // Custom fetch to include credentials for cookie-based auth
+        // Custom fetch with SSL pinning + credentials for cookie-based auth
         fetch(url, options) {
-          return fetch(url, {
+          return secureFetch(url as string, {
             ...options,
             credentials: "include",
           });
