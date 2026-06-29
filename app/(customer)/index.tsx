@@ -99,16 +99,6 @@ export default function CustomerHomeScreen() {
 
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 
-      // Safety reminder on first order
-      const hasSeenSafety = await AsyncStorage.getItem('has_seen_safety_prompt');
-      if (!hasSeenSafety) {
-        await AsyncStorage.setItem('has_seen_safety_prompt', 'true');
-        Alert.alert(
-          '⚠️ Safety Reminder',
-          'Stay aware of your surroundings when meeting the ice cream truck. If you\'re in an unfamiliar neighborhood, meet at a well-lit public area. Never share personal information with drivers.',
-          [{ text: 'Got it!' }]
-        );
-      }
 
       setRequestStatus('summoning');
 

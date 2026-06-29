@@ -37,7 +37,7 @@ const LocationContext = createContext<LocationContextType | undefined>(undefined
 async function reverseGeocode(latitude: number, longitude: number): Promise<string> {
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=16&addressdetails=1`,
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
       {
         headers: {
           'User-Agent': 'TheIceCreamManApp/1.0',
@@ -48,9 +48,19 @@ async function reverseGeocode(latitude: number, longitude: number): Promise<stri
       const data = await response.json();
       if (data.address) {
         const parts: string[] = [];
-        if (data.address.road) parts.push(data.address.road);
-        if (data.address.city || data.address.town || data.address.village) {
-          parts.push(data.address.city || data.address.town || data.address.village);
+        // Prioritize suburb/neighbourhood for accurate local area
+        if (data.address.neighbourhood) parts.push(data.address.neighbourhood);
+        else if (data.address.suburb) parts.push(data.address.suburb);
+        else if (data.address.road) parts.push(data.address.road);
+        // Use the most specific city-level name (suburb > city > town > village)
+        const city = data.address.city || data.address.town || data.address.village;
+        const suburb = data.address.suburb;
+        // If city is different from suburb, show suburb as the primary location
+        if (suburb && city && suburb !== city) {
+          if (!parts.includes(suburb)) parts.push(suburb);
+          parts.push(city);
+        } else if (city) {
+          if (!parts.includes(city)) parts.push(city);
         }
         if (data.address.state) parts.push(data.address.state);
         if (parts.length > 0) return parts.join(', ');
@@ -158,9 +168,9 @@ async function getWebLocation(): Promise<LocationData | null> {
             resolve(null);
           },
           {
-            enableHighAccuracy: false, // Don't require high accuracy - faster
-            timeout: 4000,
-            maximumAge: 60000, // Accept cached position up to 1 minute old
+            enableHighAccuracy: true, // Use high accuracy for precise neighborhood detection
+            timeout: 10000,
+            maximumAge: 30000, // Accept cached position up to 30 seconds old
           }
         );
       });
@@ -224,7 +234,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         
         if (status === 'granted') {
           const location = await ExpoLocation.getCurrentPositionAsync({
-            accuracy: ExpoLocation.Accuracy.Balanced,
+            accuracy: ExpoLocation.Accuracy.High,
           });
 
           const lat = location.coords.latitude;
@@ -302,9 +312,9 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
                 hasGpsWatch = false;
               },
               {
-                enableHighAccuracy: false,
-                timeout: 10000,
-                maximumAge: 30000,
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 10000,
               }
             );
             trackingIntervalRef.current = watchId;
@@ -333,9 +343,9 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
           if (status === 'granted') {
             const subscription = await ExpoLocation.watchPositionAsync(
               {
-                accuracy: ExpoLocation.Accuracy.Balanced,
+                accuracy: ExpoLocation.Accuracy.High,
                 timeInterval: 5000,
-                distanceInterval: 10,
+                distanceInterval: 5, // Update every 5 meters for 1000ft precision
               },
               async (location: any) => {
                 if (!isMountedRef.current) return;

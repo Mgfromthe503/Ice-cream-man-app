@@ -11,7 +11,7 @@ interface NotifPrefs {
   driverOnWay: boolean;
   driverNearby: boolean;
   driverArrived: boolean;
-  safetyAlerts: boolean;
+
 }
 
 const DEFAULT_PREFS: NotifPrefs = {
@@ -19,7 +19,7 @@ const DEFAULT_PREFS: NotifPrefs = {
   driverOnWay: true,
   driverNearby: true,
   driverArrived: true,
-  safetyAlerts: true,
+
 };
 
 export default function NotificationsScreen() {
@@ -178,19 +178,7 @@ export default function NotificationsScreen() {
           </View>
 
           {/* Other Notifications */}
-          <View style={{ gap: 8 }}>
-            <Text style={{ fontSize: 16, fontWeight: '700', color: colors.foreground }}>
-              Other Notifications
-            </Text>
 
-            <NotifToggle
-              emoji="⚠️"
-              label="Safety Alerts"
-              description="Important safety reminders and area alerts"
-              value={prefs.safetyAlerts}
-              onToggle={() => togglePref('safetyAlerts')}
-            />
-          </View>
 
           {/* Note */}
           <View style={{ backgroundColor: '#FFF8E1', borderRadius: 12, padding: 12 }}>

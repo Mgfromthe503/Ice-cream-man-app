@@ -229,3 +229,11 @@
 - [x] Simplify and clean up all screens for consistency
 - [x] Make order button more prominent and eye-catching
 - [x] Ensure all original features are present and working
+
+## Phase 27: GPS Fix, Proximity Tracking, Safety Alert Removal
+- [ ] Fix GPS to show accurate neighborhood (Beaverton not Portland)
+- [ ] Use higher accuracy GPS settings (enableHighAccuracy: true)
+- [ ] Show city/neighborhood name from reverse geocoding
+- [ ] Implement 1000ft proximity tracking between driver and customer
+- [ ] Remove ALL safety alerts from the app
+- [ ] Keep legal disclaimers ONLY in fine print (Terms of Service, Privacy Policy)
