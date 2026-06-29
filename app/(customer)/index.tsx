@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Alert, Animated, Easing } from 'react-native';
+import { View, Text, Pressable, ScrollView, Alert, Animated, Easing, Platform } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { useState, useEffect, useRef } from 'react';
@@ -112,11 +112,22 @@ export default function CustomerHomeScreen() {
       setRequestStatus('summoning');
 
       // Call backend API to create request
-      await createRequestMutation.mutateAsync({
+      const result = await createRequestMutation.mutateAsync({
         latitude: userLocation.latitude,
         longitude: userLocation.longitude,
         address: userLocation.address || `${userLocation.latitude.toFixed(4)}, ${userLocation.longitude.toFixed(4)}`,
       });
+
+      // Notify drivers of new request
+      try {
+        const { notifyDriverNewRequest } = await import('@/lib/notification-service');
+        await notifyDriverNewRequest(
+          userLocation.address || `${userLocation.latitude.toFixed(4)}, ${userLocation.longitude.toFixed(4)}`,
+          'New order nearby'
+        );
+      } catch (error) {
+        console.log('Notification service not available:', error);
+      }
 
       // Move to searching phase after 3 seconds
       setTimeout(() => {
@@ -125,12 +136,20 @@ export default function CustomerHomeScreen() {
       }, 3000);
 
       // Simulate driver acceptance after 8 seconds
-      setTimeout(() => {
+      setTimeout(async () => {
         setRequestStatus('accepted');
         setEstimatedTime(8);
         setDriverName('Ice Cream Mike');
         setDriverCheckpoint('🚚 On the way to your neighborhood!');
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        
+        // Notify customer that driver accepted
+        try {
+          const { notifyCustomerAccepted } = await import('@/lib/notification-service');
+          notifyCustomerAccepted('Ice Cream Mike', 8);
+        } catch (error) {
+          console.log('Notification service not available:', error);
+        }
       }, 8000);
 
       // Simulate driver nearby after 15 seconds
