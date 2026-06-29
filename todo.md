@@ -269,3 +269,9 @@
 - [x] Create hosted privacy policy with dual-marketplace disclosure
 - [x] Create Prominent In-App Location Disclosure modal component
 - [x] Draft App Access review text for Google Play Console
+
+## Phase 30: Google Play Reviewer Test Accounts
+- [x] Create hardcoded test credentials for Customer and Driver reviewer accounts
+- [x] Bypass email verification for test accounts
+- [x] Force Driver test account to Paid/Active/Approved status (skip $25 paywall)
+- [x] Pre-seed dashboard states so reviewer sees functional UI immediately

@@ -41,7 +41,10 @@ function RootLayoutNav() {
     const inAuthGroup = segments[0] === "(customer)" || segments[0] === "(driver)";
 
     if (!userRole && inAuthGroup) {
-      router.replace("/role-select");
+      router.replace("/login");
+    } else if (!userRole && segments[0] === "(tabs)") {
+      // First app open — show login screen
+      router.replace("/login");
     } else if (userRole && !inAuthGroup && segments[0] !== "oauth") {
       if (userRole === "customer") {
         router.replace("/(customer)");
@@ -55,6 +58,7 @@ function RootLayoutNav() {
     <>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="login" />
         <Stack.Screen name="role-select" />
         <Stack.Screen name="(customer)" />
         <Stack.Screen name="(driver)" />
