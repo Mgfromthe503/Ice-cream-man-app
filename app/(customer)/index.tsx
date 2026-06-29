@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Alert, Animated, Easing, Platform } from 'react-native';
+import { View, Text, Pressable, ScrollView, Alert, Animated, Easing } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { useState, useEffect, useRef } from 'react';
@@ -112,22 +112,11 @@ export default function CustomerHomeScreen() {
       setRequestStatus('summoning');
 
       // Call backend API to create request
-      const result = await createRequestMutation.mutateAsync({
+      await createRequestMutation.mutateAsync({
         latitude: userLocation.latitude,
         longitude: userLocation.longitude,
         address: userLocation.address || `${userLocation.latitude.toFixed(4)}, ${userLocation.longitude.toFixed(4)}`,
       });
-
-      // Notify drivers of new request
-      try {
-        const { notifyDriverNewRequest } = await import('@/lib/notification-service');
-        await notifyDriverNewRequest(
-          userLocation.address || `${userLocation.latitude.toFixed(4)}, ${userLocation.longitude.toFixed(4)}`,
-          'New order nearby'
-        );
-      } catch (error) {
-        console.log('Notification service not available:', error);
-      }
 
       // Move to searching phase after 3 seconds
       setTimeout(() => {
@@ -136,20 +125,12 @@ export default function CustomerHomeScreen() {
       }, 3000);
 
       // Simulate driver acceptance after 8 seconds
-      setTimeout(async () => {
+      setTimeout(() => {
         setRequestStatus('accepted');
         setEstimatedTime(8);
         setDriverName('Ice Cream Mike');
         setDriverCheckpoint('🚚 On the way to your neighborhood!');
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        
-        // Notify customer that driver accepted
-        try {
-          const { notifyCustomerAccepted } = await import('@/lib/notification-service');
-          notifyCustomerAccepted('Ice Cream Mike', 8);
-        } catch (error) {
-          console.log('Notification service not available:', error);
-        }
       }, 8000);
 
       // Simulate driver nearby after 15 seconds
@@ -217,9 +198,10 @@ export default function CustomerHomeScreen() {
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1">
         <View className="flex-1 gap-4 justify-between">
           {/* Header */}
-          <View className="gap-3 items-center mb-4">
-            <Text className="text-5xl font-black text-foreground" style={{ letterSpacing: 1 }}>ICE CREAM MAN</Text>
-            <Text className="text-sm text-muted font-semibold">One tap. Ice cream delivered.</Text>
+          <View className="gap-2 items-center mb-2">
+            <Text className="text-4xl font-bold text-foreground">🍦</Text>
+            <Text className="text-2xl font-bold text-foreground">Ice Cream Man</Text>
+            <Text className="text-xs text-muted font-medium">One tap. Ice cream delivered.</Text>
           </View>
 
           {/* Drivers Wanted Banner - shows when no drivers available */}

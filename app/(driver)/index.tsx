@@ -129,15 +129,6 @@ export default function DriverDashboardScreen() {
       // Remove accepted request from list
       setRequests(requests.filter((r) => r.id !== requestId));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      
-      // Notify customer that driver accepted
-      try {
-        const { notifyCustomerAccepted } = await import('@/lib/notification-service');
-        const truckNumber = await AsyncStorage.getItem('driverTruckNumber') || 'Your Ice Cream Man';
-        await notifyCustomerAccepted(truckNumber, 8);
-      } catch (error) {
-        console.log('Notification service not available:', error);
-      }
     } catch (error) {
       console.error('Failed to accept request:', error);
       Alert.alert('Error', 'Failed to accept request.');
