@@ -39,16 +39,34 @@ The Ice Cream Man is a dual-marketplace app with two user roles (Customer and Dr
 10. Accept a request → Navigate button opens Google Maps with directions
 11. Complete delivery when within 1000 feet of customer
 
-### TEST ACCOUNT FOR REVIEW (License Tester)
+### TEST ACCOUNTS FOR REVIEW (Pre-Configured — No Payment Required)
 
-To bypass the $25 real payment during review, add the following email as a **License Tester** in your Google Play Console (Setup → License testing):
+Two test accounts are pre-configured that bypass all registration and payment flows:
 
+**How to access the test login screen:**
+1. On the initial role-select screen ("Choose your role to get started")
+2. Scroll to the bottom
+3. Tap the small gray **"v1.0.0"** version text at the very bottom of the screen
+4. This opens the hidden Test Login screen
+
+**Customer Test Account:**
 | Field | Value |
 |-------|-------|
-| Test Account Email | (Add your reviewer's Google account as a license tester) |
-| Payment Response | RESPOND_NORMALLY (uses test card, no real charge) |
+| Email | Icecream@customertest.com |
+| Password | GoogleTest2026! |
 
-**Note:** Google Play's test card environment allows the reviewer to complete the billing flow without being charged. The app uses `com.android.vending.BILLING` permission and the official Google Play Billing Library.
+This account bypasses all verification and lands directly on the Customer ordering screen.
+
+**Driver Test Account:**
+| Field | Value |
+|-------|-------|
+| Email | Icecream@driverlogintest.com |
+| Password | GoogleTest2026! |
+
+This account bypasses the $25 registration fee, email verification, and all activation checks. It lands directly on the operational Driver Dashboard with a pre-registered truck (ICM-9999, area code 97005), ready to accept incoming customer requests.
+
+**Alternative (License Tester for real billing flow):**
+If you want to test the actual $25 Google Play Billing flow, add your reviewer's Google account as a License Tester in Google Play Console (Setup → License testing) with Payment Response set to RESPOND_NORMALLY (uses test card, no real charge).
 
 ### DEMO MODE (If No Active Drivers Available)
 
