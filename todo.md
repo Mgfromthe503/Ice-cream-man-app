@@ -285,3 +285,11 @@
 - [x] Remove email/password login as default entry point
 - [x] Restore role-select screen as initial app screen (tap Customer or Driver)
 - [x] Hide reviewer login behind version number tap (accessible but not visible)
+
+## Phase 33: Wire LocationDisclosure Modal into Customer Flow
+- [x] Integrate disclosure state into LocationProvider (showDisclosure, acceptDisclosure, declineDisclosure)
+- [x] Gate native GPS permission requests behind disclosure acceptance
+- [x] Render LocationDisclosure modal in customer tab layout
+- [x] Start with IP-only tracking until disclosure is accepted
+- [x] Auto-show disclosure 1.5s after customer screen loads (first time only)
+- [x] Persist acceptance in AsyncStorage so it only shows once

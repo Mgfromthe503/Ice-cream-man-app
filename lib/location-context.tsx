@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const DISCLOSURE_KEY = 'location_disclosure_accepted';
 
 export interface LocationData {
   latitude: number;
@@ -29,6 +32,9 @@ interface LocationContextType {
   startLocationTracking: () => Promise<void>;
   stopLocationTracking: () => void;
   retryLocation: () => void;
+  showDisclosure: boolean;
+  acceptDisclosure: () => Promise<void>;
+  declineDisclosure: () => void;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(undefined);
@@ -202,18 +208,68 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const [driverLocation, setDriverLocation] = useState<DriverLocation | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [disclosureAccepted, setDisclosureAccepted] = useState<boolean | null>(null);
+  const [showDisclosure, setShowDisclosure] = useState(false);
   const trackingIntervalRef = useRef<any>(null);
   const locationSubRef = useRef<any>(null);
   const isMountedRef = useRef(true);
 
+  // Check if disclosure has been accepted (runs on mount)
+  const checkDisclosureStatus = async (): Promise<boolean> => {
+    try {
+      const accepted = await AsyncStorage.getItem(DISCLOSURE_KEY);
+      const result = accepted === 'true';
+      setDisclosureAccepted(result);
+      return result;
+    } catch {
+      return false;
+    }
+  };
+
+  // Accept the disclosure and persist it
+  const acceptDisclosure = async () => {
+    await AsyncStorage.setItem(DISCLOSURE_KEY, 'true');
+    setDisclosureAccepted(true);
+    setShowDisclosure(false);
+    // Now that disclosure is accepted, start full tracking with GPS
+    startLocationTracking();
+  };
+
+  // Decline the disclosure — use IP fallback only
+  const declineDisclosure = () => {
+    setShowDisclosure(false);
+    // Still start tracking but IP-only (no native permission prompt)
+    startIPOnlyTracking();
+  };
+
+  // Prompt the disclosure modal
+  const promptDisclosure = () => {
+    setShowDisclosure(true);
+  };
+
+  // Start IP-only tracking (no native permission request)
+  const startIPOnlyTracking = async () => {
+    setIsLoadingLocation(true);
+    const ipLoc = await getLocationFromIP();
+    if (ipLoc && isMountedRef.current) {
+      setUserLocation(ipLoc);
+    }
+    if (isMountedRef.current) setIsLoadingLocation(false);
+  };
+
   // Request location permission (always returns true since we have IP fallback)
   const requestLocationPermission = async (): Promise<boolean> => {
-    // We always have a fallback, so permission is always "granted"
+    // Check disclosure first on native
     if (Platform.OS !== 'web') {
+      const accepted = await checkDisclosureStatus();
+      if (!accepted) {
+        // Show disclosure modal instead of requesting permission directly
+        setShowDisclosure(true);
+        return true; // IP fallback will work in the meantime
+      }
       try {
         const ExpoLocation = require('expo-location');
         const { status } = await ExpoLocation.requestForegroundPermissionsAsync();
-        // Even if denied on native, we can still use IP fallback
         return status === 'granted';
       } catch (error) {
         return true; // IP fallback will work
@@ -433,10 +489,32 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     startLocationTracking();
   };
 
-  // Start tracking on mount
+  // Start tracking on mount — check disclosure status first on native
   useEffect(() => {
     isMountedRef.current = true;
-    startLocationTracking();
+    
+    const init = async () => {
+      if (Platform.OS === 'web') {
+        // Web doesn't need disclosure modal — browser handles its own prompt
+        startLocationTracking();
+      } else {
+        // Native: check if disclosure was previously accepted
+        const accepted = await checkDisclosureStatus();
+        if (accepted) {
+          // Already accepted — proceed with full GPS tracking
+          startLocationTracking();
+        } else {
+          // Not yet accepted — start with IP-only, show disclosure when user interacts
+          await startIPOnlyTracking();
+          // Show disclosure modal after a short delay so the screen loads first
+          setTimeout(() => {
+            if (isMountedRef.current) setShowDisclosure(true);
+          }, 1500);
+        }
+      }
+    };
+    init();
+
     return () => {
       isMountedRef.current = false;
       stopLocationTracking();
@@ -456,6 +534,9 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         startLocationTracking,
         stopLocationTracking,
         retryLocation,
+        showDisclosure,
+        acceptDisclosure,
+        declineDisclosure,
       }}
     >
       {children}
