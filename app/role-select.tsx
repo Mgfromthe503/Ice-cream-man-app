@@ -160,7 +160,7 @@ export default function RoleSelectScreen() {
               {/* Footer tagline */}
               <View style={{ alignItems: 'center', gap: 4 }}>
                 <Text style={{ fontSize: 12, color: '#A0826D', textAlign: 'center' }}>
-                  Connecting neighborhoods with ice cream trucks
+                  Sweetly yours, ❤️ -Mindy Gaines
                 </Text>
                 <Text style={{ fontSize: 11, color: '#C4A882' }}>
                   v1.0.0
