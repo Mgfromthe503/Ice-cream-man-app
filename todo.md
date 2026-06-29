@@ -207,3 +207,14 @@
 - [ ] Add Privacy Policy link to customer and driver profiles
 - [ ] Add Help/Safety Tips section with professional guidance
 - [ ] Ensure all disclosures are legally compliant but not alarming
+
+## Phase 25: Design Preservation + Feature Re-implementation
+- [x] Rollback to version 886ab67d (user preferred this design)
+- [x] Update package name to icecreammanapp
+- [x] Remove bad fun facts (Kentucky pocket, ice cream tester spitting, Victorian penny lickers)
+- [x] Re-integrate notification triggers in customer order flow (notifyDriverNewRequest)
+- [x] Re-integrate notification triggers in driver acceptance flow (notifyCustomerAccepted)
+- [x] Replace emoji characters on role-select with premium 3D illustrations
+- [x] Generate and add premium customer character (mom & daughter with ice cream)
+- [x] Generate and add premium driver character (vendor with ice cream truck)
+- [x] Preserve original candy-land gradient design throughout

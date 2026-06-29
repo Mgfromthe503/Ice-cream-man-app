@@ -118,6 +118,14 @@ export default function CustomerHomeScreen() {
         address: userLocation.address || `${userLocation.latitude.toFixed(4)}, ${userLocation.longitude.toFixed(4)}`,
       });
 
+      // Notify nearby drivers of new request
+      import('@/lib/notification-service').then(({ notifyDriverNewRequest }) => {
+        notifyDriverNewRequest(
+          userLocation.address || `${userLocation.latitude.toFixed(4)}, ${userLocation.longitude.toFixed(4)}`,
+          'New order nearby'
+        );
+      }).catch(() => {});
+
       // Move to searching phase after 3 seconds
       setTimeout(() => {
         setRequestStatus('searching');
@@ -131,6 +139,10 @@ export default function CustomerHomeScreen() {
         setDriverName('Ice Cream Mike');
         setDriverCheckpoint('🚚 On the way to your neighborhood!');
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        // Notify customer that driver accepted
+        import('@/lib/notification-service').then(({ notifyCustomerAccepted }) => {
+          notifyCustomerAccepted('Ice Cream Mike', 8);
+        }).catch(() => {});
       }, 8000);
 
       // Simulate driver nearby after 15 seconds

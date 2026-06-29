@@ -129,6 +129,11 @@ export default function DriverDashboardScreen() {
       // Remove accepted request from list
       setRequests(requests.filter((r) => r.id !== requestId));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+      // Notify customer that driver accepted their order
+      import('@/lib/notification-service').then(({ notifyCustomerAccepted }) => {
+        notifyCustomerAccepted('Ice Cream Driver', 8);
+      }).catch(() => {});
     } catch (error) {
       console.error('Failed to accept request:', error);
       Alert.alert('Error', 'Failed to accept request.');

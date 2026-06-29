@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { FactTicker } from '@/components/fact-ticker';
+import { Image as ExpoImage } from 'expo-image';
 
 export default function RoleSelectScreen() {
   const router = useRouter();
@@ -73,7 +74,11 @@ export default function RoleSelectScreen() {
                   }}
                 >
                   <View style={{ alignItems: 'center', gap: 12 }}>
-                    <Text style={{ fontSize: 56 }}>👨‍👧‍👦</Text>
+                    <ExpoImage
+                      source={require('@/assets/images/customer-character.png')}
+                      style={{ width: 100, height: 100, borderRadius: 50 }}
+                      contentFit="cover"
+                    />
                     <Text style={{ fontSize: 24, fontWeight: '800', color: '#FFFFFF' }}>
                       Customer
                     </Text>
@@ -118,7 +123,11 @@ export default function RoleSelectScreen() {
                   }}
                 >
                   <View style={{ alignItems: 'center', gap: 12 }}>
-                    <Text style={{ fontSize: 56 }}>🚚</Text>
+                    <ExpoImage
+                      source={require('@/assets/images/driver-character.png')}
+                      style={{ width: 100, height: 100, borderRadius: 50 }}
+                      contentFit="cover"
+                    />
                     <Text style={{ fontSize: 24, fontWeight: '800', color: '#FFFFFF' }}>
                       Ice Cream Vendor
                     </Text>

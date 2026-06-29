@@ -20,7 +20,6 @@ const ICE_CREAM_FACTS = [
   "🌭 Hot dog-flavored ice cream was created by a major brand. The internet had OPINIONS.",
   "🦗 Cicada-flavored ice cream sold out in Missouri. Yes, it had real bugs in it!",
   "🍌 There's a fruit called 'Banana Apple' in Hawaii that tastes exactly like vanilla ice cream!",
-  "🥔 Food stylists in commercials use mashed potatoes instead of real ice cream because it doesn't melt!",
 
   "⚰️ Ben & Jerry's has an actual 'Flavor Graveyard' where discontinued flavors get a proper funeral!",
   "🏔️ The world's tallest ice cream cone was over 9 feet high in Norway. It took a crane to eat it!",
