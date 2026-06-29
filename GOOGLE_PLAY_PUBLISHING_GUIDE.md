@@ -3,7 +3,7 @@
 **Developer:** Mindy Gaines  
 **Email:** mindy.gaines1@gmail.com  
 **App Name:** The Ice Cream Man  
-**Package ID:** space.manus.the.ice.cream.man  
+**Package ID:** com.icecreamman.app  
 **Version:** 1.0.0
 
 ---

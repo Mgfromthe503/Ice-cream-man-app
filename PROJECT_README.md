@@ -208,8 +208,8 @@ const env = {
   appSlug: "the-ice-cream-man",
   logoUrl: "https://s3.example.com/icon.png",
   scheme: "manus20260523...",
-  iosBundleId: "space.manus.the.ice.cream.man",
-  androidPackage: "space.manus.the.ice.cream.man",
+  iosBundleId: "com.icecreamman.app",
+  androidPackage: "com.icecreamman.app",
 };
 ```
 

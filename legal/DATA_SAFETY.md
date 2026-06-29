@@ -2,7 +2,7 @@
 
 **The Ice Cream Man**
 **Developer:** Mindy Gaines
-**Package:** com.app.theicecreamman
+**Package:** com.icecreamman.app
 
 ---
 

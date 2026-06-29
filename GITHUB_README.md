@@ -447,7 +447,7 @@ This project was built with Expo, React Native, and TypeScript. Special thanks t
 
 ## Quick Links
 
-- [Google Play Store](https://play.google.com/store/apps/details?id=space.manus.the.ice.cream.man)
+- [Google Play Store](https://play.google.com/store/apps/details?id=com.icecreamman.app)
 - [Expo Documentation](https://docs.expo.dev)
 - [React Native Documentation](https://reactnative.dev)
 - [tRPC Documentation](https://trpc.io)

@@ -2,7 +2,7 @@
 
 **Developer:** Mindy Gaines  
 **App Name:** The Ice Cream Man  
-**Package Name:** space.manus.the.ice.cream.man  
+**Package Name:** com.icecreamman.app  
 **Version:** 1.0.0  
 **Build Date:** May 2026
 

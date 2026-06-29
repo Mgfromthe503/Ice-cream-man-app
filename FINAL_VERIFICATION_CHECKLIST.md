@@ -151,7 +151,7 @@
 ### 3.1 App Metadata
 - [x] App name: "The Ice Cream Man"
 - [x] App icon: 512x512 with "Ice Cream Man" text
-- [x] Package name: Valid format (space.manus.the.ice.cream.man.t...)
+- [x] Package name: Valid format (com.icecreamman.app)
 - [x] Version code: 1
 - [x] Version name: 1.0.0
 - [x] Minimum SDK: 24 (Android 7.0)

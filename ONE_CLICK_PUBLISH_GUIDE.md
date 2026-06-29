@@ -4,7 +4,7 @@
 
 **Developer:** Mindy Gaines (mindy.gaines1@gmail.com)
 **GitHub:** Mgfromthe503
-**Package Name:** com.app.theicecreamman
+**Package Name:** com.icecreamman.app
 **Version:** 1.0.0
 
 ---
@@ -19,7 +19,7 @@ Everything below has been completed and is ready for your one-click publish:
 | Splash Screen | ✅ Complete | Matching branding |
 | Android Adaptive Icon | ✅ Complete | Foreground + background layers |
 | App Name | ✅ Complete | "The Ice Cream Man" |
-| Package Name | ✅ Complete | com.app.theicecreamman |
+| Package Name | ✅ Complete | com.icecreamman.app |
 | Version Code | ✅ Complete | 1.0.0 |
 | EAS Build Config | ✅ Complete | eas.json configured for production |
 | Privacy Policy | ✅ Complete | legal/PRIVACY_POLICY.md |
@@ -117,7 +117,7 @@ Download now and never miss the ice cream man again!
 ### Step 5: Set Up In-App Purchase
 
 1. Go to **Monetize > Products > In-app products**
-2. Create product: `vendor_registration_fee`
+2. Create product: `icm_vendor_registration`
 3. Price: $25.00
 4. Title: "Vendor Registration"
 5. Activate
@@ -125,7 +125,7 @@ Download now and never miss the ice cream man again!
 ### Step 6: Configure Ads (After First Publish)
 
 1. Go to [AdMob](https://admob.google.com)
-2. Add app with package: com.app.theicecreamman
+2. Add app with package: com.icecreamman.app
 3. Create ad units
 4. Add ad unit IDs to app config
 

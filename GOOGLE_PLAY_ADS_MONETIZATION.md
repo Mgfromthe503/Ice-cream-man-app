@@ -60,7 +60,7 @@ User taps "Pay $25 & Start Earning"
 
 1. Go to [AdMob Console](https://admob.google.com)
 2. Click **Apps > Add App**
-3. Select Android, enter package name: `com.app.theicecreamman`
+3. Select Android, enter package name: `com.icecreamman.app`
 4. Create ad units for each placement
 5. Copy ad unit IDs into app configuration
 6. Add `react-native-google-mobile-ads` package
