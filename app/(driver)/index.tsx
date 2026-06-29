@@ -15,6 +15,8 @@ interface RequestItem {
   distance: string;
   time: string;
   customerZip?: string;
+  deliveryInstructions?: string;
+  shareMode?: string;
 }
 
 export default function DriverDashboardScreen() {
@@ -65,6 +67,8 @@ export default function DriverDashboardScreen() {
         distance: `${(Math.random() * 3 + 0.5).toFixed(1)} mi`,
         time: getTimeAgo(req.createdAt),
         customerZip: req.zipCode || '',
+        deliveryInstructions: req.deliveryInstructions || '',
+        shareMode: req.shareMode || 'street',
       }));
       setRequests(formattedRequests);
     }
@@ -442,7 +446,19 @@ export default function DriverDashboardScreen() {
                         <Text className="text-sm">⏰</Text>
                         <Text className="text-xs text-muted">{item.time}</Text>
                       </View>
+                      {item.shareMode && (
+                        <View className="flex-row items-center gap-1">
+                          <Text className="text-xs text-muted">
+                            {item.shareMode === 'exact' ? '📍 Exact' : item.shareMode === 'meetup' ? '🤝 Meetup' : '🛣️ Street'}
+                          </Text>
+                        </View>
+                      )}
                     </View>
+                    {item.deliveryInstructions ? (
+                      <View className="mt-2 bg-warning/10 rounded-lg p-2 border border-warning/30">
+                        <Text className="text-xs font-semibold text-foreground">📝 {item.deliveryInstructions}</Text>
+                      </View>
+                    ) : null}
                   </View>
                 </View>
                 <View style={{ flexDirection: 'row', gap: 8 }}>

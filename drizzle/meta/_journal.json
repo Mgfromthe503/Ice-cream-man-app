@@ -22,6 +22,13 @@
       "when": 1779524148253,
       "tag": "0002_closed_anthem",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1782720893021,
+      "tag": "0003_sleepy_dragon_man",
+      "breakpoints": true
     }
   ]
 }

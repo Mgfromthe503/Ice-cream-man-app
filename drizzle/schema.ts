@@ -36,6 +36,8 @@ export const iceCreamRequests = mysqlTable("ice_cream_requests", {
   latitude: double("latitude").notNull(),
   longitude: double("longitude").notNull(),
   address: text("address"),
+  shareMode: mysqlEnum("shareMode", ["exact", "street", "meetup"]).default("street").notNull(),
+  deliveryInstructions: text("deliveryInstructions"),
   status: mysqlEnum("status", ["waiting", "accepted", "in_transit", "completed", "cancelled"])
     .default("waiting")
     .notNull(),

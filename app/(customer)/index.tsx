@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Alert, Animated, Easing } from 'react-native';
+import { View, Text, Pressable, ScrollView, Alert, Animated, Easing, Modal, TextInput, TouchableOpacity } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { useState, useEffect, useRef } from 'react';
@@ -35,6 +35,11 @@ export default function CustomerHomeScreen() {
   const [driverLocation, setDriverLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [distanceToCustomer, setDistanceToCustomer] = useState<number | null>(null);
   const createRequestMutation = trpc.requests.create.useMutation();
+
+  // Delivery instructions
+  const [showDeliveryOptions, setShowDeliveryOptions] = useState(false);
+  const [shareMode, setShareMode] = useState<'exact' | 'street' | 'meetup'>('street');
+  const [deliveryInstructions, setDeliveryInstructions] = useState('');
 
   // Pulsing glow animation for the big button
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -99,14 +104,37 @@ export default function CustomerHomeScreen() {
 
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 
+      // Show delivery options modal
+      setShowDeliveryOptions(true);
+    } catch (error) {
+      console.error('Order error:', error);
+    }
+  };
 
+  const handleConfirmOrder = async () => {
+    try {
+      setShowDeliveryOptions(false);
       setRequestStatus('summoning');
+
+      // Build address based on share mode
+      let sharedAddress = userLocation.address || `${userLocation.latitude.toFixed(4)}, ${userLocation.longitude.toFixed(4)}`;
+      if (shareMode === 'street') {
+        // Only share street name, not house number
+        const parts = sharedAddress.split(',');
+        const streetPart = parts[0]?.replace(/^\d+[-\s]*/, '').trim() || sharedAddress;
+        sharedAddress = streetPart + (parts.length > 1 ? ',' + parts.slice(1).join(',') : '');
+      } else if (shareMode === 'meetup') {
+        // Use the delivery instructions as the address
+        sharedAddress = deliveryInstructions || sharedAddress;
+      }
 
       // Call backend API to create request
       await createRequestMutation.mutateAsync({
         latitude: userLocation.latitude,
         longitude: userLocation.longitude,
-        address: userLocation.address || `${userLocation.latitude.toFixed(4)}, ${userLocation.longitude.toFixed(4)}`,
+        address: sharedAddress,
+        shareMode,
+        deliveryInstructions: deliveryInstructions || undefined,
       });
 
       // Notify nearby drivers of new request
@@ -434,6 +462,78 @@ export default function CustomerHomeScreen() {
           console.log(`Customer rated ${driverName}: ${rating} stars`);
         }}
       />
+
+      {/* Delivery Options Modal */}
+      <Modal
+        visible={showDeliveryOptions}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowDeliveryOptions(false)}
+      >
+        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <View className="bg-background rounded-t-3xl p-6" style={{ maxHeight: '80%' }}>
+            <Text className="text-xl font-bold text-foreground text-center mb-1">Delivery Details</Text>
+            <Text className="text-sm text-muted text-center mb-5">How should the driver find you?</Text>
+
+            {/* Share Mode Options */}
+            <View className="gap-3 mb-5">
+              <TouchableOpacity
+                onPress={() => setShareMode('exact')}
+                className={`p-4 rounded-xl border ${shareMode === 'exact' ? 'border-primary bg-primary/10' : 'border-border bg-surface'}`}
+              >
+                <Text className="text-base font-bold text-foreground">📍 Share My Exact Address</Text>
+                <Text className="text-xs text-muted mt-1">Driver gets your full address for door-to-door delivery</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setShareMode('street')}
+                className={`p-4 rounded-xl border ${shareMode === 'street' ? 'border-primary bg-primary/10' : 'border-border bg-surface'}`}
+              >
+                <Text className="text-base font-bold text-foreground">🛣️ Street Name Only</Text>
+                <Text className="text-xs text-muted mt-1">Driver drives down your street — listen for the jingle!</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setShareMode('meetup')}
+                className={`p-4 rounded-xl border ${shareMode === 'meetup' ? 'border-primary bg-primary/10' : 'border-border bg-surface'}`}
+              >
+                <Text className="text-base font-bold text-foreground">🤝 Meet at a Spot</Text>
+                <Text className="text-xs text-muted mt-1">Pick a meetup point (stop sign, school, park, etc.)</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Special Instructions */}
+            <Text className="text-sm font-semibold text-foreground mb-2">Special Instructions (optional)</Text>
+            <TextInput
+              value={deliveryInstructions}
+              onChangeText={setDeliveryInstructions}
+              placeholder={shareMode === 'meetup' ? 'e.g. Meet at the stop sign on Oak St' : 'e.g. Blue house, extra sprinkles please!'}
+              placeholderTextColor="#999"
+              multiline
+              numberOfLines={2}
+              returnKeyType="done"
+              className="bg-surface border border-border rounded-xl p-4 text-foreground text-sm mb-5"
+              style={{ minHeight: 60, textAlignVertical: 'top' }}
+            />
+
+            {/* Confirm Button */}
+            <TouchableOpacity
+              onPress={handleConfirmOrder}
+              className="bg-primary rounded-xl p-4 mb-3"
+            >
+              <Text className="text-white font-bold text-center text-lg">🍦 Send My Order!</Text>
+            </TouchableOpacity>
+
+            {/* Cancel */}
+            <TouchableOpacity
+              onPress={() => setShowDeliveryOptions(false)}
+              className="p-3"
+            >
+              <Text className="text-muted font-medium text-center">Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScreenContainer>
   );
 }

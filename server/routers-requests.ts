@@ -17,6 +17,8 @@ export const requestsRouter = router({
         latitude: z.number(),
         longitude: z.number(),
         address: z.string().optional(),
+        shareMode: z.enum(["exact", "street", "meetup"]).default("street"),
+        deliveryInstructions: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -25,6 +27,8 @@ export const requestsRouter = router({
         latitude: input.latitude,
         longitude: input.longitude,
         address: input.address,
+        shareMode: input.shareMode,
+        deliveryInstructions: input.deliveryInstructions,
         status: "waiting",
         price: "5.00",
       });
