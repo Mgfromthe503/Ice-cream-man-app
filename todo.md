@@ -293,3 +293,12 @@
 - [x] Start with IP-only tracking until disclosure is accepted
 - [x] Auto-show disclosure 1.5s after customer screen loads (first time only)
 - [x] Persist acceptance in AsyncStorage so it only shows once
+
+## Phase 34: Automated Demo Mode for Google Play Reviewer
+- [ ] Create demo orchestrator that manages the full Customer→Driver flow
+- [ ] Auto-switch from Customer to Driver view after summons is sent
+- [ ] Show incoming notification on Driver dashboard with customer location
+- [ ] Simulate order acceptance and GPS navigation with animated map
+- [ ] Show driver approaching customer location with distance countdown
+- [ ] Complete delivery and move order to completed state
+- [ ] Pause GPS tracking when not actively navigating (battery compliance)

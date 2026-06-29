@@ -74,9 +74,40 @@ async function startServer() {
   // ============================================
   // TEST ACCOUNT LOGIN (Google Play Reviewer)
   // Bypasses OAuth, email verification, and payment
+  // Rate limited: 5 attempts per minute per IP to prevent brute-force
   // ============================================
+  const testLoginAttempts = new Map<string, { count: number; resetAt: number }>();
+
   app.post("/api/auth/test-login", async (req, res) => {
     try {
+      // Rate limiting: max 5 attempts per minute per IP
+      const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+      const now = Date.now();
+      const windowMs = 60000; // 1 minute
+      const maxAttempts = 5;
+
+      const record = testLoginAttempts.get(clientIp);
+      if (record && now < record.resetAt) {
+        if (record.count >= maxAttempts) {
+          const retryAfter = Math.ceil((record.resetAt - now) / 1000);
+          res.status(429).json({
+            error: "Too many login attempts. Please try again later.",
+            retryAfter,
+          });
+          return;
+        }
+        record.count++;
+      } else {
+        testLoginAttempts.set(clientIp, { count: 1, resetAt: now + windowMs });
+      }
+
+      // Cleanup stale entries every 100 requests to prevent memory leak
+      if (testLoginAttempts.size > 100) {
+        for (const [ip, entry] of testLoginAttempts) {
+          if (now > entry.resetAt) testLoginAttempts.delete(ip);
+        }
+      }
+
       const { email, password } = req.body || {};
       if (!email || !password) {
         res.status(400).json({ error: "Email and password are required" });
