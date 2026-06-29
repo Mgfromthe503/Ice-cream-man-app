@@ -22,9 +22,8 @@ export default function LoginScreen() {
   const router = useRouter();
   const { login } = useAuth();
   const colors = useColors();
-  // Pre-fill with customer test credentials to save reviewer time
-  const [email, setEmail] = useState('Icecream@customertest.com');
-  const [password, setPassword] = useState('GoogleTest2026!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
@@ -191,37 +190,6 @@ export default function LoginScreen() {
                     </Text>
                   )}
                 </Pressable>
-              </View>
-
-              {/* Quick-fill buttons for reviewer convenience */}
-              <View style={{ gap: 10 }}>
-                <Text style={{ textAlign: 'center', color: '#8B4513', fontSize: 12, fontWeight: '600', marginBottom: 2 }}>
-                  Quick Fill Test Account:
-                </Text>
-                <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 12 }}>
-                  <Pressable
-                    onPress={() => { setEmail('Icecream@customertest.com'); setPassword('GoogleTest2026!'); }}
-                    style={({ pressed }) => [{
-                      backgroundColor: pressed ? '#FF85C8' : '#FFB6D9',
-                      paddingVertical: 10,
-                      paddingHorizontal: 16,
-                      borderRadius: 10,
-                    }]}
-                  >
-                    <Text style={{ color: '#8B4513', fontSize: 13, fontWeight: '600' }}>🍦 Customer</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => { setEmail('Icecream@driverlogintest.com'); setPassword('GoogleTest2026!'); }}
-                    style={({ pressed }) => [{
-                      backgroundColor: pressed ? '#FFD080' : '#FFE4A0',
-                      paddingVertical: 10,
-                      paddingHorizontal: 16,
-                      borderRadius: 10,
-                    }]}
-                  >
-                    <Text style={{ color: '#8B4513', fontSize: 13, fontWeight: '600' }}>🚗 Driver</Text>
-                  </Pressable>
-                </View>
               </View>
 
               {/* Skip to role select (for normal users using OAuth) */}
