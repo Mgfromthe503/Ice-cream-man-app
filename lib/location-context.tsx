@@ -78,8 +78,8 @@ async function reverseGeocode(latitude: number, longitude: number): Promise<stri
 
 /**
  * IP-based geolocation fallback - works without ANY browser permissions.
- * Uses free IP geolocation APIs to determine approximate location.
- * This bypasses all browser location settings entirely.
+ * Uses free IP geolocation APIs to get coordinates, then reverse geocodes
+ * for neighborhood-level address accuracy.
  */
 async function getLocationFromIP(): Promise<LocationData | null> {
   // Try multiple free IP geolocation services as fallbacks
@@ -89,8 +89,7 @@ async function getLocationFromIP(): Promise<LocationData | null> {
       parse: (data: any) => ({
         latitude: data.latitude,
         longitude: data.longitude,
-        address: `${data.city}, ${data.region}, ${data.country_name}`,
-        accuracy: 5000, // IP geolocation is ~5km accurate
+        accuracy: 5000,
       }),
     },
     {
@@ -98,7 +97,6 @@ async function getLocationFromIP(): Promise<LocationData | null> {
       parse: (data: any) => ({
         latitude: data.lat,
         longitude: data.lon,
-        address: `${data.city}, ${data.regionName}, ${data.country}`,
         accuracy: 5000,
       }),
     },
@@ -107,7 +105,6 @@ async function getLocationFromIP(): Promise<LocationData | null> {
       parse: (data: any) => ({
         latitude: data.latitude,
         longitude: data.longitude,
-        address: `${data.city}, ${data.region}, ${data.country}`,
         accuracy: 5000,
       }),
     },
@@ -122,7 +119,16 @@ async function getLocationFromIP(): Promise<LocationData | null> {
         const data = await response.json();
         const result = service.parse(data);
         if (result.latitude && result.longitude) {
-          return result as LocationData;
+          // Always reverse geocode for neighborhood-level accuracy
+          // IP services only give city-level (e.g. "Portland") but reverse geocoding
+          // the coordinates gives suburb/neighborhood (e.g. "Beaverton")
+          const address = await reverseGeocode(result.latitude, result.longitude);
+          return {
+            latitude: result.latitude,
+            longitude: result.longitude,
+            accuracy: result.accuracy,
+            address,
+          } as LocationData;
         }
       }
     } catch (error) {
@@ -185,10 +191,6 @@ async function getWebLocation(): Promise<LocationData | null> {
   console.log('Using IP-based geolocation (no browser permissions needed)');
   const ipLocation = await getLocationFromIP();
   if (ipLocation) {
-    // Try to get a better address via reverse geocoding
-    if (!ipLocation.address || ipLocation.address.includes('undefined')) {
-      ipLocation.address = await reverseGeocode(ipLocation.latitude, ipLocation.longitude);
-    }
     return ipLocation;
   }
 
