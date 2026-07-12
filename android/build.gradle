@@ -1,0 +1,5 @@
+// This Gradle file forces the Google Play Billing Library version to 6.0.1 // It will be picked up by Gradle when the android build uses this root build.gradle buildscript { repositories { google() mavenCentral() } dependencies { // keep default gradle plugin declarations (the project's existing build toolchain will add these) } }
+
+allprojects { repositories { google() mavenCentral() } }
+
+// Force any dependency that requests com.android.billingclient:billing to use 6.0.1 subprojects { project.configurations.all { resolutionStrategy.eachDependency { details -> if (details.requested.group == 'com.android.billingclient' && details.requested.name == 'billing') { details.useVersion '6.0.1' } } } }
