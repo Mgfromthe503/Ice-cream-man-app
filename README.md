@@ -160,3 +160,21 @@ Portland, OR
 ## 📜 License
 
 All rights reserved. This is proprietary software.
+
+---
+
+Migration notes
+
+This repository has been prepared to be moved into a merged monorepo under the path `app/`.
+Key changes in the `merge/move-app` branch:
+- Project-level files (package.json, tsconfig.json, server, components, assets, scripts, etc.) were moved into the top-level `app/` folder so the application is self-contained.
+- TypeScript path aliases ("@/*" and "@shared/*") remain relative and will continue to work when `app/` is placed inside a monorepo, because the config files are moved alongside the code.
+
+Verification after transplanting into the monorepo
+1. Copy the `app/` folder into the monorepo root (resulting in `<monorepo>/app/`).
+2. From monorepo root, install dependencies and run the app using one of the following approaches:
+   - Run commands from the `app/` directory: `cd app && pnpm install && pnpm dev`
+   - Or run from monorepo root with workspace-aware pnpm: `pnpm --filter ./app... install` then `pnpm --filter ./app... dev` (or use `working-directory: app` in CI).
+3. Confirm the server and Expo metro start: `pnpm dev` (starts server and metro concurrently) and open Expo as usual.
+
+If issues arise, review MIGRATION_FILE_MAP.md at repository root for file locations and the PR discussion for follow-up steps.
