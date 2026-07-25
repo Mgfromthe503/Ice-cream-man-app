@@ -1,7 +1,7 @@
 module.exports = {
   expo: {
     name: 'The Ice Cream Man',
-    slug: 'the-ice-cream-man-app',
+    slug: 'the-ice-cream-man',
     version: '1.0.27',
     orientation: 'portrait',
     icon: './assets/images/icon.png',
