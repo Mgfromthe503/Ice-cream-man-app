@@ -1,6 +1,42 @@
+﻿# Dependencies
 node_modules/
+
+# Expo
 .expo/
 dist/
+web-build/
+expo-env.d.ts
+
+# Native (important - keep android/ and ios/ out of git)
+android/
+ios/
+*.jks
+*.p8
+*.p12
+*.mobileprovision
+*.orig.*
+
+# Metro / bundler
+.metro-health-check*
+
+# Debug / logs
+npm-debug.*
+yarn-debug.*
+yarn-error.*
 .manus-logs/
-.project-config.json
 *.tsbuildinfo
+
+# Environment
+.env
+.env.*
+!.env.example
+.project-config.json
+
+# macOS / editors
+.DS_Store
+*.pem
+.vscode/
+.idea/
+
+# Testing / coverage
+coverage/
