@@ -114,6 +114,12 @@ export default function CustomerHomeScreen() {
 
   const handleConfirmOrder = async () => {
     try {
+      const location = userLocation;
+      if (!location) {
+        Alert.alert('Location needed', 'Please enable location services so we can send an ice cream truck to you.');
+        setShowDeliveryOptions(false);
+        return;
+      }
       // SECURITY: Rate limit order placement (max 3 per minute)
       if (isRateLimited('place_order', 3, 60000)) {
         Alert.alert('Hold on! 🍦', 'You\'re ordering too fast. Please wait a moment and try again.');
@@ -121,7 +127,7 @@ export default function CustomerHomeScreen() {
       }
 
       // SECURITY: Validate coordinates to prevent GPS spoofing
-      if (!validateCoordinates(userLocation.latitude, userLocation.longitude)) {
+      if (!validateCoordinates(location.latitude, location.longitude)) {
         Alert.alert('Location Error', 'Invalid location detected. Please enable GPS and try again.');
         return;
       }
@@ -130,7 +136,7 @@ export default function CustomerHomeScreen() {
       setRequestStatus('summoning');
 
       // Build address based on share mode
-      let sharedAddress = userLocation.address || `${userLocation.latitude.toFixed(4)}, ${userLocation.longitude.toFixed(4)}`;
+      let sharedAddress = location.address || `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`;
       if (shareMode === 'street') {
         // Only share street name, not house number
         const parts = sharedAddress.split(',');
@@ -147,8 +153,8 @@ export default function CustomerHomeScreen() {
 
       // Call backend API to create request
       await createRequestMutation.mutateAsync({
-        latitude: userLocation.latitude,
-        longitude: userLocation.longitude,
+        latitude: location.latitude,
+        longitude: location.longitude,
         address: sanitizedAddress,
         shareMode,
         deliveryInstructions: sanitizedInstructions,
@@ -157,7 +163,7 @@ export default function CustomerHomeScreen() {
       // Notify nearby drivers of new request
       import('@/lib/notification-service').then(({ notifyDriverNewRequest }) => {
         notifyDriverNewRequest(
-          userLocation.address || `${userLocation.latitude.toFixed(4)}, ${userLocation.longitude.toFixed(4)}`,
+          location.address || `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`,
           'New order nearby'
         );
       }).catch(() => {});
