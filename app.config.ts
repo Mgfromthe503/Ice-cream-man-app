@@ -41,7 +41,7 @@ const env = {
 const config: ExpoConfig = {
   name: env.appName,
   slug: env.appSlug,
-  version: "1.0.0",
+  version: "1.0.1",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
@@ -64,6 +64,7 @@ const config: ExpoConfig = {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: env.androidPackage,
+    versionCode: 2,
     permissions: [
       "POST_NOTIFICATIONS",
       "com.android.vending.BILLING",
@@ -72,6 +73,8 @@ const config: ExpoConfig = {
     ],
     // Queries block for Android 11+ (API 30+) package visibility
     // Required for Linking.openURL() to work with external maps apps
+    // Expo's Android config type has not caught up to this manifest field.
+    // @ts-expect-error queries is emitted correctly by config plugins/prebuild.
     queries: {
       schemes: ["google.navigation", "geo", "comgooglemaps"],
       packages: ["com.google.android.apps.maps"],
@@ -137,6 +140,8 @@ const config: ExpoConfig = {
         android: {
           buildArchs: ["armeabi-v7a", "arm64-v8a"],
           minSdkVersion: 24,
+          enableProguardInReleaseBuilds: true,
+          enableShrinkResourcesInReleaseBuilds: true,
         },
       },
     ],
