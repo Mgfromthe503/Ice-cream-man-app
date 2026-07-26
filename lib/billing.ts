@@ -93,10 +93,15 @@ export async function getRegistrationProduct() {
 
   try {
     const RNIap = require('react-native-iap');
-    const products = await RNIap.getProducts({
-      skus: [VENDOR_REGISTRATION_PRODUCT_ID],
-    });
-    return products[0] || null;
+    const products = typeof RNIap.fetchProducts === 'function'
+      ? await RNIap.fetchProducts({
+          skus: [VENDOR_REGISTRATION_PRODUCT_ID],
+          type: 'in-app',
+        })
+      : await RNIap.getProducts({
+          skus: [VENDOR_REGISTRATION_PRODUCT_ID],
+        });
+    return products?.[0] || null;
   } catch (error) {
     console.error('[Billing] Failed to get product:', error);
     return null;
@@ -141,11 +146,34 @@ export async function purchaseRegistration(): Promise<PurchaseResult> {
   try {
     const RNIap = require('react-native-iap');
     
-    // Request purchase - this opens the Google Play purchase dialog
-    const purchase = await RNIap.requestPurchase({
-      skus: [VENDOR_REGISTRATION_PRODUCT_ID],
-      andDangerouslyFinishTransactionAutomaticallyIOS: false,
-    });
+    // Request purchase - this opens the Google Play purchase dialog.
+    // react-native-iap v15+ uses the OpenIAP request shape needed for
+    // Google Play Billing Library 9.1.0 compatibility. Older shapes are kept
+    // as a fallback only for local developer environments with stale native code.
+    const obfuscatedAccountId = generateTransactionFingerprint();
+    const purchaseResponse = typeof RNIap.fetchProducts === 'function'
+      ? await RNIap.requestPurchase({
+          request: {
+            google: {
+              skus: [VENDOR_REGISTRATION_PRODUCT_ID],
+              obfuscatedAccountId,
+              obfuscatedProfileId: 'vendor-registration',
+            },
+            apple: {
+              sku: VENDOR_REGISTRATION_PRODUCT_ID,
+              andDangerouslyFinishTransactionAutomatically: false,
+            },
+          },
+          type: 'in-app',
+        })
+      : await RNIap.requestPurchase({
+          skus: [VENDOR_REGISTRATION_PRODUCT_ID],
+          obfuscatedAccountIdAndroid: obfuscatedAccountId,
+          obfuscatedProfileIdAndroid: 'vendor-registration',
+          andDangerouslyFinishTransactionAutomaticallyIOS: false,
+        });
+
+    const purchase = Array.isArray(purchaseResponse) ? purchaseResponse[0] : purchaseResponse;
 
     if (purchase) {
       // SECURITY: Validate purchase token format before acknowledging
@@ -160,10 +188,17 @@ export async function purchaseRegistration(): Promise<PurchaseResult> {
       }
 
       // Acknowledge the purchase (required by Google)
-      await RNIap.acknowledgePurchaseAndroid({
-        token: purchase.purchaseToken,
-        developerPayload: '',
-      });
+      if (typeof RNIap.finishTransaction === 'function') {
+        await RNIap.finishTransaction({
+          purchase,
+          isConsumable: false,
+        });
+      } else {
+        await RNIap.acknowledgePurchaseAndroid({
+          token: purchase.purchaseToken,
+          developerPayload: '',
+        });
+      }
 
       // SECURITY: Create secure receipt and store in device secure storage
       const transactionId = purchase.transactionId || purchase.orderId;
@@ -220,7 +255,9 @@ export async function checkExistingPurchase(): Promise<boolean> {
 
   try {
     const RNIap = require('react-native-iap');
-    const purchases = await RNIap.getAvailablePurchases();
+    const purchases = await RNIap.getAvailablePurchases({
+      onlyIncludeActiveItemsIOS: true,
+    });
     return purchases.some(
       (p: any) => p.productId === VENDOR_REGISTRATION_PRODUCT_ID
     );
