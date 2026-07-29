@@ -78,6 +78,7 @@ Expo usernames are **case-sensitive** for EAS project resolution — the owner m
 | Audio | expo-audio (jingle) |
 | Tests | Vitest |
 | Builds | EAS Build + Submit |
+| Package manager | pnpm 9 (workspace monorepo) |
 
 ---
 
@@ -110,7 +111,9 @@ pnpm dev
 |---------|---------|
 | `pnpm check` | TypeScript |
 | `pnpm test` | Vitest |
-| `pnpm dev` | Metro + app |
+| `pnpm dev` | Server + Metro (concurrent) |
+| `pnpm build` | Bundle server for production |
+| `pnpm start` | Run production server |
 
 Scan the Expo QR code with Expo Go, or use a development build for native modules (billing, etc.).
 
@@ -161,17 +164,26 @@ Android signing is **EAS-managed**. Do not commit keystores or service-account J
 
 ---
 
-## Project layout
+## Project layout (monorepo)
+
+This is a **pnpm workspace monorepo**. The Expo app and Express API share one root package today; `packages/*` is reserved for future shared libraries.
 
 ```
-app/                 # Expo Router screens (customer + driver)
-components/          # UI (summon animation, map, ratings, jingle, banners)
-config/              # Canonical app identity
-constants/           # OAuth + theme
-server/              # Express + tRPC API
-legal/               # Privacy, terms, data safety, Play listing copy
-tests/               # Vitest suites
-.github/workflows/   # Validate + optional EAS build/submit
+pnpm-workspace.yaml   # workspace definition (root + packages/*)
+package.json          # root scripts: dev, check, test, build, start
+app/                  # Expo Router screens (customer + driver)
+components/           # UI (summon animation, map, ratings, jingle, banners)
+config/               # Canonical app identity (owner, slug, projectId)
+constants/            # OAuth + theme
+server/               # Express + tRPC API
+shared/               # Shared types/errors between app and server
+drizzle/              # Schema + migrations
+legal/                # Privacy, terms, data safety, Play listing copy
+tests/                # Vitest suites
+packages/             # Future shared packages (empty for now)
+eas.json              # EAS build/submit profiles (Node 22)
+render.yaml           # Optional API deploy on Render
+.github/workflows/    # Validate on PR/push; EAS on workflow_dispatch
 ```
 
 ---
