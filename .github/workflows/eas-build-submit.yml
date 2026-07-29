@@ -61,10 +61,17 @@ jobs:
       - name: Build Android app bundle
         run: eas build --platform android --profile production --non-interactive --wait
 
-      - name: Write Google Play service account
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.submit == 'true' && secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON != '' }}
-        run: printf '%s' "${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}" > /tmp/google-play.json
-
       - name: Submit latest Android build
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.submit == 'true' && secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON != '' }}
-        run: eas submit --platform android --latest --non-interactive --service-account-json /tmp/google-play.json
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.submit == 'true' }}
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is required when submit=true" >&2
+            exit 1
+          fi
+
+          umask 077
+          printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > /tmp/google-play.json
+          eas submit --platform android --latest --non-interactive --service-account-json /tmp/google-play.json
+          rm -f /tmp/google-play.json
