@@ -2,7 +2,45 @@
 
 > **Summon ice cream to your neighborhood with one tap.**
 
+> **Canonical repository:** `Mgfromthe503/Ice-cream-man-app`
+>
+> This is the single source of truth for the app. All EAS builds and releases originate from this repo.
+
 A mobile app that connects ice cream truck drivers with customers in real-time. Customers tap a button to summon the nearest ice cream truck, and drivers receive instant requests with navigation to the customer's location.
+
+---
+
+## ⚙️ Canonical App Configuration
+
+| Field | Value |
+|-------|-------|
+| **Expo slug** | `the-ice-cream-man` |
+| **Deep link scheme** | `manusapp` |
+| **iOS bundle ID** | `com.icecreamman.app` |
+| **Android package** | `com.icecreamman.app` |
+| **EAS project ID** | `a7392ba6-c4a2-455d-b03c-9bc0233b7b12` |
+| **Expo owner** | `Mgfromthe503` |
+
+All identity constants live in `config/app-identity.js` — the single source of truth for slug, scheme, bundle ID, and EAS project ID. `app.config.ts` imports from there.
+
+### Required GitHub Secrets
+
+| Secret | Purpose |
+|--------|---------|
+| `EXPO_TOKEN` | Authenticate with Expo / EAS (required for all builds) |
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | Google Play submit (only needed when submit=true) |
+
+Set these in **Settings → Secrets and variables → Actions**.
+
+### First-time EAS Setup
+
+If the EAS project has not yet been created, run once from a machine authenticated to Expo:
+
+```bash
+eas init --account Mgfromthe503 --non-interactive
+```
+
+Then update `EAS_PROJECT_ID` in `config/app-identity.js` if the generated ID differs.
 
 ---
 
@@ -134,11 +172,36 @@ pnpm dev
 - ✅ Feature graphic (1024x500)
 
 ### Build & Deploy
-1. Click **Publish** in the Manus UI to generate APK/AAB
-2. Upload AAB to Google Play Console
-3. Fill in store listing from `legal/GOOGLE_PLAY_LISTING.md`
-4. Set up in-app product: `icm_vendor_registration` at $25.00
-5. Submit for review
+
+Builds are automated via `.github/workflows/eas-build.yml`:
+
+- **Every push to `main`** → EAS production build (Android AAB)
+- **Pull requests** → type-check + tests only (no EAS build, saves credits)
+- **Manual dispatch** → choose profile (`production`/`preview`) and optionally submit to Google Play internal track
+
+```bash
+# Local release validation
+pnpm check
+pnpm test
+
+# Android release build (via EAS)
+eas build --platform android --profile production
+
+# Optional: submit latest build to Google Play internal track
+eas submit --platform android --latest
+```
+
+1. Upload/submit the resulting AAB through EAS / Google Play Console
+2. Fill in store listing from `legal/GOOGLE_PLAY_LISTING.md`
+3. Set up in-app product: `icm_vendor_registration` at $25.00
+4. Submit for review
+
+### Credentials & Signing
+
+- Android signing uses **EAS-managed credentials** (no keystore files in the repo)
+- `EXPO_TOKEN` and any Google Play service-account JSON live in **Expo/GitHub secrets**
+- Never commit keystores, service-account JSON files, `.env` files, or other credentials
+
 
 ---
 
