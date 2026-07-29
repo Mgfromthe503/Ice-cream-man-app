@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, Text, View, Share, Platform } from 'react-native';
+import { APP_BUNDLE_ID } from '@/config/app-identity.js';
 
 interface ShareButtonProps {
   variant?: 'primary' | 'secondary' | 'minimal';
@@ -17,7 +18,7 @@ export function ShareButton({
 
   const handleShare = async () => {
     try {
-      const appStoreUrl = 'https://play.google.com/store/apps/details?id=space.manus.the.ice.cream.man';
+      const appStoreUrl = `https://play.google.com/store/apps/details?id=${APP_BUNDLE_ID}`;
       const message = '🍦 Download The Ice Cream Man! Order ice cream to your neighborhood with one tap. Get it on Google Play:';
 
       const result = await Share.share(
