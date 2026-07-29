@@ -2,57 +2,31 @@
 import "./scripts/load-env.js";
 import type { ExpoConfig } from "expo/config";
 
-// Bundle ID format: space.manus.<project_name_dots>.<timestamp>
-// e.g., "my-app" created at 2024-01-15 10:30:45 -> "space.manus.my.app.t20240115103045"
-// Bundle ID can only contain letters, numbers, and dots
-// Android requires each dot-separated segment to start with a letter
-const rawBundleId = "com.icecreamman.app";
-const bundleId =
-  rawBundleId
-    .replace(/[-_]/g, ".") // Replace hyphens/underscores with dots
-    .replace(/[^a-zA-Z0-9.]/g, "") // Remove invalid chars
-    .replace(/\.+/g, ".") // Collapse consecutive dots
-    .replace(/^\.+|\.+$/g, "") // Trim leading/trailing dots
-    .toLowerCase()
-    .split(".")
-    .map((segment) => {
-      // Android requires each segment to start with a letter
-      // Prefix with 'x' if segment starts with a digit
-      return /^[a-zA-Z]/.test(segment) ? segment : "x" + segment;
-    })
-    .join(".") || "space.manus.app";
-// Extract timestamp from bundle ID and prefix with "manus" for deep link scheme
-// e.g., "space.manus.my.app.t20240115103045" -> "manus20240115103045"
-const timestamp = bundleId.split(".").pop()?.replace(/^t/, "") ?? "";
-const schemeFromBundleId = `manus${timestamp}`;
-
-const env = {
-  // App branding - update these values directly (do not use env vars)
-  appName: "The Ice Cream Man",
-  appSlug: "the-ice-cream-man",
-  // S3 URL of the app logo - set this to the URL returned by generate_image when creating custom logo
-  // Leave empty to use the default icon from assets/images/icon.png
-  logoUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663684819929/ZhrgBjGuuDNUUpzT.png",
-  scheme: schemeFromBundleId,
-  iosBundleId: bundleId,
-  androidPackage: bundleId,
-};
+// All app identity values come from the canonical source of truth.
+// Update config/app-identity.js to change slug, scheme, bundle ID, or EAS project ID.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const identity = require("./config/app-identity.js");
 
 const config: ExpoConfig = {
-  name: env.appName,
-  slug: env.appSlug,
+  name: identity.appName,
+  slug: identity.appSlug,
   version: "1.0.1",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
-  scheme: env.scheme,
+  scheme: identity.appScheme,
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
+  extra: {
+    eas: {
+      projectId: identity.easProjectId,
+    },
+  },
   ios: {
     supportsTablet: true,
-    bundleIdentifier: env.iosBundleId,
-    "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+    bundleIdentifier: identity.bundleId,
+    infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
+    },
   },
   android: {
     adaptiveIcon: {
@@ -63,7 +37,7 @@ const config: ExpoConfig = {
     },
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
-    package: env.androidPackage,
+    package: identity.androidPackage,
     versionCode: 2,
     permissions: [
       "POST_NOTIFICATIONS",
@@ -85,7 +59,7 @@ const config: ExpoConfig = {
         autoVerify: true,
         data: [
           {
-            scheme: env.scheme,
+            scheme: identity.appScheme,
             host: "*",
           },
         ],
@@ -149,7 +123,8 @@ const config: ExpoConfig = {
   experiments: {
     typedRoutes: true,
     reactCompiler: true,
-  }};
+  },
+};
 
 export default config;
 

@@ -1,0 +1,136 @@
+name: EAS Build & Submit
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Trigger strategy
+# ──────────────────────────────────────────────────────────────────────────────
+# • pull_request  → validate only (type-check + tests, no EAS build).
+#                   Keeps PRs fast and cheap; EAS minutes are conserved for main.
+# • push to main  → full EAS production build (Android .aab).
+#                   Build is queued automatically on every merge to main.
+# • workflow_dispatch → manual: choose build profile and optionally submit
+#                   to Google Play internal track.
+# ──────────────────────────────────────────────────────────────────────────────
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "EAS build profile"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - development
+          - preview
+          - production
+      submit:
+        description: "Submit to Google Play internal track after build?"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+# Cancel in-progress runs for the same branch/PR to avoid wasted EAS minutes.
+concurrency:
+  group: eas-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ────────────────────────────────────────────────────────────────────────────
+  # Job 1 – PR validation (runs on every pull request, skipped on push/dispatch)
+  # ────────────────────────────────────────────────────────────────────────────
+  validate:
+    name: Validate (type-check + tests)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type-check
+        run: pnpm check
+
+      - name: Run tests
+        run: pnpm test
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Job 2 – EAS build (runs on push to main OR manual dispatch)
+  # ────────────────────────────────────────────────────────────────────────────
+  build:
+    name: EAS Build (${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'production' }})
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type-check
+        run: pnpm check
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Setup Expo / EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: EAS Build
+        env:
+          EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
+        run: |
+          PROFILE="${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'production' }}"
+          eas build --platform android --profile "$PROFILE" --non-interactive
+
+      # ── Optional: submit to Google Play (manual dispatch with submit=true only) ──
+      - name: Submit to Google Play
+        if: github.event_name == 'workflow_dispatch' && inputs.submit == 'true'
+        env:
+          GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+          EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
+        run: |
+          # Write service account key to a temp file
+          echo "$GOOGLE_SERVICE_ACCOUNT_KEY" > /tmp/google-play.json
+
+          eas submit \
+            --platform android \
+            --profile production \
+            --non-interactive \
+            --path /tmp/google-play.json || true
+
+          # Always clean up credential file
+          rm -f /tmp/google-play.json
