@@ -16,9 +16,9 @@ A mobile app that connects ice cream truck drivers with customers in real time. 
 | Bundle ID / package | `com.icecreamman.app` |
 | Deep-link scheme | `manusapp` |
 | EAS project ID | `a7392ba6-c4a2-455d-b03c-9bc0233b7b12` |
-| Expo owner | `Mgfromthe503` |
+| Expo owner | `mgfromthe503` |
 
-All of these live in `config/app-identity.js` and are imported by `app.config.ts` and OAuth config so they never drift.
+All of these live in `config/app-identity.js` and are imported by `app.config.ts` and OAuth config so they never drift. Expo usernames are **case-sensitive** for EAS project resolution — the owner must match the account that owns the projectId.
 
 ---
 
@@ -52,7 +52,7 @@ All of these live in `config/app-identity.js` and are imported by `app.config.ts
 
 ## Local development
 
-**Requirements:** Node 20+, pnpm 9+
+**Requirements:** Node 22+, pnpm 9+
 
 ```bash
 git clone https://github.com/Mgfromthe503/Ice-cream-man-app.git
@@ -90,15 +90,17 @@ eas submit --platform android --profile production
 
 Workflow: `.github/workflows/eas-build-submit.yml`
 
-| Event | Validate | Build | Submit |
-|-------|----------|-------|--------|
+| Event | Validate (types + tests) | EAS Build | Submit |
+|-------|--------------------------|-----------|--------|
 | PR → `main` | Yes | No | No |
-| Push → `main` | Yes | Yes (production) | Yes if secret present |
-| Manual dispatch | Yes | Yes | Configurable |
+| Push → `main` | Yes | No | No |
+| Manual `workflow_dispatch` | Yes | Yes (if `EXPO_TOKEN` set) | Optional |
 
-**GitHub Secrets**
-- `EXPO_TOKEN` — required for builds
-- `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` — optional; enables auto-submit
+Push/PR CI only validates so the Actions badge stays green while you decide when to burn EAS build minutes. Trigger a production build from the Actions tab → **EAS Build and Submit** → **Run workflow**.
+
+**GitHub Secrets** (Settings → Secrets and variables → Actions)
+- `EXPO_TOKEN` — required for builds (create at https://expo.dev/settings/access-tokens)
+- `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` — optional; enables auto-submit to Play internal track
 
 Android signing is **EAS-managed**. Do not commit keystores or service-account JSON.
 
