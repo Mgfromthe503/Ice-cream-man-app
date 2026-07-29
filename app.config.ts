@@ -1,29 +1,32 @@
 // Load environment variables with proper priority (system > .env)
 import "./scripts/load-env.js";
 import type { ExpoConfig } from "expo/config";
-import {
-  APP_BUNDLE_ID,
-  APP_NAME,
-  APP_SCHEME,
-  APP_SLUG,
-  EAS_PROJECT_ID,
-} from "./config/app-identity.js";
+
+// All app identity values come from the canonical source of truth.
+// Update config/app-identity.js to change slug, scheme, bundle ID, or EAS project ID.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const identity = require("./config/app-identity.js");
 
 const config: ExpoConfig = {
-  name: APP_NAME,
-  slug: APP_SLUG,
+  name: identity.appName,
+  slug: identity.appSlug,
   version: "1.0.1",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
-  scheme: APP_SCHEME,
+  scheme: identity.appScheme,
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
+  extra: {
+    eas: {
+      projectId: identity.easProjectId,
+    },
+  },
   ios: {
     supportsTablet: true,
-    bundleIdentifier: APP_BUNDLE_ID,
-    "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+    bundleIdentifier: identity.bundleId,
+    infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
+    },
   },
   android: {
     adaptiveIcon: {
@@ -34,7 +37,7 @@ const config: ExpoConfig = {
     },
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
-    package: APP_BUNDLE_ID,
+    package: identity.androidPackage,
     versionCode: 2,
     permissions: [
       "POST_NOTIFICATIONS",
@@ -56,7 +59,7 @@ const config: ExpoConfig = {
         autoVerify: true,
         data: [
           {
-            scheme: APP_SCHEME,
+            scheme: identity.appScheme,
             host: "*",
           },
         ],
@@ -121,11 +124,7 @@ const config: ExpoConfig = {
     typedRoutes: true,
     reactCompiler: true,
   },
-  extra: {
-    eas: {
-      projectId: EAS_PROJECT_ID,
-    },
-  },
 };
 
 export default config;
+

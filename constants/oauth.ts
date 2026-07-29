@@ -1,6 +1,10 @@
+// Extract scheme from canonical app identity (single source of truth)
+// See config/app-identity.js
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { appScheme: DEEP_LINK_SCHEME } = require("../config/app-identity.js");
+
 import * as Linking from "expo-linking";
 import * as ReactNative from "react-native";
-import { APP_SCHEME } from "../config/app-identity.js";
 
 const env = {
   portal: process.env.EXPO_PUBLIC_OAUTH_PORTAL_URL ?? "",
@@ -9,7 +13,7 @@ const env = {
   ownerId: process.env.EXPO_PUBLIC_OWNER_OPEN_ID ?? "",
   ownerName: process.env.EXPO_PUBLIC_OWNER_NAME ?? "",
   apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL ?? "",
-  deepLinkScheme: APP_SCHEME,
+  deepLinkScheme: DEEP_LINK_SCHEME,
 };
 
 export const OAUTH_PORTAL_URL = env.portal;

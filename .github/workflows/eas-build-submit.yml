@@ -1,77 +1,212 @@
-name: EAS build and submit
+name: EAS Build & Submit
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Trigger strategy
+# ──────────────────────────────────────────────────────────────────────────────
+# • pull_request  → validate only (type-check + tests, no EAS build).
+#                   Keeps PRs fast and cheap; EAS minutes are conserved for main.
+# • push to main  → full EAS production build (Android .aab).
+#                   Build is queued automatically on every merge to main.
+# • workflow_dispatch → manual: choose build profile and optionally submit
+#                   to Google Play internal track.
+# ──────────────────────────────────────────────────────────────────────────────
 
 on:
+  pull_request:
+    branches: [main]
   push:
-    branches:
-      - main
-    paths:
-      - app.config.ts
-      - eas.json
-      - package.json
-      - pnpm-lock.yaml
-      - .github/workflows/eas-build-submit.yml
+    branches: [main]
   workflow_dispatch:
     inputs:
+      profile:
+        description: "EAS build profile"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - development
+          - preview
+          - production
       submit:
-        description: Submit the latest Android build to Google Play internal track
-        required: false
+        description: "Submit to Google Play internal track after build?"
+        required: true
         default: "false"
         type: choice
         options:
-          - "false"
           - "true"
+          - "false"
 
-permissions:
-  contents: read
+# Cancel in-progress runs for the same branch/PR to avoid wasted EAS minutes.
+concurrency:
+  group: eas-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build-android:
+  # ────────────────────────────────────────────────────────────────────────────
+  # Job 1 – PR validation (runs on every pull request)
+  # ────────────────────────────────────────────────────────────────────────────
+  validate:
+    name: Validate (type-check + tests)
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    env:
-      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9.12.0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
+          version: 9
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Validate types
+      - name: Type-check
         run: pnpm check
 
       - name: Run tests
         run: pnpm test
 
-      - name: Setup Expo and EAS
-        uses: expo/expo-github-action@v8
+  # ────────────────────────────────────────────────────────────────────────────
+  # Job 2 – Verify configuration and access tokens (push to main or dispatch)
+  # ────────────────────────────────────────────────────────────────────────────
+  verify-config:
+    name: Verify config & tokens
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          token: ${{ secrets.EXPO_TOKEN }}
+          node-version: 20
 
-      - name: Build Android app bundle
-        run: eas build --platform android --profile production --non-interactive --wait
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
-      - name: Submit latest Android build
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.submit == 'true' }}
-        env:
-          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type-check
+        run: pnpm check
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Check EXPO_TOKEN is configured
         run: |
-          if [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
-            echo "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is required when submit=true" >&2
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "::error::EXPO_TOKEN secret is not set. Go to Settings → Secrets and variables → Actions and add it."
             exit 1
           fi
+          echo "✅ EXPO_TOKEN is set."
 
+      - name: Verify Expo token is valid (eas whoami)
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Confirm Expo account
+        run: |
+          echo "Logged in as: $(eas whoami)"
+          echo "✅ Expo token is valid."
+
+      - name: Verify app config identity
+        run: node -e "
+          const id = require('./config/app-identity.js');
+          const checks = [
+            ['appName',        id.appName,        'The Ice Cream Man'],
+            ['appSlug',        id.appSlug,        'the-ice-cream-man'],
+            ['appScheme',      id.appScheme,      'theicecreamman'],
+            ['bundleId',       id.bundleId,       'com.icecreamman.app'],
+            ['androidPackage', id.androidPackage, 'com.icecreamman.app'],
+          ];
+          let ok = true;
+          for (const [key, actual, expected] of checks) {
+            if (actual !== expected) {
+              console.error('FAIL ' + key + ': expected ' + expected + ', got ' + actual);
+              ok = false;
+            } else {
+              console.log('✅ ' + key + ' = ' + actual);
+            }
+          }
+          if (!ok) process.exit(1);
+        "
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Job 3 – EAS build (runs after verification passes)
+  # ────────────────────────────────────────────────────────────────────────────
+  build:
+    name: EAS Build (${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'production' }})
+    needs: verify-config
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Expo / EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: EAS Build
+        env:
+          EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
+        run: |
+          PROFILE="${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'production' }}"
+          eas build --platform android --profile "$PROFILE" --non-interactive
+
+      # ── Optional: submit to Google Play (manual dispatch with submit=true only) ──
+      - name: Submit to Google Play
+        if: github.event_name == 'workflow_dispatch' && inputs.submit == 'true'
+        env:
+          GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+          EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
+        run: |
+          if [ -z "$GOOGLE_SERVICE_ACCOUNT_KEY" ]; then
+            echo "::error::GOOGLE_SERVICE_ACCOUNT_KEY secret is not set."
+            exit 1
+          fi
+          # Write the service account key JSON to the path referenced in eas.json
+          # (submit.production.android.serviceAccountKeyPath = /tmp/google-play.json)
           umask 077
-          printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > /tmp/google-play.json
-          eas submit --platform android --latest --non-interactive --service-account-json /tmp/google-play.json
+          printf '%s' "$GOOGLE_SERVICE_ACCOUNT_KEY" > /tmp/google-play.json
+
+          eas submit \
+            --platform android \
+            --profile production \
+            --non-interactive
+
+          # Always clean up the credential file
           rm -f /tmp/google-play.json

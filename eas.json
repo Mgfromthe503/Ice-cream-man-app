@@ -23,6 +23,7 @@
   "submit": {
     "production": {
       "android": {
+        "serviceAccountKeyPath": "/tmp/google-play.json",
         "track": "internal",
         "releaseStatus": "draft"
       }
