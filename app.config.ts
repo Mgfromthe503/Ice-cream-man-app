@@ -7,11 +7,13 @@ import {
   APP_SCHEME,
   APP_SLUG,
   EAS_PROJECT_ID,
+  EXPO_OWNER,
 } from "./config/app-identity.js";
 
 const config: ExpoConfig = {
   name: APP_NAME,
   slug: APP_SLUG,
+  owner: EXPO_OWNER,
   version: "1.0.1",
   orientation: "portrait",
   icon: "./assets/images/icon.png",

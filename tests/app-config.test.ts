@@ -6,6 +6,7 @@ import {
   APP_SCHEME,
   APP_SLUG,
   EAS_PROJECT_ID,
+  EXPO_OWNER,
 } from "../config/app-identity.js";
 
 describe("app identity constants", () => {
@@ -23,6 +24,10 @@ describe("app identity constants", () => {
 
   it("EAS project ID matches the canonical value", () => {
     expect(EAS_PROJECT_ID).toBe("a7392ba6-c4a2-455d-b03c-9bc0233b7b12");
+  });
+
+  it("exports the Expo account owner (required for EAS project resolution)", () => {
+    expect(EXPO_OWNER).toBe("Mgfromthe503");
   });
 });
 
@@ -42,3 +47,4 @@ describe("app identity alignment", () => {
     expect(APP_NAME).toBe("The Ice Cream Man");
   });
 });
+
