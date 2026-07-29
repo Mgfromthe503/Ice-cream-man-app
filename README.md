@@ -2,6 +2,10 @@
 
 > **Summon ice cream to your neighborhood with one tap.**
 
+> **Canonical repository:** `Mgfromthe503/Ice-cream-man-app`
+>
+> This is the single source of truth for the app. The older `Mgfromthe503/the-ice-cream-man` repository should be treated as historical reference only and archived after verification.
+
 A mobile app that connects ice cream truck drivers with customers in real-time. Customers tap a button to summon the nearest ice cream truck, and drivers receive instant requests with navigation to the customer's location.
 
 ---
@@ -46,6 +50,19 @@ A mobile app that connects ice cream truck drivers with customers in real-time. 
 | **Payments** | Google Play Billing (react-native-iap) |
 | **Maps** | Google Maps / Apple Maps (via Linking) |
 | **Audio** | expo-audio (jingle playback) |
+
+---
+
+## ⚙️ Canonical App Configuration
+
+- **Expo app config:** `app.config.ts`
+- **EAS build config:** `eas.json`
+- **Slug:** `the-ice-cream-man`
+- **Deep link scheme:** `manusapp`
+- **iOS bundle ID / Android package:** `com.icecreamman.app`
+- **EAS project ID:** `a7392ba6-c4a2-455d-b03c-9bc0233b7b12`
+
+`app.config.ts` is the canonical place for app identity and Expo/EAS linkage. There is no `app.json` in this repo.
 
 ---
 
@@ -107,6 +124,13 @@ pnpm install
 pnpm dev
 ```
 
+### Validate Before Releasing
+
+```bash
+pnpm check
+pnpm test
+```
+
 ### Running on Device
 1. Install **Expo Go** from the App Store or Google Play
 2. Scan the QR code shown in terminal
@@ -134,11 +158,29 @@ pnpm dev
 - ✅ Feature graphic (1024x500)
 
 ### Build & Deploy
-1. Click **Publish** in the Manus UI to generate APK/AAB
-2. Upload AAB to Google Play Console
-3. Fill in store listing from `legal/GOOGLE_PLAY_LISTING.md`
-4. Set up in-app product: `icm_vendor_registration` at $25.00
-5. Submit for review
+
+```bash
+# Local release validation
+pnpm check
+pnpm test
+
+# Android release build
+eas build --platform android --profile production
+
+# Optional: submit latest Android build to Google Play internal track
+eas submit --platform android --latest
+```
+
+1. Upload/submit the resulting AAB through EAS / Google Play Console
+2. Fill in store listing from `legal/GOOGLE_PLAY_LISTING.md`
+3. Set up in-app product: `icm_vendor_registration` at $25.00
+4. Submit for review
+
+### Credentials & Signing
+
+- Android signing should use **EAS-managed credentials**.
+- `EXPO_TOKEN` and any Google Play service-account JSON belong in **Expo/GitHub secrets**, not in the repository.
+- Never commit keystores, service-account JSON files, `.env` files, or other credentials.
 
 ---
 
