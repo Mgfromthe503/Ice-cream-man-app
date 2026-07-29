@@ -4,7 +4,7 @@
 **Email:** mindy.gaines1@gmail.com  
 **App Name:** The Ice Cream Man  
 **Package ID:** com.icecreamman.app  
-**Version:** 1.0.0
+**Version:** 1.0.1
 
 ---
 
@@ -12,35 +12,26 @@
 
 Once your Google Play Developer account is verified, publishing is automated:
 
-### Step 1: Generate Keystore (One-time Setup)
+### Step 1: Use the Canonical Repository
 
 ```bash
-cd /home/ubuntu/the-ice-cream-man
-
-# Generate Android keystore for signing
-keytool -genkey -v -keystore keystore.jks \
-  -keyalg RSA -keysize 2048 -validity 10000 \
-  -alias ice-cream-man-key \
-  -storepass your_keystore_password \
-  -keypass your_key_password
+cd Ice-cream-man-app
 ```
 
-### Step 2: Set Environment Variables
+### Step 2: Configure Secrets & Credentials
 
-```bash
-export KEYSTORE_PASSWORD="your_keystore_password"
-export KEY_PASSWORD="your_key_password"
-export EAS_BUILD_PROFILE="production"
-```
+- Store `EXPO_TOKEN` in GitHub Actions secrets (Settings → Secrets and variables → Actions).
+- Store the Google Play service-account JSON as the `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` GitHub secret.
+- Let **EAS manage the Android keystore**; do not commit `.jks` files to git.
 
 ### Step 3: One-Click Publish
 
 ```bash
-# Build and submit to Google Play Store
-eas build --platform android --auto-submit
+# Android release build
+eas build --platform android --profile production
 
-# Or just build (for manual submission)
-eas build --platform android
+# Optional: submit latest Android build to Google Play internal track
+eas submit --platform android --latest
 ```
 
 The app will be built and submitted to Google Play Store as a draft. You can then review and publish from Google Play Console.

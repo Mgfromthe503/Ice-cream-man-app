@@ -1,20 +1,30 @@
 {
   "cli": {
     "version": ">= 5.0.0",
+    "appVersionSource": "remote",
     "promptToConfigurePushNotifications": false
   },
   "build": {
+    "base": {
+      "node": "20",
+      "env": {
+        "EAS_BUILD_NO_EXPO_GO_WARNING": "1"
+      }
+    },
     "development": {
+      "extends": "base",
       "developmentClient": true,
       "distribution": "internal"
     },
     "preview": {
+      "extends": "base",
       "distribution": "internal",
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
+      "extends": "base",
       "android": {
         "buildType": "app-bundle"
       }

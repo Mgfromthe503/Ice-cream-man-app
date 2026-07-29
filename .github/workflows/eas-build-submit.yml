@@ -1,0 +1,137 @@
+name: EAS Build and Submit
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Trigger strategy
+# ──────────────────────────────────────────────────────────────────────────────
+# • pull_request  → validate only (type-check + tests, no EAS build).
+#                   Keeps PRs fast and cheap; EAS minutes are conserved for main.
+# • push to main  → full EAS production build (Android .aab).
+#                   Build is queued automatically on every merge to main.
+# • workflow_dispatch → manual: choose build profile and optionally submit
+#                   to Google Play internal track.
+# ──────────────────────────────────────────────────────────────────────────────
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "EAS build profile"
+        required: false
+        default: "production"
+        type: choice
+        options:
+          - development
+          - preview
+          - production
+      submit:
+        description: "Submit to Google Play internal track after build?"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+# Cancel in-progress runs for the same branch/PR to avoid wasted EAS minutes.
+concurrency:
+  group: eas-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ────────────────────────────────────────────────────────────────────────────
+  # Job 1 – Validate (runs on every event including pull_request)
+  # ────────────────────────────────────────────────────────────────────────────
+  validate:
+    name: Validate (type-check + tests)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type-check
+        run: pnpm check
+
+      - name: Run tests
+        run: pnpm test
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Job 2 – EAS Build (runs on push to main OR manual dispatch; skipped on PR)
+  # ────────────────────────────────────────────────────────────────────────────
+  build:
+    name: EAS Build (${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'production' }})
+    needs: validate
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build Android app bundle
+        run: |
+          PROFILE="${{ inputs.profile || 'production' }}"
+          eas build --platform android --profile "$PROFILE" --non-interactive --wait
+
+      # ── Submit to Google Play ─────────────────────────────────────────────
+      # Auto-submit on every push to main (if secret is present), or when
+      # workflow_dispatch is triggered with submit=true.
+      # If GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is absent the step warns and exits
+      # cleanly rather than failing the overall build.
+      - name: Submit to Google Play
+        if: >-
+          github.event_name == 'push' ||
+          (github.event_name == 'workflow_dispatch' && inputs.submit == 'true')
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo "::warning::GOOGLE_PLAY_SERVICE_ACCOUNT_JSON secret is not set — skipping submission."
+            exit 0
+          fi
+          umask 077
+          printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > /tmp/google-play.json
+          eas submit --platform android --latest --non-interactive \
+            --service-account-json /tmp/google-play.json
+          rm -f /tmp/google-play.json

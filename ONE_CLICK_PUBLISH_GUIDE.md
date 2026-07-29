@@ -5,7 +5,30 @@
 **Developer:** Mindy Gaines (mindy.gaines1@gmail.com)
 **GitHub:** Mgfromthe503
 **Package Name:** com.icecreamman.app
-**Version:** 1.0.0
+**Version:** 1.0.1
+**Expo Slug:** the-ice-cream-man
+**Deep-Link Scheme:** `manusapp`
+
+---
+
+## Automated Release Workflow
+
+Releases are **fully automated** via GitHub Actions (`.github/workflows/eas-build-submit.yml`).
+
+| Trigger | What Happens |
+|---------|-------------|
+| Open a Pull Request → `main` | Type-check + tests run automatically (no EAS build) |
+| Merge to `main` | EAS production build starts automatically |
+| Manual dispatch | Choose build profile; optionally submit to Google Play internal track |
+
+### Required GitHub Secrets
+
+Add these in **Settings → Secrets and variables → Actions**:
+
+| Secret | How to get it |
+|--------|--------------|
+| `EXPO_TOKEN` | [expo.dev](https://expo.dev) → Account → Access Tokens |
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | Google Play Console → Setup → API access → Service accounts |
 
 ---
 
@@ -20,8 +43,9 @@ Everything below has been completed and is ready for your one-click publish:
 | Android Adaptive Icon | ✅ Complete | Foreground + background layers |
 | App Name | ✅ Complete | "The Ice Cream Man" |
 | Package Name | ✅ Complete | com.icecreamman.app |
-| Version Code | ✅ Complete | 1.0.0 |
+| Version Code | ✅ Complete | 1.0.1 (versionCode 2) |
 | EAS Build Config | ✅ Complete | eas.json configured for production |
+| GitHub Actions Workflow | ✅ Complete | Automated build + optional submit |
 | Privacy Policy | ✅ Complete | legal/PRIVACY_POLICY.md |
 | Terms of Service | ✅ Complete | legal/TERMS_OF_SERVICE.md |
 | Data Safety Form | ✅ Complete | legal/DATA_SAFETY.md |
@@ -39,12 +63,16 @@ Everything below has been completed and is ready for your one-click publish:
 
 ## How to Publish (Step by Step)
 
-### Step 1: Click "Publish" in the Management UI
+### Step 1: Trigger the Build (Automated)
 
-In the Manus interface, click the **Publish** button in the top-right header. This will:
-- Trigger an automated EAS Build
-- Generate a production-signed APK/AAB
-- Package all assets and configurations
+**Option A — Automatic (recommended):**
+Merge your changes to `main`. GitHub Actions will automatically start an EAS production build. Watch the progress under **Actions** in GitHub.
+
+**Option B — Manual dispatch:**
+1. Go to **Actions → EAS Build and Submit** in GitHub
+2. Click **Run workflow**
+3. Choose profile: `production`
+4. Click **Run workflow**
 
 ### Step 2: Download the AAB File
 
