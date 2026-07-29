@@ -14,8 +14,9 @@ describe("app identity constants", () => {
     expect(APP_SLUG).toBe("the-ice-cream-man");
   });
 
-  it("exports the canonical deep-link scheme", () => {
-    expect(APP_SCHEME).toBe("icecreamman");
+  it("exports the Manus-compatible deep-link scheme", () => {
+    // Must match the scheme registered for OAuth redirects in the original Manus project.
+    expect(APP_SCHEME).toBe("manusapp");
   });
 
   it("exports the canonical bundle / package ID", () => {
