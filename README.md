@@ -2,9 +2,44 @@
 
 > **Summon ice cream to your neighborhood with one tap.**
 
+> **Canonical repository:** `Mgfromthe503/Ice-cream-man-app`
+>
+> This is the single source of truth for the app. The older `Mgfromthe503/the-ice-cream-man` repository should be treated as historical reference only.
+
 A mobile app that connects ice cream truck drivers with customers in real-time. Customers tap a button to summon the nearest ice cream truck, and drivers receive instant requests with navigation to the customer's location.
 
 ---
+
+## ⚙️ Canonical App Configuration
+
+| Key | Value |
+|-----|-------|
+| **Expo app config** | `app.config.ts` |
+| **EAS build config** | `eas.json` |
+| **App identity constants** | `config/app-identity.js` |
+| **Slug** | `the-ice-cream-man` |
+| **Deep-link scheme** | `manusapp` |
+| **iOS bundle ID / Android package** | `com.icecreamman.app` |
+| **EAS project ID** | `a7392ba6-c4a2-455d-b03c-9bc0233b7b12` |
+
+`app.config.ts` is the canonical place for Expo/EAS configuration. All identity constants are centralised in `config/app-identity.js` so they are shared across the app config, deep-link config, and tests.
+
+---
+
+## 🔄 Release Workflow
+
+The CI/CD pipeline lives in `.github/workflows/eas-build-submit.yml` and behaves as follows:
+
+| Event | Validate | Build | Submit to Play |
+|-------|----------|-------|---------------|
+| Pull request → `main` | ✅ | ❌ | ❌ |
+| Push to `main` | ✅ | ✅ | ✅ (if secret set) |
+| Manual dispatch | ✅ | ✅ | configurable |
+
+**Required GitHub secrets:**
+- `EXPO_TOKEN` — Expo personal access token (required for every build)
+- `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` — Google Play service account JSON (required for auto-submit; omit to skip submission gracefully)
+
 
 ## 📱 Features
 
@@ -134,11 +169,28 @@ pnpm dev
 - ✅ Feature graphic (1024x500)
 
 ### Build & Deploy
-1. Click **Publish** in the Manus UI to generate APK/AAB
-2. Upload AAB to Google Play Console
-3. Fill in store listing from `legal/GOOGLE_PLAY_LISTING.md`
-4. Set up in-app product: `icm_vendor_registration` at $25.00
-5. Submit for review
+
+```bash
+# Local release validation
+pnpm check
+pnpm test
+
+# Android release build (via EAS)
+eas build --platform android --profile production
+
+# Submit latest Android build to Google Play internal track
+eas submit --platform android --latest
+```
+
+1. Fill in store listing from `legal/GOOGLE_PLAY_LISTING.md`
+2. Set up in-app product: `icm_vendor_registration` at $25.00
+3. Submit for review
+
+### Credentials & Signing
+
+- Android signing uses **EAS-managed credentials** (no `.jks` files committed).
+- `EXPO_TOKEN` and the Google Play service-account JSON belong in **GitHub Secrets**, not in the repository.
+- Never commit keystores, service-account JSON files, `.env` files, or other credentials.
 
 ---
 
