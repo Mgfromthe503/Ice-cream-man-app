@@ -23,9 +23,9 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: APP_BUNDLE_ID,
-    "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+    infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
+    },
   },
   android: {
     adaptiveIcon: {
@@ -75,6 +75,9 @@ const config: ExpoConfig = {
     "expo-router",
     "expo-font",
     "expo-web-browser",
+    // Google Play Billing (vendor registration). Requires a dev client / EAS
+    // build — not available in Expo Go.
+    "react-native-iap",
     [
       "expo-location",
       {
@@ -111,6 +114,9 @@ const config: ExpoConfig = {
       "expo-build-properties",
       {
         android: {
+          // Google Play Billing Library (via react-native-iap) needs Kotlin 2.x.
+          // Expo SDK 54 ships compatible defaults; pin explicitly for EAS Gradle.
+          kotlinVersion: "2.1.20",
           buildArchs: ["armeabi-v7a", "arm64-v8a"],
           minSdkVersion: 24,
           enableProguardInReleaseBuilds: true,

@@ -33,7 +33,7 @@ concurrency:
 
 jobs:
   validate:
-    name: Validate (type-check + tests)
+    name: Validate (install + type-check + tests)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -41,6 +41,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
+        with:
+          version: 9.12.0
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -49,9 +51,13 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        # --no-frozen-lockfile: package.json Expo pins can drift from
-        # pnpm-lock.yaml after SDK upgrades; CI must still install cleanly.
+        # --no-frozen-lockfile: package.json pins / pnpm.overrides can drift from
+        # pnpm-lock.yaml after security bumps; CI must still install cleanly.
         run: pnpm install --no-frozen-lockfile
+
+      - name: Dependency audit (non-blocking report)
+        continue-on-error: true
+        run: pnpm audit --prod || true
 
       - name: Validate types
         run: pnpm check
@@ -74,6 +80,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
+        with:
+          version: 9.12.0
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -113,6 +121,9 @@ jobs:
         run: |
           PROFILE="${{ inputs.profile || 'production' }}"
           echo "Building with profile: $PROFILE"
+          # production → AAB (Play Store). preview → APK (internal test).
+          # Gradle / Kotlin / Play Billing are configured via app.config.ts
+          # (expo-build-properties + react-native-iap plugin).
           eas build --platform android --profile "$PROFILE" --non-interactive --wait
 
       - name: Submit to Google Play
