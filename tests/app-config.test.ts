@@ -2,14 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   APP_BUNDLE_ID,
+  APP_NAME,
   APP_SCHEME,
   APP_SLUG,
   EAS_PROJECT_ID,
 } from "../config/app-identity.js";
-
-// Import the compiled config value directly so this test doesn't depend on
-// app.config.ts executing its side-effectful load-env import.
-const APP_NAME_EXPECTED = "The Ice Cream Man";
 
 describe("app identity constants", () => {
   it("exports the canonical app slug", () => {
@@ -46,7 +43,7 @@ describe("app identity alignment", () => {
     expect(/^[a-z][a-z0-9+\-.]*$/.test(APP_SCHEME)).toBe(true);
   });
 
-  it("app name constant is set", () => {
-    expect(APP_NAME_EXPECTED).toBe("The Ice Cream Man");
+  it("exports the canonical app name", () => {
+    expect(APP_NAME).toBe("The Ice Cream Man");
   });
 });
