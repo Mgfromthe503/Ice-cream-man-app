@@ -27,7 +27,8 @@ describe("app identity constants", () => {
   });
 
   it("exports the Expo account owner (required for EAS project resolution)", () => {
-    expect(EXPO_OWNER).toBe("Mgfromthe503");
+    // Must match the Expo account that owns EAS projectId (case-sensitive).
+    expect(EXPO_OWNER).toBe("mgfromthe503");
   });
 });
 
@@ -47,4 +48,3 @@ describe("app identity alignment", () => {
     expect(APP_NAME).toBe("The Ice Cream Man");
   });
 });
-
