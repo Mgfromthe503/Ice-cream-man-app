@@ -82,19 +82,32 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      - name: Check EXPO_TOKEN
+        id: token
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::warning::EXPO_TOKEN secret is not set. Add it under Settings → Secrets and variables → Actions (create at https://expo.dev/settings/access-tokens). Skipping EAS build/submit."
+            echo "has_token=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_token=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Setup Expo and EAS CLI
+        if: steps.token.outputs.has_token == 'true'
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Verify EAS CLI
+        if: steps.token.outputs.has_token == 'true'
         run: |
           which eas
           eas --version
           eas whoami
 
       - name: Build Android app bundle
+        if: steps.token.outputs.has_token == 'true'
         run: |
           PROFILE="${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'production' }}"
           echo "Building with profile: $PROFILE"
@@ -102,8 +115,9 @@ jobs:
 
       - name: Submit to Google Play
         if: >-
-          github.event_name == 'push' ||
-          (github.event_name == 'workflow_dispatch' && inputs.submit == 'true')
+          steps.token.outputs.has_token == 'true' &&
+          (github.event_name == 'push' ||
+          (github.event_name == 'workflow_dispatch' && inputs.submit == 'true'))
         env:
           GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
