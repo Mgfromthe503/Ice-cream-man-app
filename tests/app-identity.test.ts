@@ -15,6 +15,17 @@ vi.mock("expo-linking", () => ({
   openURL: vi.fn(() => Promise.resolve()),
 }));
 
+// Load canonical identity at module level so all tests share the same reference
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const identity = require("../config/app-identity.js");
+
+/** Helper: load the Expo app config (handles both object and function export forms) */
+async function loadAppConfig() {
+  const { default: appConfig } = await import("../app.config");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return typeof appConfig === "function" ? appConfig({} as any) : appConfig;
+}
+
 /**
  * App identity drift-prevention tests.
  *
@@ -23,9 +34,6 @@ vi.mock("expo-linking", () => ({
  * update config/app-identity.js first, then update the expected values here.
  */
 describe("App Identity — drift prevention", () => {
-  // Load the canonical identity module under test
-  const identity = require("../config/app-identity.js");
-
   it("has the canonical app name", () => {
     expect(identity.appName).toBe("The Ice Cream Man");
   });
@@ -61,33 +69,27 @@ describe("App Identity — drift prevention", () => {
   });
 
   it("app.config.ts uses the canonical slug", async () => {
-    // Dynamic import so the test runs without a full Expo env
-    const { default: appConfig } = await import("../app.config");
-    const config = typeof appConfig === "function" ? appConfig({} as any) : appConfig;
+    const config = await loadAppConfig();
     expect(config.slug).toBe(identity.appSlug);
   });
 
   it("app.config.ts uses the canonical scheme", async () => {
-    const { default: appConfig } = await import("../app.config");
-    const config = typeof appConfig === "function" ? appConfig({} as any) : appConfig;
+    const config = await loadAppConfig();
     expect(config.scheme).toBe(identity.appScheme);
   });
 
   it("app.config.ts uses the canonical iOS bundle ID", async () => {
-    const { default: appConfig } = await import("../app.config");
-    const config = typeof appConfig === "function" ? appConfig({} as any) : appConfig;
+    const config = await loadAppConfig();
     expect(config.ios?.bundleIdentifier).toBe(identity.bundleId);
   });
 
   it("app.config.ts uses the canonical Android package", async () => {
-    const { default: appConfig } = await import("../app.config");
-    const config = typeof appConfig === "function" ? appConfig({} as any) : appConfig;
+    const config = await loadAppConfig();
     expect(config.android?.package).toBe(identity.androidPackage);
   });
 
   it("app.config.ts exposes EAS project ID in extra", async () => {
-    const { default: appConfig } = await import("../app.config");
-    const config = typeof appConfig === "function" ? appConfig({} as any) : appConfig;
+    const config = await loadAppConfig();
     expect(config.extra?.eas?.projectId).toBeDefined();
   });
 

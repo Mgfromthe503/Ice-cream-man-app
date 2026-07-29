@@ -49,6 +49,8 @@ jobs:
     name: Validate (type-check + tests)
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -80,6 +82,8 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     environment: production
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -123,14 +127,14 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
           EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
         run: |
-          # Write service account key to a temp file
+          # Write the service account key JSON to the path referenced in eas.json
+          # (submit.production.android.serviceAccountKeyPath = /tmp/google-play.json)
           echo "$GOOGLE_SERVICE_ACCOUNT_KEY" > /tmp/google-play.json
 
           eas submit \
             --platform android \
             --profile production \
-            --non-interactive \
-            --path /tmp/google-play.json || true
+            --non-interactive
 
-          # Always clean up credential file
+          # Always clean up the credential file
           rm -f /tmp/google-play.json
