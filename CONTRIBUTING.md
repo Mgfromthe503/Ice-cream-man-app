@@ -20,8 +20,8 @@ We are committed to providing a welcoming and inspiring community for all. Pleas
 ### Fork and Clone
 
 1. Fork the repository on GitHub
-2. Clone your fork locally: `git clone https://github.com/YOUR_USERNAME/the-ice-cream-man.git`
-3. Add upstream remote: `git remote add upstream https://github.com/Mgfromthe503/the-ice-cream-man.git`
+2. Clone your fork locally: `git clone https://github.com/YOUR_USERNAME/Ice-cream-man-app.git`
+3. Add upstream remote: `git remote add upstream https://github.com/Mgfromthe503/Ice-cream-man-app.git`
 
 ### Set Up Development Environment
 
