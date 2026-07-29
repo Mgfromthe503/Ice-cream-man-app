@@ -123,22 +123,45 @@ pnpm dev
 
 ---
 
-## 📋 Google Play Store Deployment
+## 🚀 Build & Deploy (Expo + EAS)
 
-### Required Assets (included in `/legal/`)
-- ✅ Privacy Policy
-- ✅ Terms of Service
-- ✅ Data Safety Form declarations
-- ✅ Store listing description with screenshots
-- ✅ App icon (512x512)
-- ✅ Feature graphic (1024x500)
+Release automation is handled by the GitHub Actions EAS workflow:
 
-### Build & Deploy
-1. Click **Publish** in the Manus UI to generate APK/AAB
-2. Upload AAB to Google Play Console
-3. Fill in store listing from `legal/GOOGLE_PLAY_LISTING.md`
-4. Set up in-app product: `icm_vendor_registration` at $25.00
-5. Submit for review
+- **Pull requests** run validation only (`pnpm check`, `pnpm test`)
+- **Pushes to `main`** trigger a production Android EAS build (`.aab`)
+- **Manual dispatch** supports `production` and `preview` builds, with optional Google Play submission when enabled
+
+### Local release validation
+
+```bash
+pnpm check
+pnpm test
+```
+
+### Build with EAS
+
+```bash
+eas build --platform android --profile production
+eas build --platform android --profile preview
+```
+
+### Optional Google Play submission
+
+```bash
+eas submit --platform android --profile production
+```
+
+Use `legal/GOOGLE_PLAY_LISTING.md` for Play Store listing metadata.
+
+### Required secrets
+
+- `EXPO_TOKEN` (required for Expo/EAS authentication)
+- `EAS_PROJECT_ID` (required for CI-managed EAS builds)
+- `GOOGLE_SERVICE_ACCOUNT_KEY` (required only when Google Play submission is enabled)
+
+### Signing
+
+Android releases use EAS-managed signing credentials. Never commit keystores, service-account JSON, `.env` files, or other secrets.
 
 ---
 
@@ -147,13 +170,6 @@ pnpm dev
 - [Privacy Policy](legal/PRIVACY_POLICY.md)
 - [Terms of Service](legal/TERMS_OF_SERVICE.md)
 - [Data Safety](legal/DATA_SAFETY.md)
-
----
-
-## 👩‍💻 Developer
-
-**Mindy Gaines**
-Portland, OR
 
 ---
 
