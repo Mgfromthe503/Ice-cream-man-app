@@ -5,6 +5,8 @@
 > **Canonical repository:** `Mgfromthe503/Ice-cream-man-app`
 >
 > This is the single source of truth for the app. The older `Mgfromthe503/the-ice-cream-man` repository should be treated as historical reference only.
+>
+> Note: the GitHub repository name (`Ice-cream-man-app`) is separate from the Expo app identity. The canonical Expo slug is `the-ice-cream-man`, the deep-link scheme is `manusapp`, and the Android/iOS bundle ID is `com.icecreamman.app` — all defined in `config/app-identity.js`.
 
 A mobile app that connects ice cream truck drivers with customers in real-time. Customers tap a button to summon the nearest ice cream truck, and drivers receive instant requests with navigation to the customer's location.
 

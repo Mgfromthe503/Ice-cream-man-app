@@ -21,11 +21,6 @@ describe("app identity constants", () => {
     expect(APP_BUNDLE_ID).toBe("com.icecreamman.app");
   });
 
-  it("exports a non-empty EAS project ID", () => {
-    expect(typeof EAS_PROJECT_ID).toBe("string");
-    expect(EAS_PROJECT_ID.length).toBeGreaterThan(0);
-  });
-
   it("EAS project ID matches the canonical value", () => {
     expect(EAS_PROJECT_ID).toBe("a7392ba6-c4a2-455d-b03c-9bc0233b7b12");
   });
