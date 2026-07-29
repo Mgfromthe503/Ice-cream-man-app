@@ -15,7 +15,7 @@ describe("app identity constants", () => {
   });
 
   it("exports the canonical deep-link scheme", () => {
-    expect(APP_SCHEME).toBe("manusapp");
+    expect(APP_SCHEME).toBe("icecreamman");
   });
 
   it("exports the canonical bundle / package ID", () => {
