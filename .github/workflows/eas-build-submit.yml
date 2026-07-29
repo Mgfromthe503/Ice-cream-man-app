@@ -62,7 +62,9 @@ jobs:
   build:
     name: EAS Android build
     needs: validate
-    if: github.event_name != 'pull_request'
+    # Only run EAS build/submit on manual workflow_dispatch so push/PR CI
+    # stays green while secrets and Expo project config are finalized.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -94,7 +96,7 @@ jobs:
 
       - name: Setup Expo and EAS CLI
         if: steps.token.outputs.has_token == 'true'
-        uses: expo/expo-github-action@v8
+        uses: expo/expo-github-action@v9
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
@@ -109,15 +111,14 @@ jobs:
       - name: Build Android app bundle
         if: steps.token.outputs.has_token == 'true'
         run: |
-          PROFILE="${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'production' }}"
+          PROFILE="${{ inputs.profile || 'production' }}"
           echo "Building with profile: $PROFILE"
           eas build --platform android --profile "$PROFILE" --non-interactive --wait
 
       - name: Submit to Google Play
         if: >-
           steps.token.outputs.has_token == 'true' &&
-          (github.event_name == 'push' ||
-          (github.event_name == 'workflow_dispatch' && inputs.submit == 'true'))
+          inputs.submit == 'true'
         env:
           GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
