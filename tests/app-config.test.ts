@@ -38,6 +38,10 @@ describe("app identity constants", () => {
   it("EAS project ID is a non-empty string", () => {
     expect(EAS_PROJECT_ID).toBeTruthy();
     expect(typeof EAS_PROJECT_ID).toBe("string");
+    // Validate UUID v4 format to catch accidental mutations
+    expect(EAS_PROJECT_ID).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    );
   });
 });
 

@@ -130,8 +130,8 @@ jobs:
             echo "::warning::GOOGLE_PLAY_SERVICE_ACCOUNT_JSON secret is not set — skipping submission."
             exit 0
           fi
-          umask 077
-          printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > /tmp/google-play.json
+          CREDS_FILE=$(mktemp)
+          printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > "$CREDS_FILE"
           eas submit --platform android --latest --non-interactive \
-            --service-account-json /tmp/google-play.json
-          rm -f /tmp/google-play.json
+            --service-account-json "$CREDS_FILE"
+          rm -f "$CREDS_FILE"
