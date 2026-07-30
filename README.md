@@ -57,7 +57,7 @@ Single source of truth: `config/app-identity.js` (imported by `app.config.ts` an
 | App name | `The Ice Cream Man` |
 | Expo slug | `the-ice-cream-man` |
 | Bundle ID / package | `com.icecreamman.app` |
-| Deep-link scheme | `manusapp` |
+| Deep-link scheme | `icecreamman` |
 | EAS project ID | `a7392ba6-c4a2-455d-b03c-9bc0233b7b12` |
 | Expo owner | `mgfromthe503` |
 
