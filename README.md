@@ -121,6 +121,8 @@ Scan the Expo QR code with Expo Go, or use a development build for native module
 
 ## Build & release (EAS)
 
+> **Same-day launch guide:** see **[LAUNCH.md](LAUNCH.md)** for the complete runbook, exact commands, required secrets, and Play Console steps.
+
 Profiles in `eas.json`:
 
 | Profile | Output | Use |
@@ -131,7 +133,7 @@ Profiles in `eas.json`:
 
 ```bash
 eas build --platform android --profile production
-eas submit --platform android --profile production
+eas submit --platform android --profile production --latest
 ```
 
 ### GitHub Actions
