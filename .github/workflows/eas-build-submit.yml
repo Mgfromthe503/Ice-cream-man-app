@@ -15,8 +15,9 @@ on:
         options:
           - production
           - preview
+          - production-apk
       submit:
-        description: "Submit to Google Play after build"
+        description: "Submit to Google Play after build (AAB/production only)"
         required: false
         default: "true"
         type: choice
@@ -116,12 +117,12 @@ jobs:
           eas --version
           eas whoami
 
-      - name: Build Android app bundle
+      - name: Build Android app
         if: steps.token.outputs.has_token == 'true'
         run: |
           PROFILE="${{ inputs.profile || 'production' }}"
           echo "Building with profile: $PROFILE"
-          # production → AAB (Play Store). preview → APK (internal test).
+          # production → AAB (Play Store). preview / production-apk → APK.
           # Gradle / Kotlin / Play Billing are configured via app.config.ts
           # (expo-build-properties + react-native-iap plugin).
           eas build --platform android --profile "$PROFILE" --non-interactive --wait
@@ -129,7 +130,8 @@ jobs:
       - name: Submit to Google Play
         if: >-
           steps.token.outputs.has_token == 'true' &&
-          inputs.submit == 'true'
+          inputs.submit == 'true' &&
+          (inputs.profile == 'production' || inputs.profile == '')
         env:
           GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
@@ -141,5 +143,6 @@ jobs:
           KEYFILE=$(mktemp)
           printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > "$KEYFILE"
           eas submit --platform android --latest --non-interactive \
+            --profile production \
             --service-account-json "$KEYFILE"
           rm -f "$KEYFILE"
