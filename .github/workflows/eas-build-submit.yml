@@ -1,5 +1,5 @@
 final_integrated_yaml = """
-name: EAS Build and Submit
+name: EAS Build and Submit.yml
 
 on:
   pull_request:
