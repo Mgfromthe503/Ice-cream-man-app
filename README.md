@@ -200,13 +200,6 @@ render.yaml           # Optional API deploy on Render
 
 ---
 
-## Developer
-
-**Mindy Gaines** · Portland, OR  
-GitHub: [@Mgfromthe503](https://github.com/Mgfromthe503)
-
----
-
 ## License
 
 Proprietary. All rights reserved.
