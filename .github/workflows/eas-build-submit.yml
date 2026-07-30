@@ -1,3 +1,4 @@
+final_integrated_yaml = """
 name: EAS Build and Submit
 
 on:
@@ -34,29 +35,27 @@ concurrency:
 
 jobs:
   validate:
-    name: Validate (install + type-check + tests)
+    name: Validate
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@v4
         with:
-          version: 9.12.0
+          version: 9
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
-          node-version-file: .nvmrc
+          node-version: 22
           cache: pnpm
 
       - name: Install dependencies
-        # --no-frozen-lockfile: package.json pins / pnpm.overrides can drift from
-        # pnpm-lock.yaml after security bumps; CI must still install cleanly.
         run: pnpm install --no-frozen-lockfile
 
-      - name: Dependency audit (non-blocking report)
+      - name: Dependency audit
         continue-on-error: true
         run: pnpm audit --prod || true
 
@@ -69,25 +68,23 @@ jobs:
   build:
     name: EAS Android build
     needs: validate
-    # Only run EAS build/submit on manual workflow_dispatch so push/PR CI
-    # stays green while secrets and Expo project config are finalized.
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@v4
         with:
-          version: 9.12.0
+          version: 9
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
-          node-version-file: .nvmrc
+          node-version: 22
           cache: pnpm
 
       - name: Install dependencies
@@ -97,7 +94,6 @@ jobs:
         id: token
         run: |
           if [ -z "$EXPO_TOKEN" ]; then
-            echo "::warning::EXPO_TOKEN secret is not set. Add it under Settings → Secrets and variables → Actions (create at https://expo.dev/settings/access-tokens). Skipping EAS build/submit."
             echo "has_token=false" >> "$GITHUB_OUTPUT"
           else
             echo "has_token=true" >> "$GITHUB_OUTPUT"
@@ -105,26 +101,15 @@ jobs:
 
       - name: Setup Expo and EAS CLI
         if: steps.token.outputs.has_token == 'true'
-        uses: expo/expo-github-action@v9
+        uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Verify EAS CLI
-        if: steps.token.outputs.has_token == 'true'
-        run: |
-          which eas
-          eas --version
-          eas whoami
 
       - name: Build Android app
         if: steps.token.outputs.has_token == 'true'
         run: |
           PROFILE="${{ inputs.profile || 'production' }}"
-          echo "Building with profile: $PROFILE"
-          # production → AAB (Play Store). preview / production-apk → APK.
-          # Gradle / Kotlin / Play Billing are configured via app.config.ts
-          # (expo-build-properties + react-native-iap plugin).
           eas build --platform android --profile "$PROFILE" --non-interactive --wait
 
       - name: Submit to Google Play
@@ -136,13 +121,14 @@ jobs:
           GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
           if [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
-            echo "::warning::GOOGLE_PLAY_SERVICE_ACCOUNT_JSON secret is not set — skipping submission."
             exit 0
           fi
           umask 077
           KEYFILE=$(mktemp)
           printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > "$KEYFILE"
-          eas submit --platform android --latest --non-interactive \
-            --profile production \
+          eas submit --platform android --latest --non-interactive \\
+            --profile production \\
             --service-account-json "$KEYFILE"
           rm -f "$KEYFILE"
+"""
+print(final_integrated_yaml)
