@@ -45,25 +45,42 @@ async function startServer() {
   app.use((req, res, next) => {
     const origin = req.headers.origin;
     if (origin) {
+      fix_code = """
+  // --- SECURE CORS CONFIGURATION START ---
+  const ALLOWED_ORIGINS = [
+    'http://localhost:8081',
+    'http://localhost:19000',
+    'http://localhost:19006',
+    'https://exp.host',
+    'https://u.expo.dev'
+  ];
+
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+
+    if (origin && ALLOWED_ORIGINS.includes(origin)) {
       res.header("Access-Control-Allow-Origin", origin);
+      res.header("Access-Control-Allow-Credentials", "true");
+    } else if (!origin) {
+      // Allow mobile app requests that don't send an Origin header
+      res.header("Access-Control-Allow-Origin", "*");
     }
+
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.header(
       "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization"
     );
-    res.header("Access-Control-Allow-Credentials", "true");
 
-    // Handle preflight requests
     if (req.method === "OPTIONS") {
-      res.sendStatus(200);
-      return;
+      return res.sendStatus(200);
     }
     next();
   });
+  // --- SECURE CORS CONFIGURATION END ---
+"""
 
-  app.use(express.json({ limit: "10mb" }));
-  app.use(express.urlencoded({ limit: "10mb", extended: true }));
+print(fix_code)d: true }));
 
   // Apply security middleware (headers, rate limiting, sanitization, fraud detection)
   applySecurityMiddleware(app);
