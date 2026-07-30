@@ -1,42 +1,18 @@
+dependabot_fix = """
+# .github/dependabot.yml
 version: 2
 updates:
-  # Root package.json (Expo app + Express server)
-  - package-ecosystem: "npm"
+  - package-ecosystem: "npm" # Check for Node.js updates
     directory: "/"
     schedule:
       interval: "daily"
-      time: "09:00"
-      timezone: "America/Los_Angeles"
     open-pull-requests-limit: 10
-    groups:
-      production-dependencies:
-        dependency-type: "production"
-        update-types:
-          - "minor"
-          - "patch"
-      development-dependencies:
-        dependency-type: "development"
-        update-types:
-          - "minor"
-          - "patch"
-    labels:
-      - "dependencies"
-    rebase-strategy: "auto"
-    target-branch: "main"
-    allow:
-      - dependency-type: "all"
-    reviewers:
-      - "Mgfromthe503"
-    insecure-external-code-execution: "deny"
 
-  # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-    labels:
-      - "dependencies"
-      - "github-actions"
-    reviewers:
-      - "Mgfromthe503"
+      interval: "daily"
+"""
+
+print("Copy the text below into your .github/dependabot.yml file:")
+print(dependabot_fix)
