@@ -97,7 +97,7 @@ This ensures the reviewer can experience the full customer journey without needi
 
 Host the Privacy Policy at a publicly accessible URL before submitting to Play Console.
 Options (choose one):
-- GitHub Pages: `https://mgfromthe503.github.io/Ice-cream-man-app/privacy-policy`
+- GitHub Pages: `https://mgfromthe503.github.io/Ice-cream-man-app/legal/PRIVACY_POLICY`
 - Your own domain: `https://theicecreamman.app/privacy`
 
 Enter this URL in Google Play Console under **App content > Privacy policy**.
