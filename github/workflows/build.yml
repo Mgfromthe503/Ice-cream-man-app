@@ -1,42 +1,47 @@
-# Note: This is a representation of what your .github/workflows/build.yml should look like.
-# You should copy the content below into your repository file.
+professional_workflow = """
+name: Production Build
 
-workflow_content = """
-name: Expo EAS Build
 on:
   push:
     branches:
       - main
 
 jobs:
-  build:
+  deploy:
+    name: EAS Build Android
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name:  Setup pnpm
+      - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22 # Updated to avoid deprecation
+          node-version: 22
           cache: 'pnpm'
 
-      - name:  Setup Expo
+      - name: Setup Expo
         uses: expo/expo-github-action@v8
         with:
           expo-version: latest
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name:  Install dependencies
+      - name: Install dependencies
         run: pnpm install
 
-      - name:  Build App
+      - name: Execute EAS Build
         run: eas build --platform android --profile production --non-interactive
+
+      - name: Upload Security Analysis
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: results.sarif
 """
-print("Workflow template updated. Ensure EXPO_TOKEN is set in your GitHub Repository Secrets.")
+print("Professional workflow generated. Update your build.yml with this content.")
