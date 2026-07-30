@@ -57,7 +57,7 @@ Single source of truth: `config/app-identity.js` (imported by `app.config.ts` an
 | App name | `The Ice Cream Man` |
 | Expo slug | `the-ice-cream-man` |
 | Bundle ID / package | `com.icecreamman.app` |
-| Deep-link scheme | `manusapp` |
+| Deep-link scheme | `icecreamman` |
 | EAS project ID | `a7392ba6-c4a2-455d-b03c-9bc0233b7b12` |
 | Expo owner | `mgfromthe503` |
 
@@ -121,6 +121,8 @@ Scan the Expo QR code with Expo Go, or use a development build for native module
 
 ## Build & release (EAS)
 
+> **Same-day launch guide:** see **[LAUNCH.md](LAUNCH.md)** for the complete runbook, exact commands, required secrets, and Play Console steps.
+
 Profiles in `eas.json`:
 
 | Profile | Output | Use |
@@ -131,7 +133,7 @@ Profiles in `eas.json`:
 
 ```bash
 eas build --platform android --profile production
-eas submit --platform android --profile production
+eas submit --platform android --profile production --latest
 ```
 
 ### GitHub Actions
