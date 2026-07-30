@@ -1,12 +1,12 @@
 {
   "cli": {
-    "version": ">= 5.0.0",
+    "version": ">= 16.0.0",
     "appVersionSource": "remote",
     "promptToConfigurePushNotifications": false
   },
   "build": {
     "base": {
-      "node": "20",
+      "node": "22.14.0",
       "env": {
         "EAS_BUILD_NO_EXPO_GO_WARNING": "1"
       }
@@ -14,7 +14,11 @@
     "development": {
       "extends": "base",
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug"
+      }
     },
     "preview": {
       "extends": "base",
@@ -26,7 +30,8 @@
     "production": {
       "extends": "base",
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "autoIncrement": true
       }
     }
   },

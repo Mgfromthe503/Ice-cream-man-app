@@ -1,19 +1,19 @@
 // Load environment variables with proper priority (system > .env)
 import "./scripts/load-env.js";
 import type { ExpoConfig } from "expo/config";
-// All app identity values come from the canonical source of truth.
-// Update config/app-identity.js to change slug, scheme, bundle ID, or EAS project ID.
 import {
   APP_BUNDLE_ID,
   APP_NAME,
   APP_SCHEME,
   APP_SLUG,
   EAS_PROJECT_ID,
+  EXPO_OWNER,
 } from "./config/app-identity.js";
 
 const config: ExpoConfig = {
   name: APP_NAME,
   slug: APP_SLUG,
+  owner: EXPO_OWNER,
   version: "1.0.1",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
@@ -75,6 +75,9 @@ const config: ExpoConfig = {
     "expo-router",
     "expo-font",
     "expo-web-browser",
+    // Google Play Billing (vendor registration). Requires a dev client / EAS
+    // build — not available in Expo Go.
+    "react-native-iap",
     [
       "expo-location",
       {
@@ -111,6 +114,9 @@ const config: ExpoConfig = {
       "expo-build-properties",
       {
         android: {
+          // Google Play Billing Library (via react-native-iap) needs Kotlin 2.x.
+          // Expo SDK 54 ships compatible defaults; pin explicitly for EAS Gradle.
+          kotlinVersion: "2.1.20",
           buildArchs: ["armeabi-v7a", "arm64-v8a"],
           minSdkVersion: 24,
           enableProguardInReleaseBuilds: true,

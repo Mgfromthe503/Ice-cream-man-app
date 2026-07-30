@@ -6,67 +6,37 @@ import {
   generateIOSATSConfig,
   getPinningStatus,
   PINNED_CERTIFICATES,
+  shouldEnforceSSLPinning,
 } from '../lib/ssl-pinning';
 
-// Mock React Native Platform
 vi.mock('react-native', () => ({
   Platform: { OS: 'ios' },
 }));
 
 describe('SSL Certificate Pinning', () => {
   describe('PINNED_CERTIFICATES configuration', () => {
-    it('should have at least one pinned domain', () => {
-      expect(Object.keys(PINNED_CERTIFICATES).length).toBeGreaterThanOrEqual(1);
+    it('should start with no production pins until API host is configured', () => {
+      expect(Object.keys(PINNED_CERTIFICATES)).toHaveLength(0);
     });
 
-    it('should have at least 2 pins per domain (primary + backup)', () => {
-      for (const [domain, config] of Object.entries(PINNED_CERTIFICATES)) {
-        expect(config.pins.length).toBeGreaterThanOrEqual(2);
-      }
-    });
-
-    it('should include the production domain', () => {
-      expect(PINNED_CERTIFICATES['icecreamapp-q7oiswec.manus.space']).toBeDefined();
-    });
-
-    it('should have includeSubdomains set', () => {
-      const config = PINNED_CERTIFICATES['icecreamapp-q7oiswec.manus.space'];
-      expect(config.includeSubdomains).toBe(true);
-    });
-
-    it('should have a reasonable maxAge (at least 1 day)', () => {
-      const config = PINNED_CERTIFICATES['icecreamapp-q7oiswec.manus.space'];
-      expect(config.maxAge).toBeGreaterThanOrEqual(86400);
+    it('should not pin the retired Manus template host', () => {
+      expect(PINNED_CERTIFICATES['icecreamapp-q7oiswec.manus.space']).toBeUndefined();
     });
   });
 
   describe('validateCertificatePin', () => {
-    it('should return valid=true for matching pin', () => {
-      const config = PINNED_CERTIFICATES['icecreamapp-q7oiswec.manus.space'];
+    it('should return valid=true for any domain when no pins are configured', () => {
       const result = validateCertificatePin(
-        'icecreamapp-q7oiswec.manus.space',
-        config.pins[2] // Let's Encrypt pin
+        'api.example.com',
+        'any_hash_value'
       );
       expect(result.valid).toBe(true);
-      expect(result.matchedPin).toBe(config.pins[2]);
+      expect(result.matchedPin).toBeNull();
       expect(result.error).toBeNull();
     });
 
-    it('should return valid=false for non-matching pin', () => {
-      const result = validateCertificatePin(
-        'icecreamapp-q7oiswec.manus.space',
-        'INVALID_HASH_THAT_DOES_NOT_MATCH_ANY_PIN'
-      );
-      expect(result.valid).toBe(false);
-      expect(result.matchedPin).toBeNull();
-      expect(result.error).toContain('pin mismatch');
-    });
-
     it('should return valid=true for unknown domains (not pinned)', () => {
-      const result = validateCertificatePin(
-        'unknown-domain.com',
-        'any_hash_value'
-      );
+      const result = validateCertificatePin('unknown-domain.com', 'any_hash_value');
       expect(result.valid).toBe(true);
       expect(result.matchedPin).toBeNull();
     });
@@ -81,12 +51,12 @@ describe('SSL Certificate Pinning', () => {
 
   describe('verifyCertificateTransparency', () => {
     it('should return true for valid SCT timestamp', () => {
-      const validTimestamp = Date.now() - 86400000; // 1 day ago
+      const validTimestamp = Date.now() - 86400000;
       expect(verifyCertificateTransparency('test.com', validTimestamp)).toBe(true);
     });
 
     it('should return false for future SCT timestamp (forgery)', () => {
-      const futureTimestamp = Date.now() + 172800000; // 2 days in future
+      const futureTimestamp = Date.now() + 172800000;
       expect(verifyCertificateTransparency('test.com', futureTimestamp)).toBe(false);
     });
 
@@ -95,7 +65,7 @@ describe('SSL Certificate Pinning', () => {
     });
 
     it('should return true for old but valid SCT', () => {
-      const oldTimestamp = Date.now() - (200 * 24 * 60 * 60 * 1000); // 200 days ago
+      const oldTimestamp = Date.now() - 200 * 24 * 60 * 60 * 1000;
       expect(verifyCertificateTransparency('test.com', oldTimestamp)).toBe(true);
     });
   });
@@ -113,14 +83,9 @@ describe('SSL Certificate Pinning', () => {
       expect(xml).toContain('cleartextTrafficPermitted="false"');
     });
 
-    it('should include pinned domains', () => {
+    it('should not include Manus template host', () => {
       const xml = generateAndroidNetworkSecurityConfig();
-      expect(xml).toContain('icecreamapp-q7oiswec.manus.space');
-    });
-
-    it('should include pin-set with SHA-256 digest', () => {
-      const xml = generateAndroidNetworkSecurityConfig();
-      expect(xml).toContain('digest="SHA-256"');
+      expect(xml).not.toContain('manus.space');
     });
 
     it('should include debug overrides for development', () => {
@@ -139,25 +104,26 @@ describe('SSL Certificate Pinning', () => {
       const config = generateIOSATSConfig();
       expect(config.NSAppTransportSecurity.NSExceptionDomains.localhost).toBeDefined();
       expect(
-        config.NSAppTransportSecurity.NSExceptionDomains.localhost.NSExceptionAllowsInsecureHTTPLoads
+        config.NSAppTransportSecurity.NSExceptionDomains.localhost
+          .NSExceptionAllowsInsecureHTTPLoads
       ).toBe(true);
     });
   });
 
-  describe('getPinningStatus', () => {
-    it('should return platform info', () => {
+  describe('getPinningStatus / shouldEnforceSSLPinning', () => {
+    it('should report platform', () => {
       const status = getPinningStatus();
       expect(status.platform).toBe('ios');
     });
 
-    it('should list pinned domains', () => {
+    it('should list zero domains while pins are disabled', () => {
       const status = getPinningStatus();
-      expect(status.domains).toContain('icecreamapp-q7oiswec.manus.space');
+      expect(status.domains).toEqual([]);
+      expect(status.pinCount).toBe(0);
     });
 
-    it('should count total pins', () => {
-      const status = getPinningStatus();
-      expect(status.pinCount).toBeGreaterThanOrEqual(2);
+    it('should not enforce pinning with empty pin set', () => {
+      expect(shouldEnforceSSLPinning()).toBe(false);
     });
   });
 });

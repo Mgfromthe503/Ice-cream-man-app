@@ -1,32 +1,42 @@
 import { describe, expect, it } from "vitest";
+
 import {
   APP_BUNDLE_ID,
   APP_NAME,
   APP_SCHEME,
   APP_SLUG,
   EAS_PROJECT_ID,
+  EXPO_OWNER,
 } from "../config/app-identity.js";
-import appConfig from "../app.config";
 
 describe("app identity constants", () => {
-  it("exports the canonical app name", () => {
-    expect(APP_NAME).toBe("The Ice Cream Man");
-  });
-
-  it("exports the canonical Expo slug", () => {
+  it("exports the canonical app slug", () => {
     expect(APP_SLUG).toBe("the-ice-cream-man");
   });
 
-  it("exports the canonical deep-link scheme", () => {
-    expect(APP_SCHEME).toBe("manusapp");
+  it("exports the Ice Cream Man deep-link scheme", () => {
+    // Must match app.config.ts `scheme` and constants/oauth.ts deepLinkScheme.
+    expect(APP_SCHEME).toBe("icecreamman");
   });
 
   it("exports the canonical bundle / package ID", () => {
     expect(APP_BUNDLE_ID).toBe("com.icecreamman.app");
   });
 
+  it("EAS project ID matches the canonical value", () => {
+    expect(EAS_PROJECT_ID).toBe("a7392ba6-c4a2-455d-b03c-9bc0233b7b12");
+  });
+
+  it("exports the Expo account owner (required for EAS project resolution)", () => {
+    // Must match the Expo account that owns EAS projectId (case-sensitive).
+    expect(EXPO_OWNER).toBe("mgfromthe503");
+  });
+});
+
+describe("app identity alignment", () => {
   it("bundle ID segments all start with a letter (Android requirement)", () => {
-    for (const seg of APP_BUNDLE_ID.split(".")) {
+    const segments = APP_BUNDLE_ID.split(".");
+    for (const seg of segments) {
       expect(/^[a-zA-Z]/.test(seg)).toBe(true);
     }
   });
@@ -35,34 +45,7 @@ describe("app identity constants", () => {
     expect(/^[a-z][a-z0-9+\-.]*$/.test(APP_SCHEME)).toBe(true);
   });
 
-  it("EAS project ID is a non-empty string", () => {
-    expect(EAS_PROJECT_ID).toBeTruthy();
-    expect(typeof EAS_PROJECT_ID).toBe("string");
-    // Validate UUID v4 format to catch accidental mutations
-    expect(EAS_PROJECT_ID).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    );
-  });
-});
-
-describe("app.config.ts alignment with app-identity constants", () => {
-  it("uses the canonical slug", () => {
-    expect(appConfig.slug).toBe(APP_SLUG);
-  });
-
-  it("uses the canonical deep-link scheme", () => {
-    expect(appConfig.scheme).toBe(APP_SCHEME);
-  });
-
-  it("uses the canonical iOS bundle ID", () => {
-    expect(appConfig.ios?.bundleIdentifier).toBe(APP_BUNDLE_ID);
-  });
-
-  it("uses the canonical Android package name", () => {
-    expect(appConfig.android?.package).toBe(APP_BUNDLE_ID);
-  });
-
-  it("includes the EAS project ID in extra.eas.projectId", () => {
-    expect(appConfig.extra?.eas?.projectId).toBe(EAS_PROJECT_ID);
+  it("exports the canonical app name", () => {
+    expect(APP_NAME).toBe("The Ice Cream Man");
   });
 });

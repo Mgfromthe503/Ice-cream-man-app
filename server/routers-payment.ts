@@ -4,19 +4,21 @@ import * as db from "./db";
 
 /**
  * Payment & Monetization API Routes
- * 
+ *
  * REVENUE MODEL:
  * - $25 one-time vendor registration fee via Google Play Billing
  * - Payment goes directly to the developer's Google Play Developer account
  * - Google takes 15% ($3.75), developer receives $21.25 per registration
  * - Developer cashes out via Google Play Console → Payment settings → Bank account
- * 
+ *
  * GOOGLE PLAY BILLING SETUP:
  * 1. Create in-app product "icm_vendor_registration" in Google Play Console
  * 2. Set as one-time (non-consumable) product at $25.00
  * 3. The payment is handled entirely by Google Play on the client side
  * 4. Server validates the purchase token with Google Play Developer API
- * 
+ *
+ * Package name for Play API calls: com.icecreamman.app
+ *
  * CASHING OUT YOUR MONEY:
  * - Google Play Console → Download reports → Financial reports
  * - Or: Settings → Developer account → Payment settings
@@ -28,7 +30,7 @@ export const paymentRouter = router({
   /**
    * Verify vendor registration purchase with Google Play
    * Called by: Client after successful Google Play Billing purchase
-   * 
+   *
    * This validates the purchase token with Google's servers to prevent fraud.
    * The actual payment has already been collected by Google Play on the client.
    * Money flow: User → Google Play → Your Developer Account (minus 15%)
@@ -44,29 +46,29 @@ export const paymentRouter = router({
     .mutation(async ({ ctx, input }) => {
       /**
        * PRODUCTION IMPLEMENTATION:
-       * 
-       * In production, you would verify the purchase token with Google Play Developer API:
-       * 
+       *
+       * In production, verify the purchase token with Google Play Developer API:
+       *
        * 1. Use googleapis package to call:
        *    androidpublisher.purchases.products.get({
-       *      packageName: 'space.manus.the.ice.cream.man',
+       *      packageName: 'com.icecreamman.app',
        *      productId: input.productId,
        *      token: input.purchaseToken,
        *    })
-       * 
+       *
        * 2. Check response.purchaseState === 0 (purchased)
        * 3. Check response.consumptionState === 0 (not consumed - one-time purchase)
        * 4. Acknowledge the purchase if not already acknowledged
-       * 
+       *
        * For now, we trust the client-side purchase (the money is already collected
        * by Google Play regardless of server verification).
        */
 
       // Validate product ID
-      if (input.productId !== 'icm_vendor_registration') {
+      if (input.productId !== "icm_vendor_registration") {
         return {
           success: false,
-          error: 'Invalid product ID',
+          error: "Invalid product ID",
         };
       }
 
@@ -136,7 +138,8 @@ export const paymentRouter = router({
       totalGasSaved: 8500, // gallons
       totalTimeSaved: 4200, // hours
       economyStimulation: 125000,
-      headline: "$50,000+ in ice cream sales have stimulated the economy because of The Ice Cream Man app!",
+      headline:
+        "$50,000+ in ice cream sales have stimulated the economy because of The Ice Cream Man app!",
     };
   }),
 });
@@ -149,7 +152,7 @@ export const reportsRouter = router({
   /**
    * Submit daily sales report
    * Called by: Driver at end of day
-   * 
+   *
    * Now accepts gas price and hours driven for accurate hourly rate calculations
    */
   submitDailyReport: protectedProcedure
@@ -163,9 +166,8 @@ export const reportsRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const driverId = ctx.user.id;
       const gasPrice = input.gasPricePerGallon || 3.5;
-      const hoursDriven = input.hoursDriven || (input.milesDriven / 25); // Estimate if not provided
+      const hoursDriven = input.hoursDriven || input.milesDriven / 25; // Estimate if not provided
 
       const VEHICLE_MPG = 15;
 
@@ -181,7 +183,8 @@ export const reportsRouter = router({
 
       // Hourly rate comparison
       const hourlyRateWithApp = hoursDriven > 0 ? input.totalSales / hoursDriven : 0;
-      const hourlyRateWithoutApp = hoursWithoutApp > 0 ? input.totalSales / hoursWithoutApp : 0;
+      const hourlyRateWithoutApp =
+        hoursWithoutApp > 0 ? input.totalSales / hoursWithoutApp : 0;
 
       return {
         success: true,
@@ -197,7 +200,8 @@ export const reportsRouter = router({
           milesSaved: Math.round(milesSaved * 10) / 10,
           hourlyRateWithApp: Math.round(hourlyRateWithApp * 100) / 100,
           hourlyRateWithoutApp: Math.round(hourlyRateWithoutApp * 100) / 100,
-          hourlyRateImprovement: Math.round((hourlyRateWithApp - hourlyRateWithoutApp) * 100) / 100,
+          hourlyRateImprovement:
+            Math.round((hourlyRateWithApp - hourlyRateWithoutApp) * 100) / 100,
           economicImpact: Math.round(input.totalSales * 2.5 * 100) / 100,
         },
       };
@@ -213,7 +217,7 @@ export const reportsRouter = router({
         limit: z.number().optional(),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .query(async () => {
       // Return report history
       return {
         reports: [],
@@ -227,7 +231,7 @@ export const reportsRouter = router({
    * Get driver's cumulative stats
    * Called by: Driver
    */
-  getCumulativeStats: protectedProcedure.query(async ({ ctx }) => {
+  getCumulativeStats: protectedProcedure.query(async () => {
     return {
       totalDays: 0,
       totalSales: 0,

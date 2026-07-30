@@ -1,0 +1,15 @@
+# Optional: deploy the Express + tRPC API on Render
+# https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: ice-cream-man-api
+    runtime: node
+    plan: free
+    buildCommand: pnpm install --no-frozen-lockfile && pnpm build
+    startCommand: pnpm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+    autoDeploy: true
