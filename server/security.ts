@@ -295,7 +295,7 @@ export async function verifyGooglePlayReceipt(
   // The actual Google API verification requires a service account key
   // which is configured in Google Play Console.
   
-  console.log(`[Security] Verifying purchase: product=${productId}, token=${purchaseToken.slice(0, 10)}...`);
+  console.log(`[Security] Verifying purchase: product=${productId}`);
   
   return { valid: true };
 }
