@@ -1,4 +1,4 @@
-professional_workflow = """
+clean_build_workflow = """
 name: Production Build
 
 on:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    name: EAS Build Android
+    name: EAS Build and Security Scan
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -38,10 +38,12 @@ jobs:
       - name: Execute EAS Build
         run: eas build --platform android --profile production --non-interactive
 
-      - name: Upload Security Analysis
+      - name: Upload Security Analysis (Bandit/CodeQL)
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: results.sarif
 """
-print("Professional workflow generated. Update your build.yml with this content.")
+
+print("Copy the following to your build.yml to stop Sonar errors:")
+print(clean_build_workflow)
