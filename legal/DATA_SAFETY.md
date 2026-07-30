@@ -54,7 +54,7 @@
 
 | Data Type | Collected | Shared | Purpose | Optional |
 |-----------|-----------|--------|---------|----------|
-| Device or other IDs | Yes | Yes (with Google AdMob) | Advertising, Analytics | No |
+| Device or other IDs | Yes | Yes (with Google Analytics) | Analytics | No |
 
 ---
 
@@ -64,9 +64,10 @@
 
 | Third Party | Data Shared | Purpose |
 |-------------|-------------|---------|
-| Google AdMob | Device IDs, usage data | Advertising |
 | Google Analytics | Usage data, device info | Analytics |
 | Google Maps | Location data | App functionality |
+
+> **Note:** This app does not use Google AdMob or any advertising SDK. Do **not** declare AdMob in the Play Console Data Safety form.
 
 ---
 
@@ -109,8 +110,7 @@
 ## Privacy Policy URL
 
 Host the Privacy Policy at a publicly accessible URL. Options:
-- GitHub Pages: `https://mgfromthe503.github.io/the-ice-cream-man/privacy-policy`
-- Google Sites: Create a simple page with the privacy policy text
-- Your own domain
+- GitHub Pages: `https://mgfromthe503.github.io/Ice-cream-man-app/legal/PRIVACY_POLICY`
+- Your own domain: `https://theicecreamman.app/privacy`
 
 Enter this URL in Google Play Console under **App content > Privacy policy**.

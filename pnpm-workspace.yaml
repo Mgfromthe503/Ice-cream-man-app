@@ -1,0 +1,6 @@
+# Monorepo workspace — The Ice Cream Man
+# Primary app + server live at the repo root (single package).
+# packages/* is reserved for future shared libraries (e.g. types, UI).
+packages:
+  - "."
+  - "packages/*"

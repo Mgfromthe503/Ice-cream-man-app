@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FactTicker } from '@/components/fact-ticker';
+import { APP_BUNDLE_ID } from '@/config/app-identity.js';
 
 interface DriverInfo {
   fullName: string;
@@ -46,11 +47,18 @@ export default function DriverProfileScreen() {
     }
   };
 
+  const openPlayStore = () => {
+    const marketUrl = `market://details?id=${APP_BUNDLE_ID}`;
+    const webUrl = `https://play.google.com/store/apps/details?id=${APP_BUNDLE_ID}`;
+    Linking.openURL(Platform.OS === 'android' ? marketUrl : webUrl).catch(() => {
+      Linking.openURL(webUrl);
+    });
+  };
+
   return (
     <ScreenContainer className="p-6">
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
         <View style={{ flex: 1, gap: 18 }}>
-          {/* Header */}
           <View style={{ gap: 4 }}>
             <Text style={{ fontSize: 24, fontWeight: '800', color: colors.foreground }}>
               👤 Profile
@@ -58,7 +66,6 @@ export default function DriverProfileScreen() {
             <Text style={{ fontSize: 13, color: colors.muted }}>Your vendor account</Text>
           </View>
 
-          {/* Profile Card */}
           <View style={{
             backgroundColor: colors.surface,
             borderRadius: 20,
@@ -101,7 +108,6 @@ export default function DriverProfileScreen() {
             </View>
           </View>
 
-          {/* Vehicle Info */}
           <View style={{
             backgroundColor: colors.surface,
             borderRadius: 16,
@@ -153,7 +159,6 @@ export default function DriverProfileScreen() {
             ) : null}
           </View>
 
-          {/* Settings */}
           <View style={{ gap: 10 }}>
             <Pressable
               onPress={() => router.push('/(driver)/daily-report')}
@@ -177,9 +182,7 @@ export default function DriverProfileScreen() {
               </View>
             </Pressable>
 
-            <Pressable
-              style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
-            >
+            <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}>
               <View style={{
                 backgroundColor: colors.surface,
                 borderRadius: 12,
@@ -199,19 +202,10 @@ export default function DriverProfileScreen() {
             </Pressable>
           </View>
 
-          {/* Fun Fact */}
           <FactTicker variant="banner" />
 
-          {/* Rate App */}
           <Pressable
-            onPress={() => {
-              const url = Platform.OS === 'android'
-                ? 'market://details?id=space.manus.the.ice.cream.man'
-                : 'https://play.google.com/store/apps/details?id=space.manus.the.ice.cream.man';
-              Linking.openURL(url).catch(() => {
-                Linking.openURL('https://play.google.com/store/apps/details?id=space.manus.the.ice.cream.man');
-              });
-            }}
+            onPress={openPlayStore}
             style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
           >
             <View style={{ backgroundColor: '#FFD700', borderRadius: 12, padding: 16, alignItems: 'center' }}>
@@ -221,7 +215,6 @@ export default function DriverProfileScreen() {
             </View>
           </Pressable>
 
-          {/* Logout Button */}
           <View style={{ marginTop: 'auto' }}>
             <Pressable
               onPress={handleLogout}

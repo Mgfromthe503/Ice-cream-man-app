@@ -1,0 +1,145 @@
+name: EAS Build and Submit
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "EAS build profile"
+        required: false
+        default: "production"
+        type: choice
+        options:
+          - production
+          - preview
+      submit:
+        description: "Submit to Google Play after build"
+        required: false
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eas-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate (install + type-check + tests)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.12.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        # --no-frozen-lockfile: package.json pins / pnpm.overrides can drift from
+        # pnpm-lock.yaml after security bumps; CI must still install cleanly.
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Dependency audit (non-blocking report)
+        continue-on-error: true
+        run: pnpm audit --prod || true
+
+      - name: Validate types
+        run: pnpm check
+
+      - name: Run tests
+        run: pnpm test
+
+  build:
+    name: EAS Android build
+    needs: validate
+    # Only run EAS build/submit on manual workflow_dispatch so push/PR CI
+    # stays green while secrets and Expo project config are finalized.
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.12.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Check EXPO_TOKEN
+        id: token
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::warning::EXPO_TOKEN secret is not set. Add it under Settings → Secrets and variables → Actions (create at https://expo.dev/settings/access-tokens). Skipping EAS build/submit."
+            echo "has_token=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_token=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Expo and EAS CLI
+        if: steps.token.outputs.has_token == 'true'
+        uses: expo/expo-github-action@v9
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Verify EAS CLI
+        if: steps.token.outputs.has_token == 'true'
+        run: |
+          which eas
+          eas --version
+          eas whoami
+
+      - name: Build Android app bundle
+        if: steps.token.outputs.has_token == 'true'
+        run: |
+          PROFILE="${{ inputs.profile || 'production' }}"
+          echo "Building with profile: $PROFILE"
+          # production → AAB (Play Store). preview → APK (internal test).
+          # Gradle / Kotlin / Play Billing are configured via app.config.ts
+          # (expo-build-properties + react-native-iap plugin).
+          eas build --platform android --profile "$PROFILE" --non-interactive --wait
+
+      - name: Submit to Google Play
+        if: >-
+          steps.token.outputs.has_token == 'true' &&
+          inputs.submit == 'true'
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo "::warning::GOOGLE_PLAY_SERVICE_ACCOUNT_JSON secret is not set — skipping submission."
+            exit 0
+          fi
+          umask 077
+          KEYFILE=$(mktemp)
+          printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > "$KEYFILE"
+          eas submit --platform android --latest --non-interactive \
+            --service-account-json "$KEYFILE"
+          rm -f "$KEYFILE"

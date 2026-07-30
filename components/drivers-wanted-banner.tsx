@@ -1,7 +1,7 @@
 import { View, Text, Pressable, Animated, Share, Platform } from 'react-native';
 import { useEffect, useRef, useState } from 'react';
 import { useColors } from '@/hooks/use-colors';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { APP_BUNDLE_ID } from '@/config/app-identity.js';
 
 interface DriversWantedBannerProps {
   registeredDrivers: number;
@@ -18,7 +18,6 @@ export function DriversWantedBanner({ registeredDrivers, activeCustomers, show }
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const [dismissed, setDismissed] = useState(false);
 
-  // Determine if we should show the banner
   const shouldShow = show !== undefined ? show : (activeCustomers > registeredDrivers * 2 || registeredDrivers === 0);
 
   useEffect(() => {
@@ -36,9 +35,11 @@ export function DriversWantedBanner({ registeredDrivers, activeCustomers, show }
 
   const handleShare = async () => {
     try {
-      const message = Platform.OS === 'web'
-        ? 'Ice Cream Truck Drivers Wanted! Download The Ice Cream Man app and start earning money delivering ice cream to neighborhoods. No more driving around aimlessly - customers come to YOU! Download: https://play.google.com/store/apps/details?id=space.manus.the.ice.cream.man'
-        : '🍦🚚 Ice Cream Truck Drivers Wanted! Download The Ice Cream Man app and start earning money delivering ice cream to neighborhoods. Customers come to YOU! Download: https://play.google.com/store/apps/details?id=space.manus.the.ice.cream.man';
+      const storeUrl = `https://play.google.com/store/apps/details?id=${APP_BUNDLE_ID}`;
+      const message =
+        Platform.OS === 'web'
+          ? `Ice Cream Truck Drivers Wanted! Download The Ice Cream Man app and start earning money delivering ice cream to neighborhoods. No more driving around aimlessly - customers come to YOU! Download: ${storeUrl}`
+          : `🍦🚚 Ice Cream Truck Drivers Wanted! Download The Ice Cream Man app and start earning money delivering ice cream to neighborhoods. Customers come to YOU! Download: ${storeUrl}`;
 
       if (Platform.OS === 'web') {
         if (navigator.share) {
@@ -75,7 +76,6 @@ export function DriversWantedBanner({ registeredDrivers, activeCustomers, show }
           elevation: 6,
         }}
       >
-        {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
             <Text style={{ fontSize: 22 }}>🚚</Text>
@@ -91,7 +91,6 @@ export function DriversWantedBanner({ registeredDrivers, activeCustomers, show }
           </Pressable>
         </View>
 
-        {/* Message */}
         <Text style={{ color: '#FFF8E7', fontSize: 13, marginTop: 8, lineHeight: 18 }}>
           {registeredDrivers === 0
             ? "There are no ice cream trucks in your area yet! Know someone with an ice cream truck? Tell them about The Ice Cream Man app!"
@@ -99,7 +98,6 @@ export function DriversWantedBanner({ registeredDrivers, activeCustomers, show }
           }
         </Text>
 
-        {/* Stats */}
         <View style={{ flexDirection: 'row', marginTop: 12, gap: 12 }}>
           <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 8, padding: 8, alignItems: 'center' }}>
             <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>{activeCustomers}</Text>
@@ -111,7 +109,6 @@ export function DriversWantedBanner({ registeredDrivers, activeCustomers, show }
           </View>
         </View>
 
-        {/* Share Button */}
         <Pressable
           onPress={handleShare}
           style={({ pressed }) => [{

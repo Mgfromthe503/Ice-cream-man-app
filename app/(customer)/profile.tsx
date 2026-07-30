@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Alert, Platform, Linking } from 'react-native';
+import { View, Text, Pressable, ScrollView, Platform, Linking } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { useAuth } from '@/lib/auth-context';
@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { ShareButton } from '@/components/share-button';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { APP_BUNDLE_ID } from '@/config/app-identity.js';
 
 export default function CustomerProfileScreen() {
   const colors = useColors();
@@ -20,7 +21,7 @@ export default function CustomerProfileScreen() {
       try {
         const deliveries = await AsyncStorage.getItem('totalDeliveries');
         setTotalOrders(parseInt(deliveries || '0', 10));
-      } catch (error) {
+      } catch {
         // Silently fail
       }
     };
@@ -36,17 +37,23 @@ export default function CustomerProfileScreen() {
     }
   };
 
+  const openPlayStore = () => {
+    const marketUrl = `market://details?id=${APP_BUNDLE_ID}`;
+    const webUrl = `https://play.google.com/store/apps/details?id=${APP_BUNDLE_ID}`;
+    Linking.openURL(Platform.OS === 'android' ? marketUrl : webUrl).catch(() => {
+      Linking.openURL(webUrl);
+    });
+  };
+
   return (
     <ScreenContainer className="p-4">
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="flex-1">
         <View className="flex-1 gap-5">
-          {/* Header */}
           <View className="gap-1">
             <Text className="text-2xl font-bold text-foreground">Profile</Text>
             <Text className="text-xs text-muted font-medium">Your account settings</Text>
           </View>
 
-          {/* Profile Card */}
           <View className="bg-surface rounded-lg p-5 border border-border">
             <View className="items-center gap-3">
               <View
@@ -68,7 +75,6 @@ export default function CustomerProfileScreen() {
             </View>
           </View>
 
-          {/* Stats - Only show real data */}
           <View className="flex-row gap-3">
             <View className="flex-1 bg-surface rounded-lg p-4 items-center border border-border">
               <Text className="text-2xl font-bold text-primary">{totalOrders}</Text>
@@ -82,24 +88,15 @@ export default function CustomerProfileScreen() {
             </View>
           </View>
 
-          {/* Share with Friends */}
           <View className="gap-3">
             <Text className="text-base font-semibold text-foreground">Share with Friends</Text>
             <ShareButton variant="primary" size="medium" showLabel={true} />
           </View>
 
-          {/* Rate App */}
           <View className="gap-2">
             <Text className="text-sm font-semibold text-foreground">Enjoying the App?</Text>
             <Pressable
-              onPress={() => {
-                const url = Platform.OS === 'android'
-                  ? 'market://details?id=space.manus.the.ice.cream.man'
-                  : 'https://play.google.com/store/apps/details?id=space.manus.the.ice.cream.man';
-                Linking.openURL(url).catch(() => {
-                  Linking.openURL('https://play.google.com/store/apps/details?id=space.manus.the.ice.cream.man');
-                });
-              }}
+              onPress={openPlayStore}
               style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
             >
               <View className="bg-warning rounded-lg p-4 items-center border border-border">
@@ -110,7 +107,6 @@ export default function CustomerProfileScreen() {
             </Pressable>
           </View>
 
-          {/* Settings */}
           <View className="gap-2">
             <Text className="text-sm font-semibold text-foreground">Settings</Text>
 
@@ -141,7 +137,6 @@ export default function CustomerProfileScreen() {
             </Pressable>
           </View>
 
-          {/* Logout Button */}
           <View className="flex-1 justify-end gap-3">
             <Pressable
               onPress={handleLogout}
@@ -151,7 +146,7 @@ export default function CustomerProfileScreen() {
                 <Text className="text-white font-semibold text-center text-sm">Logout</Text>
               </View>
             </Pressable>
-            <Text className="text-xs text-muted text-center">v1.0.0 | Made with ❤️ by Mindy Gaines</Text>
+            <Text className="text-xs text-muted text-center">v1.0.1 · The Ice Cream Man</Text>
           </View>
         </View>
       </ScrollView>
