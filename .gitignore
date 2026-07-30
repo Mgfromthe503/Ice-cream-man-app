@@ -40,6 +40,4 @@ yarn-error.*
 
 # Testing / coverage
 coverage/
-
-# Lock files — only pnpm-lock.yaml is canonical; ignore npm-generated lock files
 package-lock.json
