@@ -481,8 +481,7 @@ export default function CustomerHomeScreen() {
         visible={showRating}
         driverName={driverName}
         onClose={handleRatingClose}
-        onRatingSubmitted={(rating) => {
-          console.log(`Customer rated ${driverName}: ${rating} stars`);
+        onRatingSubmitted={(_rating) => {
         }}
       />
 

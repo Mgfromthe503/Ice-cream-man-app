@@ -12,6 +12,7 @@
  */
 
 import type { Request, Response, NextFunction } from 'express';
+import sanitizeHtml from 'sanitize-html';
 
 // ============================================
 // SECURITY HEADERS (OWASP Best Practices)
@@ -190,15 +191,11 @@ function deepSanitize(obj: any): any {
 }
 
 function sanitizeString(input: string): string {
-  return input
-    // Remove null bytes
-    .replace(/\0/g, '')
-    // Encode HTML entities to prevent XSS
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
+  return sanitizeHtml(
+    // Remove null bytes before passing to sanitizer
+    input.replace(/\0/g, ''),
+    { allowedTags: [], allowedAttributes: {} }
+  )
     // Remove potential SQL injection
     .replace(/;--/g, '')
     .replace(/\/\*/g, '')
@@ -295,7 +292,7 @@ export async function verifyGooglePlayReceipt(
   // The actual Google API verification requires a service account key
   // which is configured in Google Play Console.
   
-  console.log(`[Security] Verifying purchase: product=${productId}, token=${purchaseToken.slice(0, 10)}...`);
+  console.log(`[Security] Verifying purchase: product=${productId}`);
   
   return { valid: true };
 }

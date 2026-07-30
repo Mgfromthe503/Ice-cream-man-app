@@ -255,7 +255,7 @@ th { background: #f8f9fa; font-weight: 600; }
   const port = await findAvailablePort(preferredPort);
 
   if (port !== preferredPort) {
-    console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
+    console.log("Preferred port is busy, using an available port instead");
   }
 
   server.listen(port, () => {
