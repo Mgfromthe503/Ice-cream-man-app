@@ -1,8 +1,6 @@
-dependabot_fix = """
-# .github/dependabot.yml
 version: 2
 updates:
-  - package-ecosystem: "npm" # Check for Node.js updates
+  - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "daily"
@@ -12,7 +10,3 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-"""
-
-print("Copy the text below into your .github/dependabot.yml file:")
-print(dependabot_fix)
