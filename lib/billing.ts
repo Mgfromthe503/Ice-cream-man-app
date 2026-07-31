@@ -1,15 +1,9 @@
 /**
- * Google Play Billing Integration (Updated for react-native-iap v15+)
+ * Google Play Billing Integration (Updated for react-native-iap v12.x)
  * 
  * This module handles the $25 one-time Ice Cream Man vendor registration fee
  * via Google Play Billing. Payment goes directly to the developer's Google Play
  * Developer account.
- * 
- * MONEY FLOW:
- * 1. Driver pays $25 via Google Play Billing
- * 2. Google takes 15% ($3.75) as their platform fee
- * 3. Developer receives $21.25 in their Google Play Developer account
- * 4. Developer cashes out to their bank account via Google Play Console
  */
 
 import { Platform } from 'react-native';
@@ -38,7 +32,6 @@ export async function initializeBilling(): Promise<boolean> {
   try {
     const RNIap = require('react-native-iap');
     await RNIap.initConnection();
-    console.log('[Billing] Connection initialized');
     return true;
   } catch (error) {
     console.error('[Billing] Connection failed:', error);
@@ -63,7 +56,6 @@ export async function getRegistrationProduct() {
 
   try {
     const RNIap = require('react-native-iap');
-    // v15+ uses getProducts with skus array
     const products = await RNIap.getProducts({
       skus: [VENDOR_REGISTRATION_PRODUCT_ID]
     });
@@ -76,7 +68,6 @@ export async function getRegistrationProduct() {
 
 /**
  * Purchase the vendor registration.
- * Triggers the Google Play purchase dialog.
  */
 export async function purchaseRegistration(): Promise<PurchaseResult> {
   if (isRateLimited('purchase_registration', 3, 60000)) {
@@ -94,29 +85,20 @@ export async function purchaseRegistration(): Promise<PurchaseResult> {
     const RNIap = require('react-native-iap');
     const obfuscatedAccountId = generateTransactionFingerprint();
     
-    // Modern request shape for react-native-iap v15+ (Google Play Billing Library 6/7)
-    const purchaseResponse = await RNIap.requestPurchase({
-      request: {
-        google: {
-          skus: [VENDOR_REGISTRATION_PRODUCT_ID],
-          obfuscatedAccountId,
-          obfuscatedProfileId: 'vendor-registration',
-        },
-        apple: {
-          sku: VENDOR_REGISTRATION_PRODUCT_ID,
-          andDangerouslyFinishTransactionAutomatically: false,
-        },
-      },
+    // v12.x request shape
+    const purchase = await RNIap.requestPurchase({
+      skus: [VENDOR_REGISTRATION_PRODUCT_ID],
+      obfuscatedAccountIdAndroid: obfuscatedAccountId,
+      obfuscatedProfileIdAndroid: 'vendor-registration',
+      andDangerouslyFinishTransactionAutomaticallyIOS: false,
     });
-
-    const purchase = Array.isArray(purchaseResponse) ? purchaseResponse[0] : purchaseResponse;
 
     if (purchase) {
       if (!validatePurchaseToken(purchase.purchaseToken)) {
         return { success: false, transactionId: null, purchaseToken: null, error: 'Invalid token.' };
       }
 
-      // Acknowledge the purchase (Required)
+      // Acknowledge the purchase
       await RNIap.finishTransaction({
         purchase,
         isConsumable: false,

@@ -162,8 +162,8 @@ importers:
         specifier: ~2.28.0
         version: 2.28.0(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       react-native-iap:
-        specifier: ^15.6.0
-        version: 15.6.0(react-native-nitro-modules@0.36.1(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+        specifier: ^12.16.0
+        version: 12.16.0(expo@54.0.36)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       react-native-reanimated:
         specifier: ~4.1.1
         version: 4.1.7(react-native-worklets@0.5.1(@babel/core@7.29.7)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -4881,28 +4881,18 @@ packages:
       react: '*'
       react-native: '*'
 
-  react-native-iap@15.6.0:
-    resolution: {integrity: sha512-dO61IINaeHX+PIBLZGerCpT8yaLmnFMb7nolqqKSSQpcXZ+9z/prwAMaLcQdXvZyUEtuLA2H9DiZeLNA075R2w==}
+  react-native-iap@12.16.0:
+    resolution: {integrity: sha512-jOcZRIdXlmqXBx4dkcGqfSMGz8yxa99wt+0N7EDzX1aLCKUzMmeMPVBV2DjwcT1gDzOVfXSXIw1liJkHSNb0Aw==}
     peerDependencies:
-      '@amazon-devices/keplerscript-appstore-iap-lib': ~2.12.13
-      '@amazon-devices/package-manager-lib': ~1.0.1767254401
-      react: '*'
-      react-native: '*'
-      react-native-nitro-modules: ^0.36.1
+      expo: '>=47.0.0'
+      react: '>=16.13.1'
+      react-native: '>=0.65.1'
     peerDependenciesMeta:
-      '@amazon-devices/keplerscript-appstore-iap-lib':
-        optional: true
-      '@amazon-devices/package-manager-lib':
+      expo:
         optional: true
 
   react-native-is-edge-to-edge@1.3.1:
     resolution: {integrity: sha512-NIXU/iT5+ORyCc7p0z2nnlkouYKX425vuU1OEm6bMMtWWR9yvb+Xg5AZmImTKoF9abxCPqrKC3rOZsKzUYgYZA==}
-    peerDependencies:
-      react: '*'
-      react-native: '*'
-
-  react-native-nitro-modules@0.36.1:
-    resolution: {integrity: sha512-kBv/VvKqAmkXAvP1DxJMC9b/fRhh7JdSO4EUnPP46hJjrIFeFR8AwKm8mYaKZEuF014M/TVdv2vomVUW0umsQQ==}
     peerDependencies:
       react: '*'
       react-native: '*'
@@ -11196,18 +11186,14 @@ snapshots:
       react: 19.1.0
       react-native: 0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0)
 
-  react-native-iap@15.6.0(react-native-nitro-modules@0.36.1(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
+  react-native-iap@12.16.0(expo@54.0.36)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
     dependencies:
       react: 19.1.0
       react-native: 0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0)
-      react-native-nitro-modules: 0.36.1(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+    optionalDependencies:
+      expo: 54.0.36(@babel/core@7.29.7)(@expo/metro-runtime@6.1.2)(expo-router@6.0.24)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
 
   react-native-is-edge-to-edge@1.3.1(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
-    dependencies:
-      react: 19.1.0
-      react-native: 0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0)
-
-  react-native-nitro-modules@0.36.1(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
     dependencies:
       react: 19.1.0
       react-native: 0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0)

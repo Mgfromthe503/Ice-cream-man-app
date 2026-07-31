@@ -122,7 +122,7 @@ const config: ExpoConfig = {
           enableProguardInReleaseBuilds: false,
           enableShrinkResourcesInReleaseBuilds: false,
           // Force latest Google Play Billing Library version
-          billingLibraryVersion: "7.0.0",
+          billingLibraryVersion: "6.0.1",
         },
       },
     ],
