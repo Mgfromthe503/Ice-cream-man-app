@@ -41,17 +41,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          run_install: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 22
+          node-version: "22"
           cache: pnpm
 
       - name: Install dependencies
@@ -64,9 +64,14 @@ jobs:
           fi
           node -e "
             const be = require('brace-expansion');
-            const expand = typeof be === 'function' ? be : be.default;
+            const expand = typeof be === 'function' ? be : be && (be.default || be.expand);
             if (typeof expand !== 'function') {
               console.error('FAIL: brace-expansion has no callable default');
+              process.exit(1);
+            }
+            const viaDefault = typeof be === 'function' ? be : be && be.default;
+            if (typeof viaDefault !== 'function') {
+              console.error('FAIL: brace-expansion.default is not a function (minimatch interop path)');
               process.exit(1);
             }
             console.log('OK: expand({a,b}) =>', expand('{a,b}'));
@@ -94,17 +99,17 @@ jobs:
       EAS_BUILD_NO_EXPO_GO_WARNING: "true"
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          run_install: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 22
+          node-version: "22"
           cache: pnpm
 
       - name: Install dependencies
@@ -117,9 +122,14 @@ jobs:
           fi
           node -e "
             const be = require('brace-expansion');
-            const expand = typeof be === 'function' ? be : be.default;
+            const expand = typeof be === 'function' ? be : be && (be.default || be.expand);
             if (typeof expand !== 'function') {
               console.error('FAIL: brace-expansion has no callable default');
+              process.exit(1);
+            }
+            const viaDefault = typeof be === 'function' ? be : be && be.default;
+            if (typeof viaDefault !== 'function') {
+              console.error('FAIL: brace-expansion.default is not a function (minimatch interop path)');
               process.exit(1);
             }
             console.log('OK: expand({a,b}) =>', expand('{a,b}'));
@@ -139,6 +149,7 @@ jobs:
         if: steps.token.outputs.has_token == 'true'
         uses: expo/expo-github-action@v8
         with:
+          expo-version: latest
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
@@ -155,14 +166,16 @@ jobs:
           (github.event.inputs.profile == 'production' || github.event.inputs.profile == '' || github.event.inputs.profile == null)
         env:
           GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
         run: |
-          if [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
+          KEY_JSON="${GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:-$GOOGLE_SERVICE_ACCOUNT_KEY}"
+          if [ -z "$KEY_JSON" ]; then
             echo "No Google Play service account — skipping submit"
             exit 0
           fi
           umask 077
           KEYFILE=$(mktemp)
-          printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > "$KEYFILE"
+          printf '%s' "$KEY_JSON" > "$KEYFILE"
           eas submit --platform android --latest --non-interactive \
             --profile production \
             --service-account-json "$KEYFILE"
