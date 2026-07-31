@@ -121,6 +121,8 @@ const config: ExpoConfig = {
           minSdkVersion: 24,
           enableProguardInReleaseBuilds: false,
           enableShrinkResourcesInReleaseBuilds: false,
+          // Force latest Google Play Billing Library version
+          billingLibraryVersion: "7.0.0",
         },
       },
     ],
