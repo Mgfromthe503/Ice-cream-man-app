@@ -18,8 +18,8 @@
     "ios": "expo run:ios",
     "qr": "node scripts/generate_qr.mjs",
     "postinstall": "node scripts/patch-brace-expansion-cjs.cjs",
-    "eas-build-pre-install": "node -e \"console.log('[eas-build-pre-install] brace-expansion CJS interop will run after install')\"",
-    "eas-build-post-install": "node scripts/patch-brace-expansion-cjs.cjs"
+    "eas-build-pre-install": "node scripts/ensure-brace-expansion.cjs",
+    "eas-build-post-install": "node scripts/ensure-brace-expansion.cjs && node scripts/patch-brace-expansion-cjs.cjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
