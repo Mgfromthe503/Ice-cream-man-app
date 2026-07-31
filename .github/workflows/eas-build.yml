@@ -4,6 +4,9 @@ name: EAS Build
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build Android AAB
@@ -31,6 +34,8 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
+        # --no-frozen-lockfile allows the brace-expansion override (5.0.5) to resolve
+        # if the lockfile was generated before the pin was applied.
         run: pnpm install --no-frozen-lockfile
 
       - name: Build Android
