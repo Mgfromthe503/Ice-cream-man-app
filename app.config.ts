@@ -117,7 +117,7 @@ const config: ExpoConfig = {
       {
         android: {
           // Google Play Billing Library 7.0.0 (via expo-iap) needs Kotlin 2.x.
-          kotlinVersion: "2.1.20",
+          kotlinVersion: "2.0.21",
           buildArchs: ["armeabi-v7a", "arm64-v8a"],
           minSdkVersion: 24,
           // Enable R8 minification and resource shrinking for Google Play compliance
@@ -126,7 +126,7 @@ const config: ExpoConfig = {
           // Enable minification (R8) for release builds
           enableMinifyInReleaseBuilds: true,
           // Google Play Billing Library version 7.0.0
-          billingLibraryVersion: "7.0.0",
+          billingLibraryVersion: "9.1.0",
         },
       },
     ],

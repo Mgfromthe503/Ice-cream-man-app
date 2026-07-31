@@ -1,15 +1,15 @@
 /**
  * Expo Config Plugin: withBillingClient
  * 
- * Injects Google Play Billing Library 7.0.0 into the Android native build
+ * Injects Google Play Billing Library 9.1.0 into the Android native build
  * and adds ProGuard/R8 rules to keep BillingClient classes.
  */
 const { withAppBuildGradle, withProjectBuildGradle, withDangerousMod } = require("expo/config-plugins");
 const fs = require("fs");
 const path = require("path");
 
-const BILLING_DEPENDENCY = `    implementation "com.android.billingclient:billing:7.0.0"`;
-const BILLING_KTX_DEPENDENCY = `    implementation "com.android.billingclient:billing-ktx:7.0.0"`;
+const BILLING_DEPENDENCY = `    implementation "com.android.billingclient:billing:9.1.0"`;
+const BILLING_KTX_DEPENDENCY = `    implementation "com.android.billingclient:billing-ktx:9.1.0"`;
 
 /**
  * Add BillingClient dependency to app/build.gradle
@@ -19,7 +19,7 @@ function withBillingGradle(config) {
     const contents = config.modResults.contents;
     
     // Check if already added
-    if (contents.includes("com.android.billingclient:billing:7.0.0")) {
+    if (contents.includes("com.android.billingclient:billing:9.1.0")) {
       return config;
     }
 

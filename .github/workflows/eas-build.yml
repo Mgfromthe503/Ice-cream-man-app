@@ -39,3 +39,15 @@ jobs:
           EAS_SKIP_AUTO_FINGERPRINT: "1"
           EAS_BUILD_NO_EXPO_GO_WARNING: "true"
           EAS_NO_VCS: "1"
+
+      - name: 🚀 Submit to Google Play
+        run: |
+          if [ -n "$GOOGLE_SERVICE_ACCOUNT_KEY" ]; then
+            echo "$GOOGLE_SERVICE_ACCOUNT_KEY" > ./google-service-account.json
+            eas submit --platform android --profile production --latest --non-interactive
+            rm -f ./google-service-account.json
+          else
+            echo "No Google service account key - skipping submission"
+          fi
+        env:
+          GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
