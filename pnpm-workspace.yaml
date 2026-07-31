@@ -1,9 +1,19 @@
-# Monorepo workspace — The Ice Cream Man
+# Monorepo workspace — The Ice Cream Man App
 # Primary app + server live at the repo root (single package).
 # packages/* is reserved for future shared libraries (e.g. types, UI).
 packages:
   - "."
   - "packages/*"
+
+# pnpm linker settings (moved from .npmrc — pnpm-only keys are not valid npm config).
+# node-linker=hoisted makes brace-expansion/minimatch visible to the Gradle node
+# process (React Native codegen) instead of an isolated virtual store path.
+nodeLinker: hoisted
+publicHoistPattern:
+  - "*brace-expansion*"
+  - "*minimatch*"
+shamefullyHoist: true
+
 
 # pnpm v9.12+/v10 reads overrides ONLY from this file (the `pnpm` field in
 # package.json is no longer supported). These MUST match pnpm-lock.yaml's
