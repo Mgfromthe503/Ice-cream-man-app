@@ -1,17 +1,25 @@
 /**
  * EAS Build pre-install / local guard.
  *
- * brace-expansion@5.x CJS builds set __esModule and only export named `expand`.
- * minimatch@9.x still does:
- *   (0, require('brace-expansion').default)(...)
- * which throws TypeError and fails:
+ * minimatch@9.x (used by @react-native/codegen / Gradle codegen) does:
+ *   const brace_expansion_1 = __importDefault(require("brace-expansion"));
+ *   brace_expansion_1.default(...)
+ *
+ * TypeScript __importDefault returns `mod` unchanged when mod.__esModule === true.
+ *
+ * brace-expansion@5.x CJS builds set __esModule and only export named `expand`
+ * (no exports.default) → TypeError in:
  *   :react-native-gesture-handler:generateCodegenSchemaFromJavaScript
  *
+ * brace-expansion@2.0.2 is pure CJS (module.exports = expand, no __esModule).
+ * __importDefault therefore wraps it as { default: fn } and the call site works.
+ *
  * See: https://github.com/expo/eas-cli/issues/3695
+ *      docs/triage-eas-android-codegen.md
  *
  * This script runs via package.json "eas-build-pre-install" on EAS workers
- * and can be run locally before Android builds. Post-install patch is required
- * even when the version pin is correct (5.0.5 has no .default export).
+ * and can be run locally before Android builds. With the 2.0.2 pin the
+ * post-install patch becomes a soft no-op safety net.
  */
 "use strict";
 
@@ -19,7 +27,7 @@ const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
-const SAFE_5 = "5.0.5";
+const SAFE = "2.0.2";
 
 function log(msg) {
   console.log(`[ensure-brace-expansion] ${msg}`);
@@ -57,15 +65,15 @@ function tryRequireExpand() {
 }
 
 function forceInstall() {
-  log(`Forcing brace-expansion@${SAFE_5} ...`);
+  log(`Forcing brace-expansion@${SAFE} ...`);
   try {
-    execSync(`pnpm add brace-expansion@${SAFE_5} --save-exact`, {
+    execSync(`pnpm add brace-expansion@${SAFE} --save-exact`, {
       stdio: "inherit",
       env: process.env,
     });
   } catch {
     try {
-      execSync(`npm install brace-expansion@${SAFE_5} --save-exact --no-save`, {
+      execSync(`npm install brace-expansion@${SAFE} --save-exact --no-save`, {
         stdio: "inherit",
         env: process.env,
       });
@@ -87,7 +95,7 @@ function main() {
   if (!fs.existsSync(nm)) {
     log(
       `node_modules/brace-expansion not present yet (expected on eas-build-pre-install). ` +
-        `Overrides pin ${SAFE_5}; post-install patch adds .default for minimatch.`
+        `Overrides pin ${SAFE}; pure-CJS shape needs no .default injection.`
     );
     return;
   }
@@ -101,13 +109,11 @@ function main() {
   log(`Broken brace-expansion detected: ${check.reason}`);
   forceInstall();
 
-  // After force install, patch must still run (post-install). Soft-fail here so
-  // post-install patch can finish the interop repair.
   const recheck = tryRequireExpand();
   if (!recheck.ok) {
     log(
-      `Still missing .default after force install (${recheck.reason}). ` +
-        `Expected: postinstall / eas-build-post-install patch will inject exports.default.`
+      `Still broken after force install (${recheck.reason}). ` +
+        `Expected: postinstall / eas-build-post-install patch will inject exports.default as fallback.`
     );
     return;
   }
