@@ -1,9 +1,9 @@
 name: EAS Build
+# Manual only — do not auto-run on every push (wastes Expo build quota).
+# Trigger from Actions tab → EAS Build → Run workflow when you need a production Android AAB.
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
+
 jobs:
   build:
     name: Build Android AAB
