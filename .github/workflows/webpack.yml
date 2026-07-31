@@ -1,28 +1,14 @@
+# Disabled: this project uses Expo Metro, not Webpack.
+# The GitHub "NodeJS with Webpack" template always fails here (no webpack.config).
 name: NodeJS with Webpack
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch:  # manual only — do not run on push/PR
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
-
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-
-    - name: Build
-      run: |
-        npm install
-        npx webpack
+      - name: Skip
+        run: |
+          echo "Webpack workflow is disabled. This app uses Expo Metro."
