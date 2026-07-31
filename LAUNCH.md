@@ -10,13 +10,13 @@
 | Key | Value |
 |-----|-------|
 | App name | `The Ice Cream Man` |
-| Expo slug | `the-ice-cream-man` |
+| Expo slug | `the-ice-cream-man-app` |
 | Bundle / package ID | `com.icecreamman.app` |
 | Deep-link scheme | `icecreamman` |
-| EAS project ID | `a7392ba6-c4a2-455d-b03c-9bc0233b7b12` |
+| EAS project ID | `5bf9c92f-2974-422e-b6cb-958d6f7ae469` |
 | Expo owner | `mgfromthe503` |
-| App version | `1.0.1` |
-| Android `versionCode` | `2` (auto-increments on each production EAS build) |
+| App version | `1.0.14` |
+| Android `versionCode` | auto-increments on each production EAS build |
 | Play submit track | `internal` (draft) — promote to production in Play Console |
 
 Source of truth: `config/app-identity.js` and `app.config.ts`.
@@ -30,7 +30,7 @@ Before triggering any build, confirm each item below:
 ### Expo / EAS
 - [ ] You have an [Expo account](https://expo.dev) as `mgfromthe503`
 - [ ] Project is linked: `eas init --account mgfromthe503 --non-interactive`
-  (only needed once — project ID `a7392ba6-c4a2-455d-b03c-9bc0233b7b12` is already in `config/app-identity.js`)
+  (only needed once — project ID `5bf9c92f-2974-422e-b6cb-958d6f7ae469` is already in `config/app-identity.js`)
 - [ ] EAS Android keystore is managed: run `eas credentials` to confirm or generate
 - [ ] Create an Expo access token at <https://expo.dev/settings/access-tokens> and add it as GitHub secret `EXPO_TOKEN`
 

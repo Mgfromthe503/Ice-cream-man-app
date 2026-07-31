@@ -55,10 +55,10 @@ Single source of truth: `config/app-identity.js` (imported by `app.config.ts` an
 | Key | Value |
 |-----|-------|
 | App name | `The Ice Cream Man` |
-| Expo slug | `the-ice-cream-man` |
+| Expo slug | `the-ice-cream-man-app` |
 | Bundle ID / package | `com.icecreamman.app` |
 | Deep-link scheme | `icecreamman` |
-| EAS project ID | `a7392ba6-c4a2-455d-b03c-9bc0233b7b12` |
+| EAS project ID | `5bf9c92f-2974-422e-b6cb-958d6f7ae469` |
 | Expo owner | `mgfromthe503` |
 
 Expo usernames are **case-sensitive** for EAS project resolution — the owner must match the account that owns the projectId.

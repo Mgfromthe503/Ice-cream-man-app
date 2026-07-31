@@ -4,8 +4,8 @@
 
 ### 1. **Obfuscation Error** ✅ FIXED
 - **Problem:** Google Play was rejecting your build because ProGuard was enabled but no `mapping.txt` file was included.
-- **Solution:** Disabled ProGuard in `app.config.ts` (lines 122–123).
-- **Result:** Your app will build successfully without obfuscation errors.
+- **Solution:** R8 minification is enabled with deobfuscation file generation via `plugins/withBillingClient.js`.
+- **Result:** Your app builds with R8 enabled and mapping.txt is generated automatically.
 
 ### 2. **Billing Error** ✅ READY
 - **Problem:** Google Play requires you to set up the in-app product in Google Play Console.
@@ -143,7 +143,7 @@
 
 | File | Change |
 |------|--------|
-| `app.config.ts` | Disabled ProGuard obfuscation (lines 122–123) |
+| `app.config.ts` | R8 enabled with deobfuscation via withBillingClient plugin |
 | `.github/workflows/eas-build.yml` | Added GitHub Actions workflow for automated builds |
 | `GOOGLE_PLAY_SETUP.md` | Setup guide for Google Play Console |
 | `TROUBLESHOOTING.md` | This file |

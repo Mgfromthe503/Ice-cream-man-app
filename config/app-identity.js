@@ -1,7 +1,7 @@
 // Canonical app identity — single source of truth for all Expo/EAS config.
 // Update these values when the project is renamed or re-linked.
 export const APP_NAME = "The Ice Cream Man";
-export const APP_SLUG = "the-ice-cream-man";
+export const APP_SLUG = "the-ice-cream-man-app";
 export const APP_BUNDLE_ID = "com.icecreamman.app";
 // Deep-link scheme used by OAuth return URLs and Android intent filters.
 // Must stay aligned with app.config.ts `scheme` and constants/oauth.ts.

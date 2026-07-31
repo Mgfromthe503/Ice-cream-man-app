@@ -125,7 +125,7 @@ const config: ExpoConfig = {
           enableShrinkResourcesInReleaseBuilds: true,
           // Enable minification (R8) for release builds
           enableMinifyInReleaseBuilds: true,
-          // Google Play Billing Library version 7.0.0
+          // Google Play Billing Library version 9.1.0
           billingLibraryVersion: "9.1.0",
         },
       },

@@ -11,7 +11,7 @@ import {
 
 describe("app identity constants", () => {
   it("exports the canonical app slug", () => {
-    expect(APP_SLUG).toBe("the-ice-cream-man");
+    expect(APP_SLUG).toBe("the-ice-cream-man-app");
   });
 
   it("exports the Ice Cream Man deep-link scheme", () => {
@@ -24,7 +24,7 @@ describe("app identity constants", () => {
   });
 
   it("EAS project ID matches the canonical value", () => {
-    expect(EAS_PROJECT_ID).toBe("a7392ba6-c4a2-455d-b03c-9bc0233b7b12");
+    expect(EAS_PROJECT_ID).toBe("5bf9c92f-2974-422e-b6cb-958d6f7ae469");
   });
 
   it("exports the Expo account owner (required for EAS project resolution)", () => {

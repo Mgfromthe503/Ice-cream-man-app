@@ -3,9 +3,9 @@
 This guide helps you resolve the **Billing** and **Obfuscation** errors you encountered and explains how to generate new builds.
 
 ## 1. Resolving Obfuscation Errors
-I have disabled **ProGuard** in your `app.config.ts`. 
-- **Why?** Google Play flags "Obfuscation" errors when ProGuard is enabled but no `mapping.txt` file is uploaded. 
-- **Fix:** By disabling it, your app will still be professional and functional, but Google will no longer require a deobfuscation file. This is the simplest path to a successful launch.
+R8 minification is **enabled** in `app.config.ts` with automatic deobfuscation file generation. 
+- **Why?** R8 shrinks and obfuscates the APK for smaller size and security. The `withBillingClient.js` plugin generates the required `mapping.txt` automatically. 
+- **Fix:** The deobfuscation file is now included automatically in the AAB bundle. No manual upload needed.
 
 ## 2. Resolving Billing Errors
 Your app uses the `BILLING` permission for the $25 vendor registration fee. Google Play requires you to:
