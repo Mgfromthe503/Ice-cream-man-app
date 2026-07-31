@@ -53,14 +53,18 @@ jobs:
           node-version: "22"
           cache: pnpm
 
+      - name: Verify pnpm overrides / lockfile config
+        run: node scripts/verify-pnpm-overrides.cjs
+
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Apply CJS interop patch + verify brace-expansion
         run: |
           if [ -f scripts/patch-brace-expansion-cjs.cjs ]; then
             node scripts/patch-brace-expansion-cjs.cjs
           fi
+          node scripts/verify-pnpm-overrides.cjs
           node -e "
             const be = require('brace-expansion');
             const expand = typeof be === 'function' ? be : be && (be.default || be.expand);
