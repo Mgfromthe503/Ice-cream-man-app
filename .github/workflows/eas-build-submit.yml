@@ -43,16 +43,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+          run_install: false
+
+      - name: Configure pnpm store cache
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
           cache: pnpm
+
+      - name: Verify pnpm on PATH
+        run: |
+          command -v pnpm
+          pnpm --version
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
@@ -96,21 +107,32 @@ jobs:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
       EAS_SKIP_AUTO_FINGERPRINT: "1"
       EAS_NO_VCS: "1"
-      EAS_BUILD_NO_EXPO_GO_WARNING: "true"
+      EAS_BUILD_NO_EXPO_GO_WARNING: "1"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+          run_install: false
+
+      - name: Configure pnpm store cache
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
           cache: pnpm
+
+      - name: Verify pnpm on PATH
+        run: |
+          command -v pnpm
+          pnpm --version
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
