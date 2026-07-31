@@ -78,7 +78,7 @@ const config: ExpoConfig = {
     // Google Play Billing (vendor registration). Requires a dev client / EAS
     // build — not available in Expo Go.
     "expo-iap",
-    // Custom plugin: injects BillingClient 7.0.0 dependency + ProGuard rules
+    // Custom plugin: injects BillingClient 9.1.0 dependency + ProGuard rules
     "./plugins/withBillingClient",
     [
       "expo-location",
@@ -116,8 +116,8 @@ const config: ExpoConfig = {
       "expo-build-properties",
       {
         android: {
-          // Google Play Billing Library 7.0.0 (via expo-iap) needs Kotlin 2.x.
-          kotlinVersion: "2.0.21",
+          // Google Play Billing Library 9.1.0 (via expo-iap) needs Kotlin 2.x.
+          kotlinVersion: "2.1.20",
           buildArchs: ["armeabi-v7a", "arm64-v8a"],
           minSdkVersion: 24,
           // Enable R8 minification and resource shrinking for Google Play compliance
