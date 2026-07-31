@@ -1,0 +1,169 @@
+name: EAS Build and Submit
+
+# Validate on PR/push so CI stays green.
+# Production EAS build + optional Google Play submit only via manual Run workflow
+# (prevents wasting Expo build quota on every push).
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: EAS build profile
+        required: false
+        default: production
+        type: choice
+        options:
+          - production
+          - preview
+          - production-apk
+      submit:
+        description: Submit to Google Play after build (AAB/production only)
+        required: false
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eas-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Apply CJS interop patch + verify brace-expansion
+        run: |
+          if [ -f scripts/patch-brace-expansion-cjs.cjs ]; then
+            node scripts/patch-brace-expansion-cjs.cjs
+          fi
+          node -e "
+            const be = require('brace-expansion');
+            const expand = typeof be === 'function' ? be : be.default;
+            if (typeof expand !== 'function') {
+              console.error('FAIL: brace-expansion has no callable default');
+              process.exit(1);
+            }
+            console.log('OK: expand({a,b}) =>', expand('{a,b}'));
+          "
+
+      - name: Dependency audit
+        continue-on-error: true
+        run: pnpm audit --prod || true
+
+      - name: Validate types
+        run: pnpm check
+
+      - name: Run tests
+        run: pnpm test
+
+  build:
+    name: EAS Android build
+    needs: validate
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EAS_SKIP_AUTO_FINGERPRINT: "1"
+      EAS_NO_VCS: "1"
+      EAS_BUILD_NO_EXPO_GO_WARNING: "true"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Apply CJS interop patch + verify brace-expansion
+        run: |
+          if [ -f scripts/patch-brace-expansion-cjs.cjs ]; then
+            node scripts/patch-brace-expansion-cjs.cjs
+          fi
+          node -e "
+            const be = require('brace-expansion');
+            const expand = typeof be === 'function' ? be : be.default;
+            if (typeof expand !== 'function') {
+              console.error('FAIL: brace-expansion has no callable default');
+              process.exit(1);
+            }
+            console.log('OK: expand({a,b}) =>', expand('{a,b}'));
+          "
+
+      - name: Check EXPO_TOKEN
+        id: token
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "has_token=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::EXPO_TOKEN secret is not set. Skipping EAS build."
+          else
+            echo "has_token=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Expo and EAS CLI
+        if: steps.token.outputs.has_token == 'true'
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build Android app
+        if: steps.token.outputs.has_token == 'true'
+        run: |
+          PROFILE="${{ github.event.inputs.profile || 'production' }}"
+          eas build --platform android --profile "$PROFILE" --non-interactive --wait
+
+      - name: Submit to Google Play
+        if: >-
+          steps.token.outputs.has_token == 'true' &&
+          github.event.inputs.submit == 'true' &&
+          (github.event.inputs.profile == 'production' || github.event.inputs.profile == '' || github.event.inputs.profile == null)
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo "No Google Play service account — skipping submit"
+            exit 0
+          fi
+          umask 077
+          KEYFILE=$(mktemp)
+          printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > "$KEYFILE"
+          eas submit --platform android --latest --non-interactive \
+            --profile production \
+            --service-account-json "$KEYFILE"
+          rm -f "$KEYFILE"
