@@ -15,18 +15,22 @@
  *   :react-native-gesture-handler:generateCodegenSchemaFromJavaScript
  *
  * See: https://github.com/expo/eas-cli/issues/3695
+ *      docs/triage-eas-android-codegen.md
  *
  * Strategy
  * --------
  * After package install (eas-build-post-install / local postinstall), walk every
- * installed brace-expansion package and ensure its CJS entry exposes:
+ * installed brace-expansion package (hoisted + pnpm virtual store) and ensure
+ * its CJS entry exposes:
  *   - module.exports = expandFn
  *   - module.exports.default = expandFn
  *   - module.exports.expand = expandFn
  *
- * This is a surgical interop shim. Prefer removing it once minimatch / RN codegen
- * consume the named ESM export correctly, or once brace-expansion restores a
- * dual-package default for CJS consumers.
+ * Also normalizes package.json `main` / `exports` so require() cannot bypass
+ * the wrapper via a nested path Gradle's node process might resolve.
+ *
+ * Prefer removing this once minimatch / RN codegen consume the named ESM export,
+ * or once brace-expansion restores a dual-package default for CJS consumers.
  */
 "use strict";
 
@@ -45,7 +49,7 @@ function findBraceExpansionRoots(root) {
   if (!fs.existsSync(nm)) return results;
 
   function walk(dir, depth) {
-    if (depth > 8) return;
+    if (depth > 12) return;
     let entries;
     try {
       entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -60,10 +64,9 @@ function findBraceExpansionRoots(root) {
         results.push(full);
         continue;
       }
-      if (name === ".bin" || name === ".pnpm") continue;
-      if (name.startsWith(".")) continue;
-      // pnpm virtual store: node_modules/.pnpm/*/node_modules/brace-expansion
-      if (name === "node_modules") {
+      if (name === ".bin") continue;
+      if (name.startsWith(".") && name !== ".pnpm") continue;
+      if (name === "node_modules" || name === ".pnpm") {
         walk(full, depth + 1);
         continue;
       }
@@ -72,10 +75,9 @@ function findBraceExpansionRoots(root) {
     }
   }
 
-  // Hoisted layout
   walk(nm, 0);
 
-  // pnpm store layout
+  // Explicit pnpm virtual store: node_modules/.pnpm/*/node_modules/brace-expansion
   const pnpm = path.join(nm, ".pnpm");
   if (fs.existsSync(pnpm)) {
     let storeEntries;
@@ -106,12 +108,31 @@ function resolveExpandSource(pkgRoot) {
 
   const candidates = [];
   if (pkg.main) candidates.push(path.join(pkgRoot, pkg.main));
+  if (pkg.exports) {
+    const exp = pkg.exports;
+    if (typeof exp === "string") candidates.push(path.join(pkgRoot, exp));
+    else if (exp && typeof exp === "object") {
+      const def = exp["."] || exp;
+      if (typeof def === "string") candidates.push(path.join(pkgRoot, def));
+      else if (def && typeof def === "object") {
+        for (const key of ["require", "default", "import", "node"]) {
+          const v = def[key];
+          if (typeof v === "string") candidates.push(path.join(pkgRoot, v));
+        }
+      }
+    }
+  }
   candidates.push(path.join(pkgRoot, "index.js"));
   candidates.push(path.join(pkgRoot, "dist", "index.js"));
   candidates.push(path.join(pkgRoot, "dist", "cjs", "index.js"));
+  candidates.push(path.join(pkgRoot, "dist", "index.cjs"));
 
   for (const c of candidates) {
-    if (fs.existsSync(c) && fs.statSync(c).isFile()) return c;
+    try {
+      if (fs.existsSync(c) && fs.statSync(c).isFile()) return c;
+    } catch {
+      /* ignore */
+    }
   }
   return null;
 }
@@ -126,7 +147,6 @@ function alreadyPatched(filePath) {
 }
 
 function writeInteropWrapper(targetPath, originalRel) {
-  // Wrapper that loads the original module and normalizes exports for CJS consumers.
   const content = `${MARKER}
 "use strict";
 // Professional interop shim: make brace-expansion callable under CJS default interop.
@@ -152,6 +172,35 @@ module.exports.__esModule = true;
   fs.writeFileSync(targetPath, content, "utf8");
 }
 
+function normalizePackageJson(pkgRoot, entryRel) {
+  const pkgJsonPath = path.join(pkgRoot, "package.json");
+  try {
+    const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"));
+    let changed = false;
+    if (pkg.main !== entryRel) {
+      pkg.main = entryRel;
+      changed = true;
+    }
+    // Prefer a simple CJS main; leave type alone so we do not break ESM importers.
+    if (pkg.exports && typeof pkg.exports === "object") {
+      // Point require at the wrapper; keep import if present for ESM consumers.
+      const exp = pkg.exports;
+      if (exp["."] && typeof exp["."] === "object") {
+        if (exp["."].require !== "./" + entryRel.replace(/^\.\//, "")) {
+          exp["."].require = "./" + entryRel.replace(/^\.\//, "");
+          changed = true;
+        }
+      }
+    }
+    if (changed) {
+      fs.writeFileSync(pkgJsonPath, JSON.stringify(pkg, null, 2) + "\n", "utf8");
+      log(`normalized package.json main/exports: ${pkgRoot}`);
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 function patchPackage(pkgRoot) {
   const entry = resolveExpandSource(pkgRoot);
   if (!entry) {
@@ -159,7 +208,6 @@ function patchPackage(pkgRoot) {
     return false;
   }
 
-  // If entry is already our wrapper, done.
   if (alreadyPatched(entry)) {
     log(`already patched: ${pkgRoot}`);
     return true;
@@ -167,26 +215,17 @@ function patchPackage(pkgRoot) {
 
   const dir = path.dirname(entry);
   const base = path.basename(entry);
-  const backupName = base.replace(/\.js$/, ".original.js");
+  const backupName = base.replace(/\.js$/, ".original.js").replace(/\.cjs$/, ".original.cjs");
   const backupPath = path.join(dir, backupName);
 
-  // Move original aside once
   if (!fs.existsSync(backupPath)) {
     fs.copyFileSync(entry, backupPath);
   }
 
-  // Point package main at wrapper if needed; always rewrite entry as wrapper.
   writeInteropWrapper(entry, backupName);
 
-  // Also ensure package.json main points at the (now wrapped) entry.
-  const pkgJsonPath = path.join(pkgRoot, "package.json");
-  try {
-    const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"));
-    // Leave package.json as-is; we overwrote the file package.main already points to.
-    void pkg;
-  } catch {
-    /* ignore */
-  }
+  const entryRel = path.relative(pkgRoot, entry).split(path.sep).join("/");
+  normalizePackageJson(pkgRoot, entryRel.startsWith(".") ? entryRel : "./" + entryRel);
 
   log(`patched: ${pkgRoot}`);
   return true;
@@ -194,7 +233,6 @@ function patchPackage(pkgRoot) {
 
 function verifyRequire() {
   try {
-    // Clear cache so we load the patched copy
     Object.keys(require.cache).forEach((k) => {
       if (k.includes(`${path.sep}brace-expansion${path.sep}`) || k.endsWith(`${path.sep}brace-expansion`)) {
         delete require.cache[k];
@@ -209,7 +247,6 @@ function verifyRequire() {
     if (!Array.isArray(sample) || sample.length < 2) {
       return { ok: false, reason: "expand() returned unexpected value" };
     }
-    // Also verify the .default path minimatch uses
     const viaDefault =
       typeof be === "function"
         ? be
