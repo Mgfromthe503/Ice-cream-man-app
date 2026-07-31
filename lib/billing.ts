@@ -1,5 +1,5 @@
 /**
- * Google Play Billing Integration (Updated for react-native-iap v12.x)
+ * Google Play Billing Integration (expo-iap v5.0.0 + Billing Library 7.0.0)
  * 
  * This module handles the $25 one-time Ice Cream Man vendor registration fee
  * via Google Play Billing. Payment goes directly to the developer's Google Play
@@ -9,13 +9,11 @@
 import { Platform } from 'react-native';
 import { validatePurchaseToken, createSecureReceipt, isRateLimited, generateTransactionFingerprint } from './security';
 
-// Product ID - must match what you create in Google Play Console
 export const VENDOR_REGISTRATION_PRODUCT_ID = 'icm_vendor_registration';
 export const REGISTRATION_PRICE = 25.00;
 export const GOOGLE_CUT_PERCENT = 15;
 export const DEVELOPER_RECEIVES = REGISTRATION_PRICE * (1 - GOOGLE_CUT_PERCENT / 100);
 
-// Types for billing state
 export interface PurchaseResult {
   success: boolean;
   transactionId: string | null;
@@ -30,8 +28,8 @@ export async function initializeBilling(): Promise<boolean> {
   if (Platform.OS === 'web') return false;
 
   try {
-    const RNIap = require('react-native-iap');
-    await RNIap.initConnection();
+    const ExpoIap = require('expo-iap');
+    await ExpoIap.initConnection();
     return true;
   } catch (error) {
     console.error('[Billing] Connection failed:', error);
@@ -55,8 +53,8 @@ export async function getRegistrationProduct() {
   }
 
   try {
-    const RNIap = require('react-native-iap');
-    const products = await RNIap.getProducts({
+    const ExpoIap = require('expo-iap');
+    const products = await ExpoIap.getProducts({
       skus: [VENDOR_REGISTRATION_PRODUCT_ID]
     });
     return products?.[0] || null;
@@ -67,7 +65,7 @@ export async function getRegistrationProduct() {
 }
 
 /**
- * Purchase the vendor registration.
+ * Purchase the vendor registration using expo-iap v5.0.0 API.
  */
 export async function purchaseRegistration(): Promise<PurchaseResult> {
   if (isRateLimited('purchase_registration', 3, 60000)) {
@@ -82,15 +80,16 @@ export async function purchaseRegistration(): Promise<PurchaseResult> {
   }
 
   try {
-    const RNIap = require('react-native-iap');
+    const ExpoIap = require('expo-iap');
     const obfuscatedAccountId = generateTransactionFingerprint();
     
-    // v12.x request shape
-    const purchase = await RNIap.requestPurchase({
-      skus: [VENDOR_REGISTRATION_PRODUCT_ID],
-      obfuscatedAccountIdAndroid: obfuscatedAccountId,
-      obfuscatedProfileIdAndroid: 'vendor-registration',
-      andDangerouslyFinishTransactionAutomaticallyIOS: false,
+    // expo-iap v5.0.0 request shape (Google Play Billing Library 7.0.0 compatible)
+    const purchase = await ExpoIap.requestPurchase({
+      request: {
+        sku: VENDOR_REGISTRATION_PRODUCT_ID,
+        obfuscatedAccountId,
+        obfuscatedProfileId: 'vendor-registration',
+      },
     });
 
     if (purchase) {
@@ -99,7 +98,7 @@ export async function purchaseRegistration(): Promise<PurchaseResult> {
       }
 
       // Acknowledge the purchase
-      await RNIap.finishTransaction({
+      await ExpoIap.finishTransaction({
         purchase,
         isConsumable: false,
       });
@@ -126,8 +125,8 @@ export async function checkExistingPurchase(): Promise<boolean> {
   if (Platform.OS === 'web') return false;
 
   try {
-    const RNIap = require('react-native-iap');
-    const purchases = await RNIap.getAvailablePurchases();
+    const ExpoIap = require('expo-iap');
+    const purchases = await ExpoIap.getAvailablePurchases();
     return purchases.some((p: any) => p.productId === VENDOR_REGISTRATION_PRODUCT_ID);
   } catch (error) {
     return false;
@@ -140,7 +139,7 @@ export async function checkExistingPurchase(): Promise<boolean> {
 export async function endBillingConnection(): Promise<void> {
   if (Platform.OS === 'web') return;
   try {
-    const RNIap = require('react-native-iap');
-    await RNIap.endConnection();
+    const ExpoIap = require('expo-iap');
+    await ExpoIap.endConnection();
   } catch (error) {}
 }

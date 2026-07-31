@@ -14,7 +14,7 @@ const config: ExpoConfig = {
   name: APP_NAME,
   slug: APP_SLUG,
   owner: EXPO_OWNER,
-  version: "1.0.1",
+  version: "1.0.14",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: APP_SCHEME,
@@ -37,7 +37,7 @@ const config: ExpoConfig = {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: APP_BUNDLE_ID,
-    versionCode: 2,
+    versionCode: 10014,
     permissions: [
       "POST_NOTIFICATIONS",
       "com.android.vending.BILLING",
@@ -77,7 +77,9 @@ const config: ExpoConfig = {
     "expo-web-browser",
     // Google Play Billing (vendor registration). Requires a dev client / EAS
     // build — not available in Expo Go.
-    "react-native-iap",
+    "expo-iap",
+    // Custom plugin: injects BillingClient 7.0.0 dependency + ProGuard rules
+    "./plugins/withBillingClient",
     [
       "expo-location",
       {
@@ -114,15 +116,17 @@ const config: ExpoConfig = {
       "expo-build-properties",
       {
         android: {
-          // Google Play Billing Library (via react-native-iap) needs Kotlin 2.x.
-          // Expo SDK 54 ships compatible defaults; pin explicitly for EAS Gradle.
+          // Google Play Billing Library 7.0.0 (via expo-iap) needs Kotlin 2.x.
           kotlinVersion: "2.1.20",
           buildArchs: ["armeabi-v7a", "arm64-v8a"],
           minSdkVersion: 24,
-          enableProguardInReleaseBuilds: false,
-          enableShrinkResourcesInReleaseBuilds: false,
-          // Force latest Google Play Billing Library version
-          billingLibraryVersion: "6.0.1",
+          // Enable R8 minification and resource shrinking for Google Play compliance
+          enableProguardInReleaseBuilds: true,
+          enableShrinkResourcesInReleaseBuilds: true,
+          // Enable minification (R8) for release builds
+          enableMinifyInReleaseBuilds: true,
+          // Google Play Billing Library version 7.0.0
+          billingLibraryVersion: "7.0.0",
         },
       },
     ],
