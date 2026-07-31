@@ -72,6 +72,29 @@ Then:
 eas build -p android --profile production --clear-cache
 ```
 
+## Where overrides must live (pnpm 9 vs 10)
+
+`pnpm` reads `overrides` from `pnpm-workspace.yaml` only from **v10** onwards. This repo builds on **pnpm 9.12.0** (`package.json` `packageManager` and `eas.json` `build.base.pnpm`), where that key is parsed as unknown config and **silently ignored**.
+
+Verified locally with pnpm 9.12.0 — overrides declared only in `pnpm-workspace.yaml`:
+
+```text
+pnpm-lock.yaml                  no `overrides:` section emitted
+node_modules/brace-expansion    5.0.8   (expected 2.0.2)
+```
+
+All 20 pins — the `brace-expansion` codegen fix plus the security overrides (`axios`, `form-data`, `tar`, `node-forge`, `postcss`, …) — stop applying. Keep overrides in `package.json` `pnpm.overrides` until `packageManager` **and** `eas.json` both move to pnpm 10.
+
+## Guard: `pnpm verify:deps`
+
+`scripts/verify-pnpm-overrides.cjs` fails the build when:
+
+1. `pnpm-workspace.yaml` declares `overrides` while `packageManager` is pnpm < 10;
+2. the `overrides` block in `pnpm-lock.yaml` differs from `package.json` `pnpm.overrides` — the exact condition behind `ERR_PNPM_LOCKFILE_CONFIG_MISMATCH`, normally caused by editing overrides without regenerating the lockfile;
+3. `brace-expansion` is pinned to, or resolves to, anything other than `2.0.2`.
+
+It runs in CI before install, again after install, and on the EAS worker via `eas-build-pre-install`, so drift fails fast instead of burning an Expo build. CI installs with `--frozen-lockfile` for the same reason.
+
 ## Exit criteria (when to remove pins / shim)
 
 Remove the preload, override, and scripts when **all** of the following are true:
