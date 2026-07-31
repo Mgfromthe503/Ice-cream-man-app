@@ -41,18 +41,15 @@ async function startServer() {
   // Helmet sets secure HTTP response headers (OWASP / Express security best practices)
   app.use(helmet());
 
-  // Enable CORS for all routes - reflect the request origin to support credentials
-  app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    if (origin) {
-      fix_code = """
-  // --- SECURE CORS CONFIGURATION START ---
+  // --- SECURE CORS CONFIGURATION ---
+  // Allowlist Expo / local dev origins; support credentialed requests.
+  // Mobile clients that omit Origin are allowed via wildcard (no credentials).
   const ALLOWED_ORIGINS = [
-    'http://localhost:8081',
-    'http://localhost:19000',
-    'http://localhost:19006',
-    'https://exp.host',
-    'https://u.expo.dev'
+    "http://localhost:8081",
+    "http://localhost:19000",
+    "http://localhost:19006",
+    "https://exp.host",
+    "https://u.expo.dev",
   ];
 
   app.use((req, res, next) => {
@@ -62,14 +59,14 @@ async function startServer() {
       res.header("Access-Control-Allow-Origin", origin);
       res.header("Access-Control-Allow-Credentials", "true");
     } else if (!origin) {
-      // Allow mobile app requests that don't send an Origin header
+      // Native / mobile requests often send no Origin header
       res.header("Access-Control-Allow-Origin", "*");
     }
 
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.header(
       "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization",
     );
 
     if (req.method === "OPTIONS") {
@@ -77,10 +74,6 @@ async function startServer() {
     }
     next();
   });
-  // --- SECURE CORS CONFIGURATION END ---
-"""
-
-print(fix_code)d: true }));
 
   // Apply security middleware (headers, rate limiting, sanitization, fraud detection)
   applySecurityMiddleware(app);
@@ -102,7 +95,7 @@ print(fix_code)d: true }));
   app.post("/api/auth/test-login", async (req, res) => {
     try {
       // Rate limiting: max 5 attempts per minute per IP
-      const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+      const clientIp = req.ip || req.socket.remoteAddress || "unknown";
       const now = Date.now();
       const windowMs = 60000; // 1 minute
       const maxAttempts = 5;
@@ -147,13 +140,13 @@ print(fix_code)d: true }));
           openId: account.openId,
           name: account.displayName,
           email: account.email,
-          loginMethod: 'test_account',
+          loginMethod: "test_account",
           lastSignedIn: new Date(),
-          role: account.role === 'driver' ? 'admin' : undefined,
+          role: account.role === "driver" ? "admin" : undefined,
         });
       } catch (dbErr) {
         // DB may not be available in local dev — continue anyway
-        console.warn('[TestLogin] DB upsert skipped:', dbErr);
+        console.warn("[TestLogin] DB upsert skipped:", dbErr);
       }
 
       // Generate a REAL signed JWT session token (same as OAuth flow)
@@ -182,14 +175,14 @@ print(fix_code)d: true }));
         sessionToken,
       });
     } catch (error) {
-      console.error('[TestLogin] Error:', error);
+      console.error("[TestLogin] Error:", error);
       res.status(500).json({ error: "Login failed" });
     }
   });
 
   // Privacy Policy — publicly accessible URL for Google Play Console
   app.get("/privacy-policy", (_req, res) => {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.send(`<!DOCTYPE html>
 <html lang="en">
 <head>
