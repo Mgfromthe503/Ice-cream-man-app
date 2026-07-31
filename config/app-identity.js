@@ -7,7 +7,7 @@ export const APP_BUNDLE_ID = "com.icecreamman.app";
 // Must stay aligned with app.config.ts `scheme` and constants/oauth.ts.
 export const APP_SCHEME = "icecreamman";
 // Run `eas init --account mgfromthe503 --non-interactive` once to create/link the project.
-export const EAS_PROJECT_ID = "a7392ba6-c4a2-455d-b03c-9bc0233b7b12";
+export const EAS_PROJECT_ID = "5bf9c92f-2974-422e-b6cb-958d6f7ae469";
 // Expo account that owns the EAS project. Must match the account that owns projectId
 // (Expo usernames are case-sensitive in EAS project resolution).
 export const EXPO_OWNER = "mgfromthe503";
