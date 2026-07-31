@@ -34,21 +34,19 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
-        # --no-frozen-lockfile lets selective brace-expansion overrides resolve even if
-        # the committed lockfile still listed 5.0.6+ / 2.1.0+.
         run: pnpm install --no-frozen-lockfile
 
-      - name: Verify brace-expansion is CJS-safe (codegen guard)
+      - name: Apply CJS interop patch + verify brace-expansion
         run: |
-          node scripts/ensure-brace-expansion.cjs
+          node scripts/patch-brace-expansion-cjs.cjs
           node -e "
             const be = require('brace-expansion');
             const expand = typeof be === 'function' ? be : be.default;
             if (typeof expand !== 'function') {
-              console.error('FAIL: brace-expansion has no callable export');
+              console.error('FAIL: brace-expansion has no callable default');
               process.exit(1);
             }
-            console.log('OK: brace-expansion callable, sample=', expand('{a,b}'));
+            console.log('OK: expand({a,b}) =>', expand('{a,b}'));
           "
 
       - name: Build Android
