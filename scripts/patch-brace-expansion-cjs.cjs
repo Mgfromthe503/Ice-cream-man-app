@@ -10,10 +10,12 @@
  *
  * TypeScript __importDefault returns `mod` unchanged when mod.__esModule === true.
  *
- * brace-expansion@5.0.5 (and 5.0.6+) ship a CJS build that only does:
- *   Object.defineProperty(exports, "__esModule", { value: true });
- *   exports.expand = expand;
- * with NO exports.default. So .default is undefined and RN codegen fails:
+ * brace-expansion@2.0.2 is pure CJS (`module.exports = expand`, no __esModule).
+ * __importDefault therefore wraps it as `{ default: expand }` — minimatch works
+ * with zero patching. This is the preferred pin (see package.json overrides).
+ *
+ * brace-expansion@5.0.5 ships CJS with only `exports.expand` + `__esModule: true`
+ * and NO exports.default, so .default is undefined and RN codegen fails:
  *
  *   :react-native-gesture-handler:generateCodegenSchemaFromJavaScript
  *   TypeError: (0 , brace_expansion_1.default) is not a function
@@ -21,13 +23,14 @@
  * See: https://github.com/expo/eas-cli/issues/3695
  *      docs/triage-eas-android-codegen.md
  *
- * Strategy (EAS / pnpm / Gradle-safe)
- * ------------------------------------
- * 1. Walk every installed brace-expansion (hoisted + pnpm virtual store).
- * 2. In-place append on the real CJS entry so exports.default is the expand fn.
- * 3. Also drop a root interop.cjs and point package.json main + exports.require
- *    at it (.cjs is always CommonJS even when package.json has "type": "module").
- * 4. Verify with the exact minimatch interop shape before exiting 0.
+ * Strategy
+ * --------
+ * 1. If require('brace-expansion') already satisfies the minimatch interop
+ *    shape, exit 0 immediately (idempotent; safe to run from postinstall AND
+ *    the CI verify step).
+ * 2. Otherwise walk installed copies and repair broken 5.x / ESM shapes only.
+ * 3. Never treat interop.cjs as the source entry (avoids circular require on
+ *    re-runs after package.json main was rewritten).
  */
 "use strict";
 
@@ -39,6 +42,60 @@ const INTEROP_CJS = "interop.cjs";
 
 function log(msg) {
   console.log(`[patch-brace-expansion-cjs] ${msg}`);
+}
+
+function clearBraceCache() {
+  Object.keys(require.cache).forEach((k) => {
+    if (
+      k.includes(`${path.sep}brace-expansion${path.sep}`) ||
+      k.endsWith(`${path.sep}brace-expansion`) ||
+      k.endsWith(`${path.sep}${INTEROP_CJS}`)
+    ) {
+      delete require.cache[k];
+    }
+  });
+}
+
+/** Simulate TypeScript __importDefault + minimatch call site. */
+function minimatchInteropOk(mod) {
+  // __importDefault: if mod && mod.__esModule then return mod; else return { default: mod }
+  const imported = mod && mod.__esModule ? mod : { default: mod };
+  return typeof imported.default === "function";
+}
+
+function verifyRequire() {
+  try {
+    clearBraceCache();
+    const be = require("brace-expansion");
+
+    if (!minimatchInteropOk(be)) {
+      return {
+        ok: false,
+        reason:
+          "minimatch interop path failed: require('brace-expansion').default is not a function " +
+          `(typeof=${typeof be}, keys=${be && typeof be === "object" ? Object.keys(be).join(",") : "n/a"})`,
+      };
+    }
+
+    const expand = typeof be === "function" ? be : be.default || be.expand;
+    const sample = expand("{a,b}");
+    if (!Array.isArray(sample) || sample.length < 2) {
+      return { ok: false, reason: "expand('{a,b}') returned unexpected value" };
+    }
+    return { ok: true, version: readInstalledVersion() };
+  } catch (err) {
+    return { ok: false, reason: String(err && err.message ? err.message : err) };
+  }
+}
+
+function readInstalledVersion() {
+  try {
+    const resolved = require.resolve("brace-expansion/package.json");
+    const pkg = JSON.parse(fs.readFileSync(resolved, "utf8"));
+    return pkg.version || "unknown";
+  } catch {
+    return "unknown";
+  }
 }
 
 function findBraceExpansionRoots(root) {
@@ -94,6 +151,10 @@ function findBraceExpansionRoots(root) {
   return [...new Set(results)];
 }
 
+/**
+ * Resolve the real package source entry — never interop.cjs (our own wrapper).
+ * Prefer dist/commonjs, index.js, package main when it is not interop.cjs.
+ */
 function resolveCjsEntry(pkgRoot) {
   const pkgJsonPath = path.join(pkgRoot, "package.json");
   if (!fs.existsSync(pkgJsonPath)) return null;
@@ -104,28 +165,40 @@ function resolveCjsEntry(pkgRoot) {
     return null;
   }
 
+  const isInterop = (p) => {
+    if (!p) return false;
+    const base = path.basename(p).toLowerCase();
+    return base === INTEROP_CJS || base === "interop.js";
+  };
+
   const candidates = [];
 
-  // Prefer the require/export path (real CJS build)
-  if (pkg.exports && typeof pkg.exports === "object") {
-    const exp = pkg.exports["."] || pkg.exports;
-    if (exp && typeof exp === "object") {
-      const req = exp.require;
-      if (typeof req === "string") candidates.push(path.join(pkgRoot, req));
-      else if (req && typeof req === "object" && typeof req.default === "string") {
-        candidates.push(path.join(pkgRoot, req.default));
-      }
-    }
-  }
-  if (pkg.main) candidates.push(path.join(pkgRoot, pkg.main));
+  // Prefer known real CJS sources first (before package.json main, which we may have rewritten)
   candidates.push(path.join(pkgRoot, "dist", "commonjs", "index.js"));
   candidates.push(path.join(pkgRoot, "dist", "cjs", "index.js"));
   candidates.push(path.join(pkgRoot, "dist", "index.cjs"));
   candidates.push(path.join(pkgRoot, "index.js"));
 
+  if (pkg.exports && typeof pkg.exports === "object") {
+    const exp = pkg.exports["."] || pkg.exports;
+    if (exp && typeof exp === "object") {
+      const req = exp.require;
+      if (typeof req === "string" && !isInterop(req)) {
+        candidates.push(path.join(pkgRoot, req));
+      } else if (req && typeof req === "object" && typeof req.default === "string" && !isInterop(req.default)) {
+        candidates.push(path.join(pkgRoot, req.default));
+      }
+    } else if (typeof exp === "string" && !isInterop(exp)) {
+      candidates.push(path.join(pkgRoot, exp));
+    }
+  }
+  if (pkg.main && !isInterop(pkg.main)) {
+    candidates.push(path.join(pkgRoot, pkg.main));
+  }
+
   for (const c of candidates) {
     try {
-      if (fs.existsSync(c) && fs.statSync(c).isFile()) return c;
+      if (fs.existsSync(c) && fs.statSync(c).isFile() && !isInterop(c)) return c;
     } catch {
       /* ignore */
     }
@@ -140,12 +213,8 @@ function injectDefaultExport(entryPath) {
   } catch {
     return false;
   }
-  if (text.includes(MARKER)) return true;
+  if (text.includes(MARKER)) return true; // already injected — idempotent
 
-  // Append interop so both shapes work:
-  // - module.exports is a function (legacy 2.x)
-  // - module.exports.expand is a function (5.x named)
-  // - module.exports.default is always the callable expand
   const appendix = `
 ${MARKER}
 ;(function () {
@@ -165,17 +234,22 @@ ${MARKER}
   }
 })();
 `;
-  fs.writeFileSync(entryPath, text + appendix, "utf8");
+  fs.writeFileSync(entryPath, text + append, "utf8");
   return true;
 }
 
 function writeRootInteropCjs(pkgRoot, entryRelFromRoot) {
   const interopPath = path.join(pkgRoot, INTEROP_CJS);
-  // Use a relative require of the (patched) CJS entry. .cjs is always CommonJS.
+  // Require the real source entry only — never self.
+  const rel = entryRelFromRoot.replace(/^\.\//, "");
+  if (path.basename(rel).toLowerCase() === INTEROP_CJS) {
+    log(`WARN: refused to write interop that requires itself (${rel})`);
+    return null;
+  }
   const content = `${MARKER}
 "use strict";
 // Root interop entry: always CJS (.cjs) so Gradle/node never hit type:module .js.
-var mod = require(${JSON.stringify("./" + entryRelFromRoot.replace(/^\.\//, ""))});
+var mod = require(${JSON.stringify("./" + rel)});
 var expand =
   typeof mod === "function"
     ? mod
@@ -208,7 +282,6 @@ function normalizePackageJson(pkgRoot, interopRel) {
       changed = true;
     }
 
-    // Ensure require() condition points at the .cjs interop.
     if (!pkg.exports || typeof pkg.exports !== "object") {
       pkg.exports = { ".": { require: mainTarget, default: mainTarget } };
       changed = true;
@@ -220,7 +293,6 @@ function normalizePackageJson(pkgRoot, interopRel) {
       } else if (exp["."] && typeof exp["."] === "object") {
         const dot = exp["."];
         if (dot.require !== mainTarget) {
-          // Keep nested require.default shape if present, else set string.
           if (dot.require && typeof dot.require === "object") {
             if (dot.require.default !== mainTarget) {
               dot.require.default = mainTarget;
@@ -246,11 +318,51 @@ function normalizePackageJson(pkgRoot, interopRel) {
   }
 }
 
+function packageAlreadyHealthy(pkgRoot) {
+  // Pure CJS 2.0.2 needs no interop file. Prefer leave package.json alone.
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(pkgRoot, "package.json"), "utf8"));
+    if (pkg.version === "2.0.2" || (pkg.version && pkg.version.startsWith("2.0."))) {
+      return true;
+    }
+  } catch {
+    /* ignore */
+  }
+  return false;
+}
+
 function patchPackage(pkgRoot) {
+  if (packageAlreadyHealthy(pkgRoot)) {
+    log(`skip (pure CJS ${readPkgVersion(pkgRoot)} — minimatch interop OK): ${pkgRoot}`);
+    return false;
+  }
+
   const entry = resolveCjsEntry(pkgRoot);
   if (!entry) {
     log(`skip (no CJS entry): ${pkgRoot}`);
     return false;
+  }
+
+  const entryRel = path.relative(pkgRoot, entry).split(path.sep).join("/");
+
+  // Idempotent: if marker already on real entry and interop exists, do not rewrite
+  try {
+    const existing = fs.readFileSync(entry, "utf8");
+    const interopPath = path.join(pkgRoot, INTEROP_CJS);
+    if (existing.includes(MARKER) && fs.existsSync(interopPath)) {
+      const interopText = fs.readFileSync(interopPath, "utf8");
+      // Guard against previously corrupted self-requiring interop
+      if (
+        interopText.includes(MARKER) &&
+        !interopText.includes(`require("./${INTEROP_CJS}")`) &&
+        !interopText.includes(`require('./${INTEROP_CJS}')`)
+      ) {
+        log(`already patched (idempotent): ${pkgRoot}`);
+        return false;
+      }
+    }
+  } catch {
+    /* continue to repair */
   }
 
   const injected = injectDefaultExport(entry);
@@ -259,66 +371,40 @@ function patchPackage(pkgRoot) {
     return false;
   }
 
-  const entryRel = path.relative(pkgRoot, entry).split(path.sep).join("/");
-  writeRootInteropCjs(pkgRoot, entryRel);
+  const written = writeRootInteropCjs(pkgRoot, entryRel);
+  if (!written) return false;
   normalizePackageJson(pkgRoot, INTEROP_CJS);
 
   log(`patched: ${pkgRoot} (entry=${entryRel})`);
   return true;
 }
 
-/** Simulate TypeScript __importDefault + minimatch call site. */
-function minimatchInteropOk(mod) {
-  // __importDefault: if mod && mod.__esModule then return mod; else return { default: mod }
-  const imported =
-    mod && mod.__esModule ? mod : { default: mod };
-  const fn = imported.default;
-  return typeof fn === "function";
-}
-
-function verifyRequire() {
+function readPkgVersion(pkgRoot) {
   try {
-    Object.keys(require.cache).forEach((k) => {
-      if (
-        k.includes(`${path.sep}brace-expansion${path.sep}`) ||
-        k.endsWith(`${path.sep}brace-expansion`) ||
-        k.endsWith(`${path.sep}interop.cjs`)
-      ) {
-        delete require.cache[k];
-      }
-    });
-
-    const be = require("brace-expansion");
-
-    if (!minimatchInteropOk(be)) {
-      return {
-        ok: false,
-        reason:
-          "minimatch interop path failed: require('brace-expansion').default is not a function " +
-          `(typeof=${typeof be}, keys=${be && typeof be === "object" ? Object.keys(be).join(",") : "n/a"})`,
-      };
-    }
-
-    const expand =
-      typeof be === "function" ? be : be.default || be.expand;
-    const sample = expand("{a,b}");
-    if (!Array.isArray(sample) || sample.length < 2) {
-      return { ok: false, reason: "expand('{a,b}') returned unexpected value" };
-    }
-    return { ok: true };
-  } catch (err) {
-    return { ok: false, reason: String(err && err.message ? err.message : err) };
+    return JSON.parse(fs.readFileSync(path.join(pkgRoot, "package.json"), "utf8")).version || "?";
+  } catch {
+    return "?";
   }
 }
 
 function main() {
+  // Fast path: already good (pure CJS 2.0.2 or previously healthy patch).
+  // This makes the script safe to run from postinstall AND the CI verify step.
+  const early = verifyRequire();
+  if (early.ok) {
+    log(
+      `verify OK (noop) — brace-expansion@${early.version || "?"} already satisfies minimatch interop`
+    );
+    return;
+  }
+
   const root = process.cwd();
   const roots = findBraceExpansionRoots(root);
   if (roots.length === 0) {
     log("no brace-expansion installs found yet (ok during pre-install)");
     return;
   }
-  log(`found ${roots.length} brace-expansion install(s)`);
+  log(`found ${roots.length} brace-expansion install(s); interop was broken: ${early.reason}`);
   let patched = 0;
   for (const r of roots) {
     if (patchPackage(r)) patched += 1;
