@@ -126,7 +126,7 @@ function checkBraceExpansionPin(expected) {
     fail(
       `package.json pnpm.overrides pins brace-expansion to ` +
         `${expected["brace-expansion"] ?? "(absent)"}; must be ${BRACE_EXPANSION_PIN} ` +
-        `(security-patched; preload handles Gradle CJS interop). See docs/triage-eas-android-codegen.md.`,
+      `(security-patched; preload + postinstall patch handle Gradle CJS interop). See docs/triage-eas-android-codegen.md.`,
     );
   }
 

@@ -1,167 +1,66 @@
-# 🚀 Ice Cream Man App — Troubleshooting & Build Guide
+# Ice Cream Man Build Troubleshooting
 
-## What I Fixed For You
+## Canonical source repository
 
-### 1. **Obfuscation Error** ✅ FIXED
-- **Problem:** Google Play was rejecting your build because ProGuard was enabled but no `mapping.txt` file was included.
-- **Solution:** R8 minification is enabled with deobfuscation file generation via `plugins/withBillingClient.js`.
-- **Result:** Your app builds with R8 enabled and mapping.txt is generated automatically.
+Use **`Mgfromthe503/Ice-cream-man-app`** as the single source repository for Expo/EAS builds.
 
-### 2. **Billing Error** ✅ READY
-- **Problem:** Google Play requires you to set up the in-app product in Google Play Console.
-- **Solution:** I've documented exactly what you need to do in Google Play Console.
-- **Action Required:** Follow **Section 3** below.
+Do not build from forks or mirrored repositories unless you intentionally re-link the Expo project and credentials.
 
-### 3. **Build Generation** ✅ AUTOMATED
-- **Problem:** You didn't know how to generate a new build from GitHub.
-- **Solution:** I've added a GitHub Actions workflow that automatically builds your app.
-- **Action Required:** Follow **Section 2** below.
+## Canonical identity values (must always match)
 
----
+Source of truth: `/home/runner/work/Ice-cream-man-app/Ice-cream-man-app/config/app-identity.js`
 
-## 2. How to Generate a New Build via GitHub
+- App name: `The Ice Cream Man`
+- Expo slug: `the-ice-cream-man-app`
+- Bundle ID / Android package: `com.icecreamman.app`
+- Deep-link scheme: `icecreamman`
+- Expo owner: `mgfromthe503`
+- EAS project ID: `5bf9c92f-2974-422e-b6cb-958d6f7ae469`
 
-### Step 1: Create an Expo Token
-1. Go to [Expo Settings → Access Tokens](https://expo.dev/settings/access-tokens)
-2. Click **Create token**
-3. Name it: `github-eas-build`
-4. Copy the token (you'll only see it once)
+These values must stay consistent across:
 
-### Step 2: Add Token to GitHub Secrets
-1. Go to your GitHub repo: **Settings → Secrets and variables → Actions**
-2. Click **New repository secret**
-3. Name: `EXPO_TOKEN`
-4. Value: Paste the token you just copied
-5. Click **Add secret**
+- `config/app-identity.js`
+- `app.config.ts`
+- EAS project selected by your Expo token/account
 
-### Step 3: Trigger the Build
-**Option A: Automatic (recommended)**
-- Push any change to the `main` branch
-- GitHub will automatically start building
+## Repeated EAS Android failure loop: diagnostic flow
 
-**Option B: Manual**
-1. Go to your GitHub repo → **Actions** tab
-2. Select **EAS Build** workflow on the left
-3. Click **Run workflow**
-4. Select branch: `main`
-5. Click **Run workflow**
+1. Confirm your workflow run used this repository and branch.
+2. Confirm `EXPO_TOKEN` authenticates as `mgfromthe503`.
+3. Confirm build profile is `production` unless you intentionally chose another profile.
+4. Confirm dependency guards pass:
+   - `pnpm verify:deps`
+   - `pnpm test`
+5. Confirm `brace-expansion` resolves to `2.1.3` (security-patched; Gradle interop handled by preload/patch guards).
+6. Re-run EAS with a clean worker cache:
+   - `eas build -p android --profile production --clear-cache`
 
-### Step 4: Monitor the Build
-1. Go to [Expo Dashboard](https://expo.dev/)
-2. Select **The Ice Cream Man** project
-3. You'll see the build progress in real-time
-4. Once complete, you'll see a download link for your `.aab` file
+## Common CI/EAS outcomes
 
----
+### Validate job fails before EAS build starts
 
-## 3. Google Play Console Setup
+If GitHub Actions fails in `Run tests` or `Validate types`, EAS build is skipped. Fix validation first, then re-run.
 
-### Step 1: Create the In-App Product
-1. Go to [Google Play Console](https://play.google.com/console)
-2. Select your app: **The Ice Cream Man**
-3. Navigate: **Monetize → Products → In-app products**
-4. Click **Create product**
-5. Fill in:
-   - **Product ID:** `icm_vendor_registration` (must match exactly)
-   - **Product type:** One-time (managed)
-   - **Price:** $25.00
-   - **Status:** Active
-6. Click **Save**
+### EAS build fails with codegen / brace-expansion error
 
-### Step 2: Upload Your Build
-1. Go to **Testing → Internal testing** (or **Production** if ready)
-2. Click **Create release**
-3. Click **Browse files** and select your `.aab` file
-4. Add release notes (e.g., "Initial launch")
-5. Click **Review release**
-6. Click **Start rollout to internal testing**
+This repository hard-pins `brace-expansion` to `2.1.3` and includes preload/patch guards. If this regresses, regenerate lockfile and commit it:
 
-### Step 3: Verify the Build
-1. Add yourself as a tester (or use an existing test account)
-2. Open the Google Play Store on an Android device
-3. Search for "The Ice Cream Man"
-4. Tap **Install** (or **Update**)
-5. Test the $25 vendor registration flow
+```bash
+pnpm install
+git add package.json pnpm-lock.yaml
+git commit -m "fix: restore brace-expansion 2.1.3 secure pin for EAS codegen"
+```
 
----
+### EAS build fails with Gradle unknown error
 
-## 4. Common Issues & Solutions
+Open the Expo build page from workflow logs and inspect the **Run gradlew** phase. GitHub logs only show the high-level EAS failure summary.
 
-### Issue: "Build failed in GitHub Actions"
-**Solution:** 
-- Check that `EXPO_TOKEN` is set correctly in GitHub Secrets
-- Verify the token hasn't expired (create a new one if needed)
-- Check the GitHub Actions logs for the specific error
+## Build workflow behavior
 
-### Issue: "Google Play says 'Obfuscation error'"
-**Solution:** 
-- This is now fixed! The obfuscation is disabled in your `app.config.ts`
-- Re-download the latest version from GitHub and generate a new build
+- `.github/workflows/eas-build-submit.yml`
+  - PR/push to `main`: validate only (types/tests)
+  - manual `workflow_dispatch`: validate + optional EAS build/submit
+- `.github/workflows/eas-build.yml`
+  - manual EAS build workflow
 
-### Issue: "Google Play says 'Billing error' or 'Missing product'"
-**Solution:** 
-- Go to Google Play Console → **Monetize → In-app products**
-- Verify that `icm_vendor_registration` exists and is **Active**
-- If missing, create it following **Section 3, Step 1**
-
-### Issue: "The app crashes when I tap 'Register as Vendor'"
-**Solution:** 
-- Ensure the in-app product is **Active** in Google Play Console
-- Verify you're testing on a real Android device (not an emulator)
-- Check the device has Google Play Services installed
-
-### Issue: "I don't see the build in Expo Dashboard"
-**Solution:** 
-- Wait 2–5 minutes for the build to appear
-- Refresh the page
-- Check GitHub Actions for build errors
-- Verify `EXPO_TOKEN` is correct
-
----
-
-## 5. Next Steps After Launch
-
-### Revenue Tracking
-1. Go to Google Play Console → **Financial → Earnings**
-2. Your $21.25 per registration will appear here (Google takes 15%)
-3. Set up automatic payouts in **Settings → Developer account → Payment settings**
-
-### Updates
-1. Make changes to your code
-2. Push to `main` branch
-3. GitHub automatically builds a new version
-4. Download and upload to Google Play Console
-
-### Support
-- If you have questions, refer to the `LAUNCH.md` file for comprehensive documentation
-- For Expo-specific issues, visit [Expo Documentation](https://docs.expo.dev)
-- For Google Play issues, visit [Google Play Console Help](https://support.google.com/googleplay/android-developer)
-
----
-
-## 6. Files I Created/Modified
-
-| File | Change |
-|------|--------|
-| `app.config.ts` | R8 enabled with deobfuscation via withBillingClient plugin |
-| `.github/workflows/eas-build.yml` | Added GitHub Actions workflow for automated builds |
-| `GOOGLE_PLAY_SETUP.md` | Setup guide for Google Play Console |
-| `TROUBLESHOOTING.md` | This file |
-
----
-
-## 7. Quick Reference
-
-| Item | Value |
-|------|-------|
-| App Name | The Ice Cream Man |
-| Package ID | com.icecreamman.app |
-| In-App Product ID | icm_vendor_registration |
-| Price | $25.00 |
-| Your Revenue | $21.25 per registration (Google takes 15%) |
-| Build Profile | production |
-| Distribution | Google Play Store |
-
----
-
-**You're all set!** Your app is now ready to launch on Google Play. Follow the steps above and you'll have it live within hours. 🎉
+EAS minutes are only consumed on manual workflow dispatch.

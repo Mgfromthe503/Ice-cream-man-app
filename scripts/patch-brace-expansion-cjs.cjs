@@ -10,9 +10,8 @@
  *
  * TypeScript __importDefault returns `mod` unchanged when mod.__esModule === true.
  *
- * brace-expansion@2.0.2 is pure CJS (`module.exports = expand`, no __esModule).
- * __importDefault therefore wraps it as `{ default: expand }` — minimatch works
- * with zero patching. This is the preferred pin (see package.json overrides).
+ * brace-expansion@2.1.3 is the repository's security-patched pin.
+ * It still needs CJS interop support for minimatch's default-export call path.
  *
  * brace-expansion@5.0.5 ships CJS with only `exports.expand` + `__esModule: true`
  * and NO exports.default, so .default is undefined and RN codegen fails:
@@ -319,7 +318,7 @@ function normalizePackageJson(pkgRoot, interopRel) {
 }
 
 function packageAlreadyHealthy(pkgRoot) {
-  // Pure CJS 2.0.2 needs no interop file. Prefer leave package.json alone.
+  // Legacy pure-CJS 2.0.x needs no interop file. Prefer leave package.json alone.
   try {
     const pkg = JSON.parse(fs.readFileSync(path.join(pkgRoot, "package.json"), "utf8"));
     if (pkg.version === "2.0.2" || (pkg.version && pkg.version.startsWith("2.0."))) {
@@ -388,7 +387,7 @@ function readPkgVersion(pkgRoot) {
 }
 
 function main() {
-  // Fast path: already good (pure CJS 2.0.2 or previously healthy patch).
+  // Fast path: already good (legacy pure CJS 2.0.x or previously healthy patch).
   // This makes the script safe to run from postinstall AND the CI verify step.
   const early = verifyRequire();
   if (early.ok) {

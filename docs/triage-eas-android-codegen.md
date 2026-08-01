@@ -25,11 +25,11 @@ Also seen in EAS auto-fingerprint (mitigated with `EAS_SKIP_AUTO_FINGERPRINT=1`)
 |---------|----------|
 | `minimatch@9.x` | CJS build uses `__importDefault(require("brace-expansion")).default(...)` |
 | `brace-expansion@5.0.5` (and 5.0.6+) | CJS build sets `__esModule: true` and **only** `exports.expand = expand` — **no** `exports.default` |
-| `brace-expansion@2.0.2` | Pure CJS: `module.exports = expand` (no `__esModule`) → `__importDefault` wraps as `{ default: fn }` |
+| `brace-expansion@2.1.3` | Security-patched 2.x pin used in this repo; preload/postinstall interop shim guarantees callable `.default` for minimatch/codegen |
 
 TypeScript `__importDefault` returns the module unchanged when `__esModule` is true, so `.default` is `undefined` on 5.x.
 
-**Why PR #56 still failed on `e4f8dab3`:** `package.json` pinned `2.0.2`, but **`pnpm-lock.yaml` was never regenerated**. EAS resolved the stale lockfile graph (5.x / 2.1+). Postinstall patches only cover the install-phase tree; Gradle's node process can still resolve a nested broken copy.
+**Why PR #56 still failed on `e4f8dab3`:** `package.json` pin changes were made, but **`pnpm-lock.yaml` was never regenerated**. EAS resolved a stale graph. Postinstall patches only cover the install-phase tree; Gradle's node process can still resolve a nested broken copy.
 
 Documented upstream: [expo/eas-cli#3695](https://github.com/expo/eas-cli/issues/3695).
 
@@ -40,10 +40,10 @@ Documented upstream: [expo/eas-cli#3695](https://github.com/expo/eas-cli/issues/
    `NODE_OPTIONS=--require ./scripts/brace-expansion-preload.cjs`  
    Hooks `Module._load` so `require('brace-expansion')` always has a callable `.default`, including Gradle-spawned codegen.
 
-2. **Absolute + selective override** — `brace-expansion: 2.0.2`  
+2. **Absolute + selective override** — `brace-expansion: 2.1.3`  
    - Top-level `overrides` and `pnpm.overrides`  
-   - Range selectors `brace-expansion@>=2.1.0 <3` and `brace-expansion@>=5` forced to `2.0.2`  
-   - Direct dependency `brace-expansion@2.0.2`  
+   - Range selectors `brace-expansion@>=2.1.0 <3` and `brace-expansion@>=5` forced to `2.1.3`  
+   - Direct dependency `brace-expansion@2.1.3`  
    - **Must regenerate `pnpm-lock.yaml` after changing overrides** (`pnpm install`, commit lockfile).
 
 3. **Interop patch (secondary)** — `scripts/patch-brace-expansion-cjs.cjs` on postinstall / eas-build-post-install.
@@ -62,7 +62,7 @@ Documented upstream: [expo/eas-cli#3695](https://github.com/expo/eas-cli/issues/
 rm -rf node_modules
 pnpm install
 git add pnpm-lock.yaml package.json
-git commit -m "chore: regen pnpm-lock.yaml for brace-expansion@2.0.2"
+git commit -m "chore: regen pnpm-lock.yaml for brace-expansion@2.1.3"
 git push
 ```
 
@@ -80,7 +80,7 @@ Verified locally with pnpm 9.12.0 — overrides declared only in `pnpm-workspace
 
 ```text
 pnpm-lock.yaml                  no `overrides:` section emitted
-node_modules/brace-expansion    5.0.8   (expected 2.0.2)
+node_modules/brace-expansion    5.0.8   (expected 2.1.3)
 ```
 
 All 20 pins — the `brace-expansion` codegen fix plus the security overrides (`axios`, `form-data`, `tar`, `node-forge`, `postcss`, …) — stop applying. Keep overrides in `package.json` `pnpm.overrides` until `packageManager` **and** `eas.json` both move to pnpm 10.
@@ -91,7 +91,7 @@ All 20 pins — the `brace-expansion` codegen fix plus the security overrides (`
 
 1. `pnpm-workspace.yaml` declares `overrides` while `packageManager` is pnpm < 10;
 2. the `overrides` block in `pnpm-lock.yaml` differs from `package.json` `pnpm.overrides` — the exact condition behind `ERR_PNPM_LOCKFILE_CONFIG_MISMATCH`, normally caused by editing overrides without regenerating the lockfile;
-3. `brace-expansion` is pinned to, or resolves to, anything other than `2.0.2`.
+3. `brace-expansion` is pinned to, or resolves to, anything other than `2.1.3`.
 
 It runs in CI before install, again after install, and on the EAS worker via `eas-build-pre-install`, so drift fails fast instead of burning an Expo build. CI installs with `--frozen-lockfile` for the same reason.
 
