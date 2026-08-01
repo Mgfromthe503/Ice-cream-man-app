@@ -21,7 +21,7 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
-const BRACE_EXPANSION_PIN = "2.0.2";
+const BRACE_EXPANSION_PIN = "2.1.3";
 
 const errors = [];
 

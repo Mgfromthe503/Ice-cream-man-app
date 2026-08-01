@@ -26,7 +26,7 @@ describe("pnpm override configuration", () => {
   });
 
   it("pins brace-expansion to the pure-CJS build required by Gradle codegen", () => {
-    expect(pkg.pnpm?.overrides?.["brace-expansion"]).toBe("2.0.2");
+    expect(pkg.pnpm?.overrides?.["brace-expansion"]).toBe("2.1.3");
   });
 
   it("keeps pnpm-lock.yaml in sync with the overrides (ERR_PNPM_LOCKFILE_CONFIG_MISMATCH)", () => {
