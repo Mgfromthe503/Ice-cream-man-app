@@ -27,7 +27,7 @@ const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
-const SAFE = "2.1.3";
+const SAFE = "2.0.2";
 
 function log(msg) {
   console.log(`[ensure-brace-expansion] ${msg}`);
