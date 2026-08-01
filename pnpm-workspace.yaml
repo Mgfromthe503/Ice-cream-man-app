@@ -1,36 +1,23 @@
-# Monorepo workspace — The Ice Cream Man App
+# Monorepo workspace — The Ice Cream Man
 # Primary app + server live at the repo root (single package).
 # packages/* is reserved for future shared libraries (e.g. types, UI).
 packages:
   - "."
   - "packages/*"
 
-# pnpm linker settings (moved from .npmrc — pnpm-only keys are not valid npm config).
-# node-linker=hoisted makes brace-expansion/minimatch visible to the Gradle node
-# process (React Native codegen) instead of an isolated virtual store path.
-nodeLinker: hoisted
-publicHoistPattern:
-  - "*brace-expansion*"
-  - "*minimatch*"
-shamefullyHoist: true
-
-
-# pnpm v9.12+/v10 reads overrides ONLY from this file (the `pnpm` field in
-# package.json is no longer supported). These MUST match pnpm-lock.yaml's
-# `overrides:` block or `pnpm install --frozen-lockfile` fails on EAS with
-# ERR_PNPM_LOCKFILE_CONFIG_MISMATCH.
+# Dependency overrides (pnpm 9.12+ reads overrides from pnpm-workspace.yaml,
+# not from the "pnpm" field in package.json).
 overrides:
   axios: ^1.18.1
-  '@xmldom/xmldom': ^0.9.8
+  "@xmldom/xmldom": ^0.9.8
   ajv: ^8.17.1
-  brace-expansion: 2.0.2
-  brace-expansion@>=2.1.0 <3: 2.0.2
-  brace-expansion@>=5: 2.0.2
+  brace-expansion: ^5.0.8
   esbuild: ^0.28.1
   fast-uri: ^3.1.2
   flatted: ^3.4.2
   form-data: ^4.0.4
   js-yaml: ^4.1.1
+  minimatch: ^9.0.9
   node-forge: ^1.3.1
   path-to-regexp: ^8.2.0
   picomatch: ^4.0.3
