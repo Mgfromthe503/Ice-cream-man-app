@@ -73,20 +73,29 @@ export async function secureDelete(key: string): Promise<void> {
  */
 export function sanitizeInput(input: string): string {
   if (!input || typeof input !== 'string') return '';
-  
-  return input
+
+  let sanitized = input
     // Remove null bytes
     .replace(/\0/g, '')
-    // Remove script tags and event handlers
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    // Remove event handlers
     .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
     // Remove SQL injection patterns
     .replace(/(['";])\s*(DROP|DELETE|UPDATE|INSERT|ALTER|EXEC|EXECUTE|UNION|SELECT)\s/gi, '$1')
     // Remove potential command injection
-    .replace(/[;&|`$]/g, '')
-    // Trim and limit length
-    .trim()
-    .slice(0, 1000);
+    .replace(/[;&|`$]/g, '');
+
+  // Remove script tags repeatedly to avoid reintroducing "<script" via overlaps.
+  let previous: string;
+  do {
+    previous = sanitized;
+    sanitized = sanitized.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+  } while (sanitized !== previous);
+
+  // Remove any remaining tag delimiters to prevent HTML injection.
+  sanitized = sanitized.replace(/[<>]/g, '');
+
+  // Trim and limit length
+  return sanitized.trim().slice(0, 1000);
 }
 
 /**
