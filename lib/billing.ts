@@ -1,5 +1,5 @@
 /**
- * Google Play Billing Integration (expo-iap v5.0.0 + Billing Library 7.0.0)
+ * Google Play Billing Integration (expo-iap v5.0.0 + Billing Library 9.1.0)
  * 
  * This module handles the $25 one-time Ice Cream Man vendor registration fee
  * via Google Play Billing. Payment goes directly to the developer's Google Play
@@ -83,7 +83,7 @@ export async function purchaseRegistration(): Promise<PurchaseResult> {
     const ExpoIap = require('expo-iap');
     const obfuscatedAccountId = generateTransactionFingerprint();
     
-    // expo-iap v5.0.0 request shape (Google Play Billing Library 7.0.0 compatible)
+    // expo-iap v5.0.0 request shape (Google Play Billing Library 9.1.0 compatible)
     const purchase = await ExpoIap.requestPurchase({
       request: {
         sku: VENDOR_REGISTRATION_PRODUCT_ID,

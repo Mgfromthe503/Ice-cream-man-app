@@ -1,6 +1,5 @@
-// WebDev Auth TypeScript types
-// Auto-generated from protobuf definitions
-// Generated on: 2025-09-24T05:57:57.338Z
+// OAuth Auth TypeScript types
+// Derived from WebDev Auth protobuf definitions
 
 export interface AuthorizeRequest {
   redirectUri: string;

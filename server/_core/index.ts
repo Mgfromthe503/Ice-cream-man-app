@@ -5,7 +5,6 @@ import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
-import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { applySecurityMiddleware } from "../security";
@@ -78,7 +77,6 @@ async function startServer() {
   // Apply security middleware (headers, rate limiting, sanitization, fraud detection)
   applySecurityMiddleware(app);
 
-  registerStorageProxy(app);
   registerOAuthRoutes(app);
 
   app.get("/api/health", (_req, res) => {
