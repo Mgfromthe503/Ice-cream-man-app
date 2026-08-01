@@ -21,7 +21,7 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
-const BRACE_EXPANSION_PIN = "2.0.2";
+const BRACE_EXPANSION_PIN = "2.1.3";
 
 const errors = [];
 
@@ -126,7 +126,7 @@ function checkBraceExpansionPin(expected) {
     fail(
       `package.json pnpm.overrides pins brace-expansion to ` +
         `${expected["brace-expansion"] ?? "(absent)"}; must be ${BRACE_EXPANSION_PIN} ` +
-        `(security-patched; preload handles Gradle CJS interop). See docs/triage-eas-android-codegen.md.`,
+      `(security-patched; preload + postinstall patch handle Gradle CJS interop). See docs/triage-eas-android-codegen.md.`,
     );
   }
 

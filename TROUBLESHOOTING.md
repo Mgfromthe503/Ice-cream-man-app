@@ -31,7 +31,7 @@ These values must stay consistent across:
 4. Confirm dependency guards pass:
    - `pnpm verify:deps`
    - `pnpm test`
-5. Confirm `brace-expansion` resolves to `2.0.2` (required for Gradle codegen interop).
+5. Confirm `brace-expansion` resolves to `2.1.3` (security-patched; Gradle interop handled by preload/patch guards).
 6. Re-run EAS with a clean worker cache:
    - `eas build -p android --profile production --clear-cache`
 
@@ -43,12 +43,12 @@ If GitHub Actions fails in `Run tests` or `Validate types`, EAS build is skipped
 
 ### EAS build fails with codegen / brace-expansion error
 
-This repository hard-pins `brace-expansion` to `2.0.2` and includes preload/patch guards. If this regresses, regenerate lockfile and commit it:
+This repository hard-pins `brace-expansion` to `2.1.3` and includes preload/patch guards. If this regresses, regenerate lockfile and commit it:
 
 ```bash
 pnpm install
 git add package.json pnpm-lock.yaml
-git commit -m "fix: restore brace-expansion 2.0.2 pin for EAS codegen"
+git commit -m "fix: restore brace-expansion 2.1.3 secure pin for EAS codegen"
 ```
 
 ### EAS build fails with Gradle unknown error

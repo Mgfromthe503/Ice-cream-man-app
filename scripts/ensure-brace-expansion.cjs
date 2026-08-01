@@ -11,15 +11,14 @@
  * (no exports.default) → TypeError in:
  *   :react-native-gesture-handler:generateCodegenSchemaFromJavaScript
  *
- * brace-expansion@2.0.2 is pure CJS (module.exports = expand, no __esModule).
- * __importDefault therefore wraps it as { default: fn } and the call site works.
+ * brace-expansion@2.1.3 is security-patched but still needs interop shimming
+ * for minimatch's default-export call path.
  *
  * See: https://github.com/expo/eas-cli/issues/3695
  *      docs/triage-eas-android-codegen.md
  *
  * This script runs via package.json "eas-build-pre-install" on EAS workers
- * and can be run locally before Android builds. With the 2.0.2 pin the
- * post-install patch becomes a soft no-op safety net.
+ * and can be run locally before Android builds.
  */
 "use strict";
 
@@ -27,7 +26,7 @@ const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
-const SAFE = "2.0.2";
+const SAFE = "2.1.3";
 
 function log(msg) {
   console.log(`[ensure-brace-expansion] ${msg}`);
@@ -95,7 +94,7 @@ function main() {
   if (!fs.existsSync(nm)) {
     log(
       `node_modules/brace-expansion not present yet (expected on eas-build-pre-install). ` +
-        `Overrides pin ${SAFE}; pure-CJS shape needs no .default injection.`
+        `Overrides pin ${SAFE}; postinstall shim will inject .default when needed.`
     );
     return;
   }
