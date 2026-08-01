@@ -1,23 +1,27 @@
-# Deploy the Express + tRPC API on Render
+# Deploy the Express + tRPC API on Render — with a FREE PostgreSQL database
 # https://render.com/docs/blueprint-spec
 #
 # How to deploy:
 #   1. Go to https://dashboard.render.com/
 #   2. New → Blueprint → connect your GitHub repo
-#   3. Render will auto-detect this file and create the service
-#   4. Fill in the secret values marked "FILL_IN" in the Render dashboard
-#      (Environment tab of the service)
+#   3. Render will auto-detect this file and create both the database AND the API service
+#   4. Fill in the secret values marked "sync: false" in the Render dashboard
+#      (Environment tab of the ice-cream-man-api service)
 #
-# Database note:
-#   Render does NOT offer managed MySQL. You need an external MySQL provider:
-#   - PlanetScale (free tier): https://planetscale.com
-#   - Railway (free tier):     https://railway.app
-#   - Clever Cloud:            https://clever-cloud.com
-#   Once created, copy the connection string into DATABASE_URL below.
+# The DATABASE_URL is wired automatically from the Render Postgres database below —
+# you do NOT need to copy/paste it manually.
 #
-# After first deploy, set EXPO_PUBLIC_API_BASE_URL in your EAS environment
-# to the Render service URL (e.g. https://ice-cream-man-api.onrender.com)
-# so the mobile app knows where to find the backend.
+# After first deploy, run migrations once from the Render shell:
+#   pnpm db:push
+#
+# Then set EXPO_PUBLIC_API_BASE_URL in your EAS environment to the Render service URL
+# (e.g. https://ice-cream-man-api.onrender.com) so the mobile app can reach the backend.
+
+databases:
+  - name: ice-cream-man-db
+    databaseName: icecreamman
+    user: icecreamman
+    plan: free
 
 services:
   - type: web
@@ -35,11 +39,12 @@ services:
       - key: PORT
         value: 3000
 
-      # ── Database ─────────────────────────────────────────────────────────
-      # MySQL connection string from PlanetScale / Railway / Clever Cloud
-      # Format: ******host:3306/dbname?ssl={"rejectUnauthorized":true}
+      # ── Database ──────────────────────────────────────────────────────────
+      # Automatically wired from the Render Postgres database above
       - key: DATABASE_URL
-        sync: false   # enter this in the Render dashboard — do NOT commit the real value
+        fromDatabase:
+          name: ice-cream-man-db
+          property: connectionString
 
       # ── Auth / Session ───────────────────────────────────────────────────
       # A long random secret used to sign session JWTs and cookies
