@@ -12,7 +12,7 @@
  * - Falls back gracefully in development mode
  *
  * CURRENT STATE: PINNED_CERTIFICATES is empty until a real production API
- * host is chosen. The previous Manus template host is not used for pinning.
+ * host is chosen. No previous template host is used for pinning.
  * When the backend is live, add the domain and at least two real SPKI pins
  * (primary + backup). Generate pins with:
  *   openssl s_client -connect <domain>:443 -servername <domain> </dev/null 2>/dev/null | \

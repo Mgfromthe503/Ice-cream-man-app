@@ -10,12 +10,10 @@ This guide covers server-side features including authentication, database, tRPC 
 |----------|-----------------|---------------------|----------|
 | Data stays on device only | No | No | Use `AsyncStorage` |
 | Data syncs across devices | Yes | Yes | Database + tRPC |
-| User accounts / login | Yes | Yes | Manus OAuth |
-| AI-powered features | Yes | **Optional** | LLM Integration |
-| User uploads files | Yes | **Optional** | S3 Storage |
+| User accounts / login | Yes | Yes | OAuth |
 | Server-side validation | Yes | **Optional** | tRPC procedures |
 
-> **Note:** Backend ≠ User Auth. You can run a backend with LLM/Storage/ImageGen capabilities without requiring user login — just use `publicProcedure` instead of `protectedProcedure`. User auth is only mandatory when you need to identify users or sync user-specific data.
+> **Note:** Backend ≠ User Auth. You can run a backend without requiring user login — just use `publicProcedure` instead of `protectedProcedure`. User auth is only mandatory when you need to identify users or sync user-specific data.
 
 ---
 
@@ -25,7 +23,6 @@ This guide covers server-side features including authentication, database, tRPC 
 server/
   db.ts              ← Query helpers (add database functions here)
   routers.ts         ← tRPC procedures (add API routes here)
-  storage.ts         ← S3 storage helpers (can extend)
   _core/             ← Framework-level code (don't modify)
 drizzle/
   schema.ts          ← Database tables & types (add your tables here)
@@ -52,7 +49,7 @@ Only touch the files with "←" markers. Anything under `_core/` directories is 
 
 ### Overview
 
-The template uses **Manus OAuth** for user authentication. It works differently on native and web:
+The app uses **OAuth** for user authentication. It works differently on native and web:
 
 | Platform | Auth Method | Token Storage |
 |----------|-------------|---------------|
@@ -89,7 +86,7 @@ The `user` object contains:
 ```tsx
 interface User {
   id: number;
-  openId: string;        // Manus OAuth ID
+  openId: string;        // OAuth user ID
   name: string | null;
   email: string | null;
   loginMethod: string;
@@ -101,7 +98,7 @@ interface User {
 ### Login Flow (Native)
 
 1. User taps Login button
-2. `WebBrowser.openAuthSessionAsync()` opens Manus OAuth
+2. `WebBrowser.openAuthSessionAsync()` opens OAuth login
 3. User authenticates
 4. Deep link redirects to `app/oauth/callback.tsx`
 5. Callback exchanges code for session token
@@ -111,7 +108,7 @@ interface User {
 ### Login Flow (Web)
 
 1. User clicks Login button
-2. Browser redirects to Manus OAuth
+2. Browser redirects to OAuth login
 3. User authenticates
 4. Redirect back with session cookie
 5. Cookie automatically sent with requests
@@ -351,226 +348,6 @@ create: protectedProcedure
 
 ---
 
-## LLM Integration
-
-Use the preconfigured LLM helpers. Credentials are injected from the platform (no manual setup required).
-
-```ts
-import { invokeLLM } from "./server/_core/llm";
-
-/**
- * Simple chat completion
- * type Role = "system" | "user" | "assistant" | "tool" | "function";
- * type TextContent = {
- *   type: "text";
- *   text: string;
- * };
- *
- * type ImageContent = {
- *   type: "image_url";
- *   image_url: {
- *     url: string;
- *     detail?: "auto" | "low" | "high";
- *   };
- * };
- *
- * type FileContent = {
- *   type: "file_url";
- *   file_url: {
- *     url: string;
- *     mime_type?: "audio/mpeg" | "audio/wav" | "application/pdf" | "audio/mp4" | "video/mp4" ;
- *   };
- * };
- *
- * export type Message = {
- *   role: Role;
- *   content: string | Array<ImageContent | TextContent | FileContent>
- * };
- *
- * Supported parameters:
- * messages: Array<{
- *   role: 'system' | 'user' | 'assistant' | 'tool',
- *   content: string | { tool_call: { name: string, arguments: string } }
- * }>
- * tool_choice?: 'none' | 'auto' | 'required' | { type: 'function', function: { name: string } }
- * tools?: Tool[]
- */
-const response = await invokeLLM({
-  messages: [
-    { role: "system", content: "You are a helpful assistant." },
-    { role: "user", content: "Hello, world!" },
-  ],
-});
-```
-
-Tips
-- Always call llm functions from server-side code (e.g., inside tRPC procedures), to avoid exposing your API key.
-- You don't need to manually set the model; the helper uses a sensible default.
-- LLM responses often contain markdown. Use `<Streamdown>{content}</Streamdown>` (imported from `streamdown`) to render markdown content with proper formatting and streaming support.
-- For image-based gen AI workflows, local `file://` and blob URLs don't work. Upload to S3 first, then pass the public URL to `invokeLLM()`.
-
-### Structured Responses (JSON Schema)
-
-Ask the model to return structured JSON via `response_format`:
-
-```ts
-import { invokeLLM } from "./server/_core/llm";
-
-const structured = await invokeLLM({
-  messages: [
-    { role: "system", content: "You are a helpful assistant designed to output JSON." },
-    { role: "user", content: "Extract the name and age from the following text: \"My name is Alice and I am 30 years old.\"" },
-  ],
-  response_format: {
-    type: "json_schema",
-    json_schema: {
-      name: "person_info",
-      strict: true,
-      schema: {
-        type: "object",
-        properties: {
-          name: { type: "string", description: "The name of the person" },
-          age: { type: "integer", description: "The age of the person" },
-        },
-        required: ["name", "age"],
-        additionalProperties: false,
-      },
-    },
-  },
-});
-
-// The model responds with JSON content matching the schema.
-// Access via `structured.choices[0].message.content` and JSON.parse if needed.
-```
-The helpers mirror the Python SDK semantics but produce JavaScript-first code, keeping credentials inside the server and ensuring every environment has access to the same token.
-
-**CRITICAL Note:** `json_schema` works for flat structures. For nested arrays/objects, use `json_object` instead.
-```ts
-const response = await invokeLLM({
-  messages: [
-    {
-      role: "system",
-      content: `Analyze the food image. Return JSON:
-{
-  "foods": [{ "name": "string", "calories": number }],
-  "totalCalories": number
-}`
-    },
-    {
-      role: "user",
-      content: [
-        { type: "text", text: "What food is this?" },
-        { type: "image_url", image_url: { url: imageUrl } }
-      ]
-    }
-  ],
-  response_format: { type: "json_object" }
-});
-const data = JSON.parse(response.choices[0].message.content);
-```
-
----
-
-## Voice Transcription Integration
-
-Use the preconfigured voice transcription helper that converts speech to text using Whisper API, no manual setup required.
-
-Example usage:
-```ts
-import { transcribeAudio } from "./server/_core/voiceTranscription";
-
-const result = await transcribeAudio({
-  audioUrl: "https://storage.example.com/audio/recording.mp3",
-  language: "en", // Optional: helps improve accuracy
-  prompt: "Transcribe meeting notes" // Optional: context hint
-});
-
-// Returns native Whisper API response
-// result.text - Full transcription
-// result.language - Detected language (ISO-639-1)
-// result.segments - Timestamped segments with metadata
-```
-
-Tips
-- Accepts URL to pre-uploaded audio file
-- 16MB file size limit enforced during transcription, size flag to be set by frontend
-- Supported formats: webm, mp3, wav, ogg, m4a
-- Returns native Whisper API response with rich metadata
-- Frontend should handle audio capture, storage upload, and size validation
-
----
-
-## Image Generation Integration
-
-Use the preconfigured image generation helper that connects to the internal ImageService, no manual setup required.
-
-Example usage:
-```ts
-import { generateImage } from "./server/_core/imageGeneration.ts";
-
-const { url: imageUrl } = await generateImage({
-  prompt: "A serene landscape with mountains"
-});
-// For editing:
-const { url: imageUrl } = await generateImage({
-  prompt: "Add a rainbow to this landscape",
-  originalImages: [{
-    url: "https://example.com/original.jpg",
-    mimeType: "image/jpeg"
-  }]
-});
-```
-
-Tips
-- Always call from server-side code (e.g., inside tRPC procedures) to avoid exposing API keys
-- Image generation can take 5-20 seconds, implement proper loading states
-- Implement proper error handling as image generation can fail
-
----
-
-## ☁️ File Storage
-
-Use the preconfigured storage helpers in `server/storage.ts`. Credentials are injected from the platform (no manual setup required). Files are stored securely and served via the built-in `/manus-storage/` path — no manual URL management needed.
-
-```ts
-import { storagePut } from "./server/storage";
-
-// Upload bytes to storage
-const fileKey = `${userId}-files/${fileName}.png`
-const { key, url } = await storagePut(
-  fileKey,
-  fileBuffer, // Buffer | Uint8Array | string
-  "image/png"
-);
-// url = "/manus-storage/{key}" — use directly in frontend code
-// key = unique storage key — save in database
-```
-
-Tips
-- Save the `key` or `url` in your database; use storage for the actual file bytes. This applies to all files including images, documents, and media.
-- For file uploads, have the client POST to your server, then call `storagePut` from your backend.
-- The returned `url` (e.g. `/manus-storage/...`) is automatically served via signed redirect — no manual URL signing needed.
-- To delete a file, drop its `key` from your DB and any UI references — the key is the only way to reach the object, so an unreferenced file is effectively gone. Do not implement a helper to remove the underlying object; the template's storage layer does not expose a delete endpoint.
-
----
-
-## ☁️ Data API
-
-When you need external data, use the omni_search with search_type = 'api' to see there's any built-in api available in Manus API Hub access. You only have to connect other api if there's no suitable built-in api available.
-
----
-
-## Owner Notifications
-
-This template already ships with a `notifyOwner({ title, content })` helper (`server/_core/notification.ts`) and a protected tRPC mutation at `trpc.system.notifyOwner`. Use it whenever backend logic needs to push an operational update to the Manus project owner—common triggers are new form submissions, survey feedback, or workflow results.
-
-1. On the server, call `await notifyOwner({ title, content })` or reuse the provided `system.notifyOwner` mutation from jobs/webhooks (`trpc.system.notifyOwner.useMutation()` on the client).
-2. Handle the boolean return (`true` on success, `false` if the upstream service is temporarily unavailable) to decide whether you need a fallback channel.
-
-Keep this channel for owner-facing alerts; end-user messaging should flow through your app-specific systems.
-
----
-
 ## Environment Variables
 
 Available environment variables:
@@ -579,13 +356,11 @@ Available environment variables:
 |----------|-------------|
 | `DATABASE_URL` | MySQL/TiDB connection string |
 | `JWT_SECRET` | Session signing secret |
-| `VITE_APP_ID` | Manus OAuth app ID |
-| `OAUTH_SERVER_URL` | Manus OAuth backend URL |
-| `VITE_OAUTH_PORTAL_URL` | Manus login portal URL |
-| `OWNER_OPEN_ID` | Owner's Manus ID |
+| `APP_ID` | OAuth app ID |
+| `OAUTH_SERVER_URL` | OAuth backend URL |
+| `OAUTH_PORTAL_URL` | OAuth login portal URL |
+| `OWNER_OPEN_ID` | Owner's user ID |
 | `OWNER_NAME` | Owner's display name |
-| `BUILT_IN_FORGE_API_URL` | Manus API endpoint |
-| `BUILT_IN_FORGE_API_KEY` | Manus API key |
 
 Expo runtime variables (prefixed with `EXPO_PUBLIC_`):
 
@@ -648,7 +423,7 @@ export const users = mysqlTable("users", {
    * Use this for relations between tables.
    */
   id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
+  /** OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
@@ -791,107 +566,6 @@ export const appRouter = router({
 });
 
 export type AppRouter = typeof appRouter;
-```
-
-`server/storage.ts`
-```ts
-// Preconfigured storage helpers for Manus WebDev templates
-// Uploads via Forge Server presigned URL to S3 (PUT direct).
-// Downloads return /manus-storage/{key} paths served via 307 redirect.
-
-import { ENV } from "./_core/env";
-
-function getForgeConfig() {
-  const forgeUrl = ENV.forgeApiUrl;
-  const forgeKey = ENV.forgeApiKey;
-
-  if (!forgeUrl || !forgeKey) {
-    throw new Error(
-      "Storage config missing: set BUILT_IN_FORGE_API_URL and BUILT_IN_FORGE_API_KEY",
-    );
-  }
-
-  return { forgeUrl: forgeUrl.replace(/\/+$/, ""), forgeKey };
-}
-
-function normalizeKey(relKey: string): string {
-  return relKey.replace(/^\/+/, "");
-}
-
-function appendHashSuffix(relKey: string): string {
-  const hash = crypto.randomUUID().replace(/-/g, "").slice(0, 8);
-  const lastDot = relKey.lastIndexOf(".");
-  if (lastDot === -1) return `${relKey}_${hash}`;
-  return `${relKey.slice(0, lastDot)}_${hash}${relKey.slice(lastDot)}`;
-}
-
-export async function storagePut(
-  relKey: string,
-  data: Buffer | Uint8Array | string,
-  contentType = "application/octet-stream",
-): Promise<{ key: string; url: string }> {
-  const { forgeUrl, forgeKey } = getForgeConfig();
-  const key = appendHashSuffix(normalizeKey(relKey));
-
-  // 1. Get presigned PUT URL from Forge
-  const presignUrl = new URL("v1/storage/presign/put", forgeUrl + "/");
-  presignUrl.searchParams.set("path", key);
-
-  const presignResp = await fetch(presignUrl, {
-    headers: { Authorization: `Bearer ${forgeKey}` },
-  });
-
-  if (!presignResp.ok) {
-    const msg = await presignResp.text().catch(() => presignResp.statusText);
-    throw new Error(`Storage presign failed (${presignResp.status}): ${msg}`);
-  }
-
-  const { url: s3Url } = (await presignResp.json()) as { url: string };
-  if (!s3Url) throw new Error("Forge returned empty presign URL");
-
-  // 2. PUT file directly to S3
-  const blob =
-    typeof data === "string"
-      ? new Blob([data], { type: contentType })
-      : new Blob([data as any], { type: contentType });
-
-  const uploadResp = await fetch(s3Url, {
-    method: "PUT",
-    headers: { "Content-Type": contentType },
-    body: blob,
-  });
-
-  if (!uploadResp.ok) {
-    throw new Error(`Storage upload to S3 failed (${uploadResp.status})`);
-  }
-
-  return { key, url: `/manus-storage/${key}` };
-}
-
-export async function storageGet(relKey: string): Promise<{ key: string; url: string }> {
-  const key = normalizeKey(relKey);
-  return { key, url: `/manus-storage/${key}` };
-}
-
-export async function storageGetSignedUrl(relKey: string): Promise<string> {
-  const { forgeUrl, forgeKey } = getForgeConfig();
-  const key = normalizeKey(relKey);
-
-  const getUrl = new URL("v1/storage/presign/get", forgeUrl + "/");
-  getUrl.searchParams.set("path", key);
-
-  const resp = await fetch(getUrl, {
-    headers: { Authorization: `Bearer ${forgeKey}` },
-  });
-
-  if (!resp.ok) {
-    const msg = await resp.text().catch(() => resp.statusText);
-    throw new Error(`Storage signed URL failed (${resp.status}): ${msg}`);
-  }
-
-  const { url } = (await resp.json()) as { url: string };
-  return url;
-}
 ```
 
 `lib/trpc.ts`
@@ -1109,7 +783,7 @@ function createAuthContext(): { ctx: TrpcContext; clearedCookies: CookieCall[] }
     openId: "sample-user",
     email: "sample@example.com",
     name: "Sample User",
-    loginMethod: "manus",
+    loginMethod: "email",
     role: "user",
     createdAt: new Date(),
     updatedAt: new Date(),

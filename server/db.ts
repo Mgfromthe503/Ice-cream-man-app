@@ -1,5 +1,5 @@
 import { eq, and } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
+import { drizzle } from "drizzle-orm/postgres-js";
 import { InsertUser, users, iceCreamRequests, driverProfiles, driverLocationHistory, type InsertIceCreamRequest, type InsertDriverProfile } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -61,7 +61,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     if (Object.keys(updateSet).length === 0) {
       updateSet.lastSignedIn = new Date();
     }
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
+    await db.insert(users).values(values).onConflictDoUpdate({
+      target: users.openId,
       set: updateSet,
     });
   } catch (error) {

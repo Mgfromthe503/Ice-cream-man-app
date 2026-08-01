@@ -75,6 +75,14 @@ const config: ExpoConfig = {
     "expo-router",
     "expo-font",
     "expo-web-browser",
+    [
+      "expo-notifications",
+      {
+        icon: "./assets/images/icon.png",
+        color: "#E6F4FE",
+        defaultChannel: "default",
+      },
+    ],
     // Google Play Billing (vendor registration). Requires a dev client / EAS
     // build — not available in Expo Go.
     "expo-iap",

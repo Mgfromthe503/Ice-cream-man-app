@@ -74,7 +74,7 @@ Expo usernames are **case-sensitive** for EAS project resolution — the owner m
 | UI | NativeWind 4, Reanimated 4 |
 | Backend | Express + tRPC |
 | Database | MySQL + Drizzle ORM |
-| Payments | Google Play Billing (`react-native-iap`) |
+| Payments | Google Play Billing (`expo-iap`) |
 | Audio | expo-audio (jingle) |
 | Tests | Vitest |
 | Builds | EAS Build + Submit |
