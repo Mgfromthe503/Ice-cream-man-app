@@ -40,7 +40,7 @@ jobs:
       EAS_BUILD_NO_EXPO_GO_WARNING: "true"
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -48,7 +48,7 @@ jobs:
           run_install: false
 
       - name: Setup Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: pnpm
