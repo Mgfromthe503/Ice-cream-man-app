@@ -72,14 +72,13 @@ export async function getUserInfo(): Promise<User | null> {
   try {
     console.log("[Auth] Getting user info...");
 
-    let info: string | null = null;
     if (Platform.OS === "web") {
-      // Use localStorage for web
-      info = window.localStorage.getItem(USER_INFO_KEY);
-    } else {
-      // Use SecureStore for native
-      info = await SecureStore.getItemAsync(USER_INFO_KEY);
+      // Web uses cookie-based auth; do not persist user profile in browser storage.
+      return null;
     }
+
+    // Use SecureStore for native
+    const info = await SecureStore.getItemAsync(USER_INFO_KEY);
 
     if (!info) {
       console.log("[Auth] No user info found");
@@ -99,9 +98,8 @@ export async function setUserInfo(user: User): Promise<void> {
     console.log("[Auth] Setting user info...", user);
 
     if (Platform.OS === "web") {
-      // Use localStorage for web
-      window.localStorage.setItem(USER_INFO_KEY, JSON.stringify(user));
-      console.log("[Auth] User info stored in localStorage successfully");
+      // Web uses cookie-based auth; do not persist user profile in browser storage.
+      console.log("[Auth] Web platform uses cookie-based auth, skipping user info storage");
       return;
     }
 
