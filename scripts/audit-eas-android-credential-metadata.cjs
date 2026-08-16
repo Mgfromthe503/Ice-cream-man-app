@@ -11,9 +11,33 @@ const query = `
     app {
       byFullName(fullName: "@mgfromthe503/the-ice-cream-man-app") {
         id
-        androidAppCredentials(filter: {
+        current: androidAppCredentials(filter: {
           applicationIdentifier: "com.icecreamman.app"
           legacyOnly: false
+        }) {
+          id
+          applicationIdentifier
+          isLegacy
+          androidAppBuildCredentialsList {
+            id
+            name
+            isDefault
+            isLegacy
+            androidKeystore {
+              id
+              type
+              keyAlias
+              md5CertificateFingerprint
+              sha1CertificateFingerprint
+              sha256CertificateFingerprint
+              createdAt
+              updatedAt
+            }
+          }
+        }
+        legacy: androidAppCredentials(filter: {
+          applicationIdentifier: "com.icecreamman.app"
+          legacyOnly: true
         }) {
           id
           applicationIdentifier
@@ -40,6 +64,32 @@ const query = `
   }
 `;
 
+function sanitizeCredential(credential) {
+  return {
+    id: credential.id,
+    applicationIdentifier: credential.applicationIdentifier,
+    isLegacy: credential.isLegacy,
+    buildCredentials: (credential.androidAppBuildCredentialsList ?? []).map((buildCredential) => ({
+      id: buildCredential.id,
+      name: buildCredential.name,
+      isDefault: buildCredential.isDefault,
+      isLegacy: buildCredential.isLegacy,
+      keystore: buildCredential.androidKeystore
+        ? {
+            id: buildCredential.androidKeystore.id,
+            type: buildCredential.androidKeystore.type,
+            keyAlias: buildCredential.androidKeystore.keyAlias,
+            md5CertificateFingerprint: buildCredential.androidKeystore.md5CertificateFingerprint,
+            sha1CertificateFingerprint: buildCredential.androidKeystore.sha1CertificateFingerprint,
+            sha256CertificateFingerprint: buildCredential.androidKeystore.sha256CertificateFingerprint,
+            createdAt: buildCredential.androidKeystore.createdAt,
+            updatedAt: buildCredential.androidKeystore.updatedAt,
+          }
+        : null,
+    })),
+  };
+}
+
 async function main() {
   const response = await fetch("https://api.expo.dev/graphql", {
     method: "POST",
@@ -64,31 +114,17 @@ async function main() {
     throw new Error("The configured EAS project was not found.");
   }
 
-  const credentials = (app.androidAppCredentials ?? []).map((credential) => ({
-    id: credential.id,
-    applicationIdentifier: credential.applicationIdentifier,
-    isLegacy: credential.isLegacy,
-    buildCredentials: (credential.androidAppBuildCredentialsList ?? []).map((buildCredential) => ({
-      id: buildCredential.id,
-      name: buildCredential.name,
-      isDefault: buildCredential.isDefault,
-      isLegacy: buildCredential.isLegacy,
-      keystore: buildCredential.androidKeystore
-        ? {
-            id: buildCredential.androidKeystore.id,
-            type: buildCredential.androidKeystore.type,
-            keyAlias: buildCredential.androidKeystore.keyAlias,
-            md5CertificateFingerprint: buildCredential.androidKeystore.md5CertificateFingerprint,
-            sha1CertificateFingerprint: buildCredential.androidKeystore.sha1CertificateFingerprint,
-            sha256CertificateFingerprint: buildCredential.androidKeystore.sha256CertificateFingerprint,
-            createdAt: buildCredential.androidKeystore.createdAt,
-            updatedAt: buildCredential.androidKeystore.updatedAt,
-          }
-        : null,
-    })),
-  }));
-
-  console.log(JSON.stringify({ appId: app.id, credentials }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        appId: app.id,
+        currentCredentials: (app.current ?? []).map(sanitizeCredential),
+        legacyCredentials: (app.legacy ?? []).map(sanitizeCredential),
+      },
+      null,
+      2
+    )
+  );
 }
 
 main().catch((error) => {
