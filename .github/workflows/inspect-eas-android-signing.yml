@@ -1,0 +1,85 @@
+name: Inspect EAS Android Signing
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    name: Inspect Expo Android credential fingerprints
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Read managed Android signing fingerprints
+        shell: bash
+        run: |
+          node <<'NODE'
+          const endpoint = 'https://api.expo.dev/graphql';
+          const query = `
+            query AndroidSigningCredentials(
+              $projectFullName: String!
+              $applicationIdentifier: String!
+            ) {
+              app {
+                byFullName(fullName: $projectFullName) {
+                  androidAppCredentials(
+                    filter: { applicationIdentifier: $applicationIdentifier }
+                  ) {
+                    applicationIdentifier
+                    isLegacy
+                    androidAppBuildCredentialsList {
+                      name
+                      isDefault
+                      androidKeystore {
+                        sha1CertificateFingerprint
+                        sha256CertificateFingerprint
+                        createdAt
+                        updatedAt
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          `;
+
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              authorization: `Bearer ${process.env.EXPO_TOKEN}`,
+              'content-type': 'application/json',
+            },
+            body: JSON.stringify({
+              query,
+              variables: {
+                projectFullName: 'mgfromthe503/the-ice-cream-man-app',
+                applicationIdentifier: 'com.icecreamman.app',
+              },
+            }),
+          });
+
+          const body = await response.json();
+          if (!response.ok || body.errors?.length) {
+            throw new Error(`Expo credential query failed: ${JSON.stringify(body.errors ?? body)}`);
+          }
+
+          const credentials = body.data?.app?.byFullName?.androidAppCredentials ?? [];
+          if (credentials.length === 0) {
+            throw new Error('No Android app credentials were returned for com.icecreamman.app.');
+          }
+
+          for (const credential of credentials) {
+            console.log(`Application: ${credential.applicationIdentifier}`);
+            console.log(`Legacy: ${credential.isLegacy}`);
+            for (const buildCredential of credential.androidAppBuildCredentialsList ?? []) {
+              const keystore = buildCredential.androidKeystore;
+              console.log(`Profile: ${buildCredential.name}; default=${buildCredential.isDefault}`);
+              console.log(`SHA-1: ${keystore?.sha1CertificateFingerprint ?? 'none'}`);
+              console.log(`SHA-256: ${keystore?.sha256CertificateFingerprint ?? 'none'}`);
+              console.log(`Updated: ${keystore?.updatedAt ?? 'none'}`);
+            }
+          }
+          NODE
