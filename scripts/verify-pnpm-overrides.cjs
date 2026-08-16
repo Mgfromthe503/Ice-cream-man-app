@@ -11,7 +11,7 @@
  *    pnpm 9.12.0 (package.json packageManager + eas.json build.base.pnpm),
  *    where that key is silently ignored — every security override stops
  *    applying and brace-expansion floats back to 5.x, which re-breaks Gradle
- *    codegen (see docs/triage-eas-android-codegen.md).
+ *    codegen (see docs/records/eas-android-codegen.md).
  *
  * Dependency-free on purpose: this runs before/independently of node_modules.
  */
@@ -126,7 +126,7 @@ function checkBraceExpansionPin(expected) {
     fail(
       `package.json pnpm.overrides pins brace-expansion to ` +
         `${expected["brace-expansion"] ?? "(absent)"}; must be ${BRACE_EXPANSION_PIN} ` +
-      `(security-patched; preload + postinstall patch handle Gradle CJS interop). See docs/triage-eas-android-codegen.md.`,
+      `(security-patched; preload + postinstall patch handle Gradle CJS interop). See docs/records/eas-android-codegen.md.`,
     );
   }
 

@@ -20,7 +20,7 @@
  *   TypeError: (0 , brace_expansion_1.default) is not a function
  *
  * See: https://github.com/expo/eas-cli/issues/3695
- *      docs/triage-eas-android-codegen.md
+ *      docs/records/eas-android-codegen.md
  *
  * Strategy
  * --------

@@ -1,300 +1,101 @@
 # Contributing to The Ice Cream Man
 
-Thank you for your interest in contributing to The Ice Cream Man! This document provides guidelines and instructions for contributing to the project.
+Thank you for contributing to The Ice Cream Man. This guide defines the expected workflow for code, tests, configuration, and documentation changes. Follow the [development guide](docs/development.md) to set up and run the repository.
 
----
+## Community standards
 
-## Code of Conduct
+Contributions should be respectful, specific, and constructive. Discuss the technical issue, the proposed behavior, and the evidence for a change. Do not include credentials, personal data, private test-account details, or service-account material in issues, commits, pull requests, screenshots, or documentation.
 
-We are committed to providing a welcoming and inspiring community for all. Please read and adhere to our Code of Conduct:
+## Prepare a change
 
-- Be respectful and inclusive
-- Welcome newcomers and help them get started
-- Focus on constructive feedback
-- Report inappropriate behavior to the maintainers
-
----
-
-## Getting Started
-
-### Fork and Clone
-
-1. Fork the repository on GitHub
-2. Clone your fork locally: `git clone https://github.com/YOUR_USERNAME/Ice-cream-man-app.git`
-3. Add upstream remote: `git remote add upstream https://github.com/Mgfromthe503/Ice-cream-man-app.git`
-
-### Set Up Development Environment
-
-Follow the instructions in the README to install dependencies and set up your development environment.
-
-### Create a Feature Branch
-
-Create a new branch for your feature or bug fix:
+Fork the repository if you do not have write access, then create a focused branch from the current default branch.
 
 ```bash
-git checkout -b feature/your-feature-name
+git clone https://github.com/YOUR_USERNAME/Ice-cream-man-app.git
+cd Ice-cream-man-app
+git remote add upstream https://github.com/Mgfromthe503/Ice-cream-man-app.git
+git checkout -b type/concise-change-name
+pnpm install
 ```
 
-Use descriptive branch names that clearly indicate the feature or fix.
+Choose a branch name that describes the purpose of the change, such as `feat/driver-report-export`, `fix/android-build`, or `docs/release-runbook`.
 
----
+## Development expectations
 
-## Development Guidelines
+Keep changes scoped to the requested behavior. Update tests, types, configuration, and documentation when they define the changed contract. Preserve existing public interfaces unless a breaking change is explicitly intended and documented.
 
-### Code Style
+| Area | Expectation |
+|---|---|
+| TypeScript | Use clear types and avoid `any` unless a boundary genuinely requires it. |
+| Components | Follow existing React Native, Expo Router, and NativeWind patterns in the surrounding feature. |
+| Naming | Use PascalCase for components, `use…` names for hooks, and existing repository conventions for files and constants. |
+| Configuration | Update the responsible source of truth and do not duplicate sensitive values in documentation. |
+| Tests | Add or update focused Vitest coverage when behavior changes can be reliably tested. |
+| Documentation | Update the document that owns the command, configuration, operational process, or public capability. |
 
-The project uses ESLint and Prettier for code formatting. Before committing, ensure your code follows the project's style:
+## Validate before opening a pull request
+
+Run the applicable checks locally. The following sequence is the standard full validation for an application change:
 
 ```bash
+pnpm check
 pnpm lint
-pnpm format
+pnpm test
+pnpm build
+git diff --check
+git diff --stat
 ```
 
-### TypeScript
+Use `pnpm verify:deps` whenever dependency versions, lockfiles, Android tooling, or EAS behavior may be affected. Run `pnpm format` when formatting is needed, then inspect the resulting diff before committing.
 
-All code should be written in TypeScript with proper type annotations. Avoid using `any` types unless absolutely necessary.
+| Change type | Minimum additional validation |
+|---|---|
+| Client or server behavior | Focused test coverage plus `pnpm test`. |
+| Database schema | Review generated Drizzle migration, test against an appropriate database, and update owning documentation. |
+| Android, EAS, or dependency configuration | `pnpm verify:deps`, relevant build validation, and the [Android release documentation](docs/release/android-google-play.md). |
+| Documentation only | Verify all relative links, code samples, and referenced commands. |
 
-### Component Structure
+## Commit messages
 
-When creating new components, follow this structure:
+Use concise Conventional Commit-style messages that describe the intent of the change.
 
-```typescript
-import React from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { useColors } from '@/hooks/use-colors';
-
-interface MyComponentProps {
-  title: string;
-  onPress?: () => void;
-}
-
-export function MyComponent({ title, onPress }: MyComponentProps) {
-  const colors = useColors();
-
-  return (
-    <Pressable onPress={onPress}>
-      <View className="p-4">
-        <Text className="text-lg font-semibold text-foreground">{title}</Text>
-      </View>
-    </Pressable>
-  );
-}
+```text
+feat(driver): add daily report export
+fix(android): restore EAS codegen compatibility
+docs(release): clarify Play submission prerequisites
+test(requests): cover request acceptance flow
 ```
 
-### Naming Conventions
+A commit message should state what changed, not merely that files were edited.
 
-- **Components:** PascalCase (e.g., `MyComponent.tsx`)
-- **Hooks:** camelCase starting with `use` (e.g., `useAuth.ts`)
-- **Files:** kebab-case for utilities (e.g., `my-utility.ts`)
-- **Constants:** UPPER_SNAKE_CASE (e.g., `MAX_RETRIES`)
+## Pull request expectations
 
-### Comments and Documentation
+A pull request should describe the problem, the implementation, validation performed, and any risk or follow-up required. Link related issues where applicable. Include screenshots or recordings for user-interface changes when they make the result easier to review.
 
-Write clear comments for complex logic. Use JSDoc for function documentation:
+| Pull-request section | Include |
+|---|---|
+| Purpose | The user or maintenance problem the change addresses. |
+| Implementation | The key design choice and affected areas. |
+| Validation | Exact commands, checks, or devices used and their outcomes. |
+| Risks or follow-up | Unverified environments, migration steps, release notes, or dependencies on external configuration. |
 
-```typescript
-/**
- * Fetches ice cream requests for the current driver.
- * @param driverId - The unique identifier of the driver
- * @returns Promise resolving to an array of requests
- */
-async function fetchDriverRequests(driverId: string): Promise<Request[]> {
-  // Implementation
-}
-```
+Do not force-push a shared review branch unless the reviewer or maintainer asks. Resolve review comments with code changes or a concise explanation grounded in project behavior.
 
----
+## Documentation responsibilities
 
-## Testing
+The documentation structure is task-oriented. Use the [documentation index](docs/README.md) to choose the correct location.
 
-### Writing Tests
+| If a change affects… | Update… |
+|---|---|
+| Quick start, high-level capability, or repository navigation | [`README.md`](README.md) |
+| Local commands and developer workflow | [`docs/development.md`](docs/development.md) |
+| Android release or Play submission process | [`docs/release/`](docs/release/) |
+| Build failure diagnosis or incident context | [`docs/troubleshooting/`](docs/troubleshooting/) or [`docs/records/`](docs/records/) |
+| Server interface, API, database, auth, or environment configuration | [`server/README.md`](server/README.md) |
+| Privacy, terms, store listing, Data Safety, or reviewer access | [`legal/`](legal/) |
 
-All new features should include tests. Use Vitest for unit tests:
+## Report an issue or propose an improvement
 
-```typescript
-import { describe, it, expect } from 'vitest';
-import { calculateEarnings } from '@/lib/earnings';
+A useful bug report includes the affected version or commit, clear reproduction steps, expected and observed results, relevant non-sensitive logs, and device or operating-system context. A useful feature proposal explains the user problem, expected outcome, and meaningful constraints or alternatives.
 
-describe('calculateEarnings', () => {
-  it('should calculate earnings correctly', () => {
-    const earnings = calculateEarnings(10, 5); // 10 orders, $5 per order
-    expect(earnings).toBe(50);
-  });
-});
-```
-
-### Running Tests
-
-Run all tests with `pnpm test`. For watch mode during development:
-
-```bash
-pnpm test:watch
-```
-
-Ensure all tests pass before submitting a pull request.
-
----
-
-## Commit Messages
-
-Write clear, descriptive commit messages following the Conventional Commits format:
-
-```
-type(scope): description
-
-[optional body]
-
-[optional footer]
-```
-
-### Types
-
-- `feat:` A new feature
-- `fix:` A bug fix
-- `docs:` Documentation changes
-- `style:` Code style changes (formatting, missing semicolons, etc.)
-- `refactor:` Code refactoring without feature changes
-- `perf:` Performance improvements
-- `test:` Adding or updating tests
-- `chore:` Maintenance tasks
-
-### Examples
-
-```
-feat(auth): add OAuth login support
-fix(map): resolve location tracking lag on Android
-docs: update installation instructions
-test(requests): add test for request acceptance flow
-```
-
----
-
-## Pull Request Process
-
-### Before Submitting
-
-1. Update your branch with the latest upstream changes: `git fetch upstream && git rebase upstream/main`
-2. Run tests: `pnpm test`
-3. Run linter: `pnpm lint`
-4. Format code: `pnpm format`
-5. Build the project: `pnpm build`
-
-### Creating a Pull Request
-
-1. Push your branch to your fork: `git push origin feature/your-feature-name`
-2. Go to the original repository and click "New Pull Request"
-3. Select your branch and fill in the PR template
-4. Provide a clear description of your changes
-5. Link related issues if applicable
-
-### PR Title Format
-
-Follow the same format as commit messages:
-
-```
-feat(component): add new ice cream flavor selector
-fix(api): resolve request timeout issue
-```
-
-### PR Description Template
-
-```markdown
-## Description
-Brief description of what this PR does.
-
-## Related Issues
-Closes #123
-
-## Changes
-- Change 1
-- Change 2
-
-## Testing
-How to test these changes.
-
-## Screenshots (if applicable)
-Add screenshots of UI changes.
-```
-
----
-
-## Code Review
-
-### What to Expect
-
-- Maintainers will review your PR within 2-3 business days
-- Feedback will be constructive and focused on code quality
-- Multiple rounds of review may be necessary
-
-### Addressing Feedback
-
-- Make requested changes in new commits
-- Avoid force-pushing unless asked
-- Respond to comments explaining your approach
-- Re-request review after making changes
-
----
-
-## Documentation
-
-### Updating Documentation
-
-When adding new features, update relevant documentation:
-
-- Update README.md if adding major features
-- Add JSDoc comments to new functions
-- Update API documentation if adding endpoints
-- Add examples for complex features
-
-### Documentation Standards
-
-- Use clear, concise language
-- Include code examples
-- Explain the "why" not just the "what"
-- Keep documentation up-to-date with code changes
-
----
-
-## Reporting Issues
-
-### Bug Reports
-
-When reporting bugs, include:
-
-- Clear description of the issue
-- Steps to reproduce
-- Expected behavior
-- Actual behavior
-- Screenshots or logs if applicable
-- Device and OS information
-
-### Feature Requests
-
-When suggesting features, include:
-
-- Clear description of the feature
-- Use case and motivation
-- Proposed implementation (if applicable)
-- Examples or mockups
-
----
-
-## Questions?
-
-If you have questions about contributing, feel free to:
-
-- Open an issue with the `question` label
-- Contact the maintainer: mindy.gaines1@gmail.com
-- Check existing issues and discussions
-
----
-
-## Recognition
-
-Contributors will be recognized in:
-
-- The project README
-- Release notes for their contributions
-- GitHub contributors page
-
-Thank you for contributing to The Ice Cream Man! 🍦
+Before reporting a security-sensitive issue, avoid publishing exploitable details or credentials. Use the repository owner’s preferred private reporting channel when one is available.

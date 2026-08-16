@@ -1,104 +1,47 @@
-# 🍦 The Ice Cream Man
+# The Ice Cream Man
 
-> **Summon ice cream to your neighborhood with one tap.**
+> **A mobile application that connects customers with nearby ice cream truck drivers.**
 
-A mobile app that connects ice cream truck drivers with customers in real time. Customers tap a big ice cream button to summon the nearest truck; drivers get the request and navigate straight to the customer — no more aimless cruising, no more missing the truck.
+The Ice Cream Man provides a customer experience for requesting and tracking a nearby truck, together with a driver experience for receiving requests, navigating to customers, and reviewing daily activity. The repository contains the Expo/React Native app, Express and tRPC API, database schema, Android release configuration, and store-compliance materials.
 
-[![Expo](https://img.shields.io/badge/Expo-54-black?logo=expo)](https://expo.dev)
-[![React Native](https://img.shields.io/badge/React%20Native-0.81-blue?logo=react)](https://reactnative.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![License](https://img.shields.io/badge/License-Proprietary-red)](LICENSE)
+## Documentation
 
-**Repo:** [Mgfromthe503/Ice-cream-man-app](https://github.com/Mgfromthe503/Ice-cream-man-app)
+Start with the guide that matches the task at hand. The [documentation index](docs/README.md) is the canonical navigation page for repository documentation.
 
----
+| Audience or task | Recommended document |
+|---|---|
+| Run the project locally | [Development guide](docs/development.md) |
+| Contribute a change | [Contributing guide](CONTRIBUTING.md) |
+| Build or publish the Android app | [Android and Google Play release runbook](docs/release/android-google-play.md) |
+| Configure Google Play before a release | [Google Play setup reference](docs/release/google-play-setup.md) |
+| Diagnose an Android/EAS build failure | [Android and EAS troubleshooting](docs/troubleshooting/android-eas-builds.md) |
+| Understand the backend and API | [Backend reference](server/README.md) |
+| Review product and interface direction | [Product design reference](docs/design/product-design.md) |
+| Review privacy, terms, and store materials | [Legal and store documentation](#legal-and-store-materials) |
 
-## Why this app exists
+## Product capabilities
 
-| Side | Old problem | With The Ice Cream Man |
-|------|-------------|-------------------------|
-| **Customers** | Guess when the truck might pass by | One-tap summon + live tracking |
-| **Drivers** | Drive around hoping to find people | Requests come to you with GPS |
-| **Everyone** | Waste time and gas | Location-matched, efficient service |
+| Customers | Drivers |
+|---|---|
+| Request a nearby truck and view its approach on a map. | Receive nearby customer requests and open navigation. |
+| Review request history and rate completed service. | Review daily reports, earnings, mileage, and fuel-cost inputs. |
+| Receive proximity messaging and a configurable ice-cream-truck jingle. | Complete one-time registration through Google Play Billing. |
 
----
+## Architecture at a glance
 
-## Features
-
-### For customers
-- **One-tap summoning** — giant ice cream button calls the nearest truck
-- **Real-time tracking** — watch the truck approach on a candy-land style map
-- **Fun facts** — rotating ice cream trivia while you wait
-- **Jingle alert** — classic ice cream truck jingle when the truck is near
-- **Rate your driver** — star ratings after each delivery
-- **Order history** — past requests and deliveries in one place
-
-### For ice cream vendors
-- **Incoming request alerts** — notified when customers nearby want ice cream
-- **One-tap navigation** — directions straight to the customer
-- **Daily reports** — earnings, mileage, gas costs, hourly rate
-- **Earnings dashboard** — income over time (with vs. without the app)
-- **$25 one-time registration** — via Google Play Billing (`icm_vendor_registration`)
-- **Drivers Wanted banner** — recruits new drivers when demand is high
-
-### Smart economics (drivers)
-- Hourly rate calculator (app vs. driving around)
-- Gas cost tracking from daily prices + mileage
-- Clear picture of time and fuel saved
-
----
-
-## App identity
-
-Single source of truth: `config/app-identity.js` (imported by `app.config.ts` and OAuth config).
-
-| Key | Value |
-|-----|-------|
-| App name | `The Ice Cream Man` |
-| Expo slug | `the-ice-cream-man-app` |
-| Bundle ID / package | `com.icecreamman.app` |
-| Deep-link scheme | `icecreamman` |
-| EAS project ID | `5bf9c92f-2974-422e-b6cb-958d6f7ae469` |
-| Expo owner | `mgfromthe503` |
-
-Expo usernames are **case-sensitive** for EAS project resolution — the owner must match the account that owns the projectId.
-
----
-
-## Tech stack
-
-| Layer | Technology |
-|-------|------------|
-| App | React Native + Expo SDK 54, TypeScript |
-| Navigation | Expo Router 6 (file-based) |
-| UI | NativeWind 4, Reanimated 4 |
-| Backend | Express + tRPC |
-| Database | MySQL + Drizzle ORM |
-| Payments | Google Play Billing (`expo-iap`) |
-| Audio | expo-audio (jingle) |
-| Tests | Vitest |
-| Builds | EAS Build + Submit |
-| Package manager | pnpm 9 (workspace monorepo) |
-
----
-
-## Design (candy-land theme)
-
-| Token | Color |
-|-------|--------|
-| Primary | `#FFB6D9` Candy Pink |
-| Secondary | `#A8E6CF` Mint Green |
-| Accent | `#FFD3B6` Peach |
-| Background | `#FFFACD` Lemon Chiffon |
-| Text | `#8B4513` Saddle Brown |
-
-Rounded buttons, soft cards, pastel map styling, emoji-friendly icons. Theme tokens live in `theme.config.js`.
-
----
+| Layer | Primary technology |
+|---|---|
+| Mobile and web client | Expo, React Native, Expo Router, and TypeScript |
+| Styling and interaction | NativeWind, React Native Reanimated, and Expo modules |
+| API | Express and tRPC |
+| Data | Drizzle ORM with a MySQL-compatible database |
+| Native commerce | `expo-iap` and Google Play Billing |
+| Quality checks | TypeScript, ESLint, Prettier, and Vitest |
+| Android delivery | EAS Build, EAS Submit, and GitHub Actions |
 
 ## Local development
 
-**Requirements:** Node **22+**, pnpm 9+
+The project is a pnpm workspace. Use Node.js **22** and pnpm **9.12.0** to align with the checked-in EAS configuration.
 
 ```bash
 git clone https://github.com/Mgfromthe503/Ice-cream-man-app.git
@@ -107,99 +50,69 @@ pnpm install
 pnpm dev
 ```
 
+`pnpm dev` runs the API in watch mode and starts the Expo development server. Use Expo Go where its native-module support is sufficient; use a development build for native capabilities such as Google Play Billing.
+
 | Command | Purpose |
-|---------|---------|
-| `pnpm check` | TypeScript |
-| `pnpm test` | Vitest |
-| `pnpm dev` | Server + Metro (concurrent) |
-| `pnpm build` | Bundle server for production |
-| `pnpm start` | Run production server |
+|---|---|
+| `pnpm dev` | Run the API and Expo development server together. |
+| `pnpm dev:server` | Run only the API in watch mode. |
+| `pnpm dev:metro` | Run only the Expo development server. |
+| `pnpm check` | Run the TypeScript type check. |
+| `pnpm lint` | Run the Expo ESLint configuration. |
+| `pnpm format` | Format repository files with Prettier. |
+| `pnpm test` | Run the Vitest suite once. |
+| `pnpm build` | Bundle the production API server into `dist/`. |
+| `pnpm start` | Run the bundled production API server. |
+| `pnpm db:push` | Generate and apply Drizzle migrations; requires `DATABASE_URL`. |
+| `pnpm verify:deps` | Verify dependency override and lockfile safeguards. |
 
-Scan the Expo QR code with Expo Go, or use a development build for native modules (billing, etc.).
+For environment variables, database changes, backend architecture, and API conventions, see the [backend reference](server/README.md).
 
----
+## Configuration sources of truth
 
-## Build & release (EAS)
+Keep configuration changes in the responsible file rather than duplicating values across documents.
 
-> **Same-day launch guide:** see **[LAUNCH.md](LAUNCH.md)** for the complete runbook, exact commands, required secrets, and Play Console steps.
+| Concern | Authoritative location |
+|---|---|
+| App name, package identifier, Expo owner, slug, and deep-link scheme | [`config/app-identity.js`](config/app-identity.js) |
+| Expo configuration, native plugins, permissions, and app version | [`app.config.ts`](app.config.ts) |
+| EAS build and submission profiles | [`eas.json`](eas.json) |
+| Package scripts, dependencies, and pnpm version | [`package.json`](package.json) |
+| Database schema and migrations | [`drizzle/schema.ts`](drizzle/schema.ts) and [`drizzle/`](drizzle/) |
+| CI and manual EAS workflow behavior | [`.github/workflows/`](.github/workflows/) |
 
-Profiles in `eas.json`:
+## Project layout
 
-| Profile | Output | Use |
-|---------|--------|-----|
-| `development` | Debug APK + dev client | Local device testing |
-| `preview` | Internal APK | QA / stakeholders |
-| `production` | AAB | Google Play |
-
-```bash
-eas build --platform android --profile production
-eas submit --platform android --profile production --latest
+```text
+app/                 Expo Router routes for customer and driver experiences
+components/          Reusable UI and product-specific components
+config/              Canonical application identity configuration
+constants/           Shared client configuration and theme constants
+docs/                Task-oriented project, release, troubleshooting, and design guides
+drizzle/             Database schema and migrations
+legal/               Privacy, terms, Play listing, and reviewer materials
+lib/                 Client services, contexts, and application utilities
+server/              Express, tRPC, database, and authentication implementation
+shared/              Cross-boundary types and errors
+tests/               Vitest test suite
 ```
 
-### GitHub Actions
+## Android release and automation
 
-Workflow: `.github/workflows/eas-build-submit.yml`
+Android release profiles and submission settings live in [`eas.json`](eas.json). Pull requests and pushes to `main` run validation; Android builds and optional Play submissions are initiated manually through the **EAS Build and Submit** GitHub Actions workflow. Follow the [Android and Google Play release runbook](docs/release/android-google-play.md) before creating a production build.
 
-| Event | Validate (types + tests) | EAS Build | Submit |
-|-------|--------------------------|-----------|--------|
-| PR → `main` | Yes | No | No |
-| Push → `main` | Yes | No | No |
-| Manual `workflow_dispatch` | Yes | Yes (if `EXPO_TOKEN` set) | Optional |
+Store access tokens, Android keystores, and service-account JSON must never be committed. Configure the required values through the relevant service and repository secret settings instead.
 
-Push/PR CI only validates so Actions stays green while you choose when to spend EAS minutes. Trigger a production build from **Actions** → **EAS Build and Submit** → **Run workflow**.
+## Legal and store materials
 
-**Secrets** (Settings → Secrets and variables → Actions)
-
-- `EXPO_TOKEN` — required for builds ([create token](https://expo.dev/settings/access-tokens))
-- `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` — optional; enables auto-submit to Play internal track
-
-Android signing is **EAS-managed**. Do not commit keystores or service-account JSON.
-
----
-
-## Monetization
-
-- **$25 one-time** driver registration via Google Play Billing
-- Product ID: `icm_vendor_registration`
-- No recurring fees for drivers or customers
-- Revenue goes to the Google Play Developer account (Google’s standard commission applies)
-
----
-
-## Project layout (monorepo)
-
-This is a **pnpm workspace monorepo**. The Expo app and Express API share one root package today; `packages/*` is reserved for future shared libraries.
-
-```
-pnpm-workspace.yaml   # workspace definition (root + packages/*)
-package.json          # root scripts: dev, check, test, build, start
-app/                  # Expo Router screens (customer + driver)
-components/           # UI (summon animation, map, ratings, jingle, banners)
-config/               # Canonical app identity (owner, slug, projectId)
-constants/            # OAuth + theme
-server/               # Express + tRPC API
-shared/               # Shared types/errors between app and server
-drizzle/              # Schema + migrations
-legal/                # Privacy, terms, data safety, Play listing copy
-tests/                # Vitest suites
-packages/             # Future shared packages (empty for now)
-eas.json              # EAS build/submit profiles (Node 22)
-render.yaml           # Optional API deploy on Render
-.github/workflows/    # Validate on PR/push; EAS on workflow_dispatch
-```
-
----
-
-## Legal & store listing
-
-- [Privacy Policy](legal/PRIVACY_POLICY.md)
-- [Terms of Service](legal/TERMS_OF_SERVICE.md)
-- [Data Safety](legal/DATA_SAFETY.md)
-- [Play Store listing copy](legal/GOOGLE_PLAY_LISTING.md)
-- [App access notes](legal/GOOGLE_PLAY_APP_ACCESS.md)
-
----
+| Document | Purpose |
+|---|---|
+| [Privacy Policy](legal/PRIVACY_POLICY.md) | End-user privacy practices and disclosures. |
+| [Terms of Service](legal/TERMS_OF_SERVICE.md) | Terms governing use of the application. |
+| [Google Play Data Safety](legal/DATA_SAFETY.md) | Play Console data-safety entry reference. |
+| [Google Play Listing](legal/GOOGLE_PLAY_LISTING.md) | Store-listing content and release-note material. |
+| [Google Play App Access](legal/GOOGLE_PLAY_APP_ACCESS.md) | Reviewer access and test-flow instructions. |
 
 ## License
 
-Proprietary. All rights reserved.
+This project is proprietary. All rights reserved.
