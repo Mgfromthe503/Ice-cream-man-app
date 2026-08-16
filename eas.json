@@ -5,46 +5,10 @@
     "promptToConfigurePushNotifications": false
   },
   "build": {
-    "base": {
-      "node": "22.14.0",
-      "pnpm": "9.12.0",
-      "env": {
-        "EAS_BUILD_NO_EXPO_GO_WARNING": "1",
-        "EAS_SKIP_AUTO_FINGERPRINT": "1",
-        "EAS_NO_VCS": "1"
-      }
-    },
-    "development": {
-      "extends": "base",
-      "developmentClient": true,
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk",
-        "gradleCommand": ":app:assembleDebug"
-      }
-    },
-    "preview": {
-      "extends": "base",
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk",
-        "resourceClass": "medium"
-      }
-    },
     "production": {
-      "extends": "base",
       "distribution": "store",
       "android": {
         "buildType": "app-bundle",
-        "autoIncrement": true,
-        "resourceClass": "medium"
-      }
-    },
-    "production-apk": {
-      "extends": "base",
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk",
         "autoIncrement": true,
         "resourceClass": "medium"
       }
@@ -55,8 +19,7 @@
       "android": {
         "track": "internal",
         "releaseStatus": "draft",
-        "changesNotSentForReview": false,
-        "serviceAccountKeyPath": "./google-service-account.json"
+        "changesNotSentForReview": false
       }
     }
   }
