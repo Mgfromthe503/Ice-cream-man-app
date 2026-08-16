@@ -14,7 +14,7 @@ const config: ExpoConfig = {
   name: APP_NAME,
   slug: APP_SLUG,
   owner: EXPO_OWNER,
-  version: "1.0.15",
+  version: "1.0.14",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: APP_SCHEME,
@@ -36,14 +36,17 @@ const config: ExpoConfig = {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: APP_BUNDLE_ID,
+    versionCode: 10014,
     permissions: [
       "POST_NOTIFICATIONS",
       "com.android.vending.BILLING",
       "ACCESS_FINE_LOCATION",
       "ACCESS_COARSE_LOCATION",
     ],
-    // Queries block for Android 11+ (API 30+) package visibility.
-    // @ts-expect-error Expo's Android config type does not yet expose queries.
+    // Queries block for Android 11+ (API 30+) package visibility
+    // Required for Linking.openURL() to work with external maps apps
+    // Expo's Android config type has not caught up to this manifest field.
+    // @ts-expect-error queries is emitted correctly by config plugins/prebuild.
     queries: {
       schemes: ["google.navigation", "geo", "comgooglemaps"],
       packages: ["com.google.android.apps.maps"],
@@ -79,7 +82,10 @@ const config: ExpoConfig = {
         defaultChannel: "default",
       },
     ],
+    // Google Play Billing (vendor registration). Requires a dev client / EAS
+    // build — not available in Expo Go.
     "expo-iap",
+    // Custom plugin: injects BillingClient 8.1.0 dependency + ProGuard rules
     "./plugins/withBillingClient",
     [
       "expo-location",
@@ -91,6 +97,7 @@ const config: ExpoConfig = {
     [
       "expo-audio",
       {
+        // The app uses playback only. Do not request microphone access or ship RECORD_AUDIO.
         microphonePermission: false,
         recordAudioAndroid: false,
         enableBackgroundRecording: false,
@@ -119,12 +126,16 @@ const config: ExpoConfig = {
       "expo-build-properties",
       {
         android: {
+          // Google Play Billing Library 8.1.0 (via expo-iap) needs Kotlin 2.x.
           kotlinVersion: "2.1.20",
           buildArchs: ["armeabi-v7a", "arm64-v8a"],
           minSdkVersion: 24,
+          // Enable R8 minification and resource shrinking for Google Play compliance
           enableProguardInReleaseBuilds: true,
           enableShrinkResourcesInReleaseBuilds: true,
+          // Enable minification (R8) for release builds
           enableMinifyInReleaseBuilds: true,
+          // Google Play Billing Library version 8.1.0
           billingLibraryVersion: "8.1.0",
         },
       },
