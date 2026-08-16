@@ -1,8 +1,8 @@
-name: EAS Build and Submit
+name: EAS Production Android Release
 
-# Validate on PR/push so CI stays green.
-# Production EAS build + optional Google Play submit only via manual Run workflow
-# (prevents wasting Expo build quota on every push).
+# One production path for the existing Google Play application.
+# Validation runs on pull requests/pushes; the actual EAS AAB build and
+# optional Google Play submission are manual to avoid consuming build quota.
 on:
   pull_request:
     branches: [main]
@@ -10,19 +10,10 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
-      profile:
-        description: EAS build profile
-        required: false
-        default: production
-        type: choice
-        options:
-          - production
-          - preview
-          - production-apk
       submit:
-        description: Submit to Google Play after build (AAB/production only)
+        description: Submit the production AAB to Google Play after build
         required: false
-        default: "true"
+        default: "false"
         type: choice
         options:
           - "true"
@@ -32,12 +23,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: eas-${{ github.workflow }}-${{ github.ref }}
+  group: eas-production-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   validate:
-    name: Validate
+    name: Validate production source
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -69,24 +60,14 @@ jobs:
           node -e "
             const be = require('brace-expansion');
             const expand = typeof be === 'function' ? be : be && (be.default || be.expand);
-            if (typeof expand !== 'function') {
-              console.error('FAIL: brace-expansion has no callable default');
-              process.exit(1);
-            }
+            if (typeof expand !== 'function') process.exit(1);
             const viaDefault = typeof be === 'function' ? be : be && be.default;
-            if (typeof viaDefault !== 'function') {
-              console.error('FAIL: brace-expansion.default is not a function (minimatch interop path)');
-              process.exit(1);
-            }
-            console.log('OK: expand({a,b}) =>', expand('{a,b}'));
+            if (typeof viaDefault !== 'function') process.exit(1);
+            console.log('OK: brace-expansion');
           "
 
       - name: Verify Android Play release configuration
         run: pnpm verify:android-release
-
-      - name: Dependency audit
-        continue-on-error: true
-        run: pnpm audit --prod || true
 
       - name: Validate types
         run: pnpm check
@@ -95,7 +76,7 @@ jobs:
         run: pnpm test
 
   build:
-    name: EAS Android build
+    name: Build production Android AAB
     needs: validate
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
@@ -125,31 +106,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Apply CJS interop patch + verify brace-expansion
-        run: |
-          if [ -f scripts/patch-brace-expansion-cjs.cjs ]; then
-            node scripts/patch-brace-expansion-cjs.cjs
-          fi
-          node scripts/verify-pnpm-overrides.cjs
-          node -e "
-            const be = require('brace-expansion');
-            const expand = typeof be === 'function' ? be : be && (be.default || be.expand);
-            if (typeof expand !== 'function') {
-              console.error('FAIL: brace-expansion has no callable default');
-              process.exit(1);
-            }
-            const viaDefault = typeof be === 'function' ? be : be && be.default;
-            if (typeof viaDefault !== 'function') {
-              console.error('FAIL: brace-expansion.default is not a function (minimatch interop path)');
-              process.exit(1);
-            }
-            console.log('OK: expand({a,b}) =>', expand('{a,b}'));
-          "
-
-      - name: Require EAS release credential
+      - name: Require EAS token
         run: |
           if [ -z "$EXPO_TOKEN" ]; then
-            echo "EXPO_TOKEN is required to create an Android release build." >&2
+            echo "EXPO_TOKEN is required for the production EAS build." >&2
             exit 1
           fi
 
@@ -160,28 +120,22 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Build Android app
-        run: |
-          PROFILE="${{ github.event.inputs.profile || 'production' }}"
-          eas build --platform android --profile "$PROFILE" --non-interactive --wait
+      - name: Build production AAB
+        run: eas build --platform android --profile production --non-interactive --wait
 
-      - name: Submit to Google Play
-        if: >-
-          github.event.inputs.submit == 'true' &&
-          (github.event.inputs.profile == 'production' || github.event.inputs.profile == '' || github.event.inputs.profile == null)
+      - name: Submit production AAB to Google Play
+        if: github.event.inputs.submit == 'true'
         env:
           GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-          GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
         run: |
-          KEY_JSON="${GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:-$GOOGLE_SERVICE_ACCOUNT_KEY}"
-          if [ -z "$KEY_JSON" ]; then
-            echo "A Google Play service account secret is required when submission is requested." >&2
+          if [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is required when submission is requested." >&2
             exit 1
           fi
           umask 077
           KEYFILE=$(mktemp)
-          printf '%s' "$KEY_JSON" > "$KEYFILE"
+          trap 'rm -f "$KEYFILE"' EXIT
+          printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > "$KEYFILE"
           eas submit --platform android --latest --non-interactive \
             --profile production \
             --service-account-json "$KEYFILE"
-          rm -f "$KEYFILE"
