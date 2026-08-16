@@ -1,17 +1,13 @@
-name: EAS Production Android Release
+name: CLEAN LAUNCH — EAS Android Release
 
-# One production path for the existing Google Play application.
-# Validation runs on pull requests/pushes; the actual EAS AAB build and
-# optional Google Play submission are manual to avoid consuming build quota.
+# This workflow belongs to the clean-launch-track branch.
+# It never targets the existing com.icecreamman.app Play project.
+# It builds the new com.icecreamman.launch application only.
 on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       submit:
-        description: Submit the production AAB to Google Play after build
+        description: Submit the new AAB to Google Play after build
         required: false
         default: "false"
         type: choice
@@ -23,16 +19,15 @@ permissions:
   contents: read
 
 concurrency:
-  group: eas-production-${{ github.ref }}
+  group: clean-launch-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   validate:
-    name: Validate production source
+    name: Validate clean launch
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -45,49 +40,30 @@ jobs:
           node-version: "22"
           cache: pnpm
 
-      - name: Verify pnpm overrides / lockfile config
-        run: node scripts/verify-pnpm-overrides.cjs
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Apply CJS interop patch + verify brace-expansion
-        run: |
-          if [ -f scripts/patch-brace-expansion-cjs.cjs ]; then
-            node scripts/patch-brace-expansion-cjs.cjs
-          fi
-          node scripts/verify-pnpm-overrides.cjs
-          node -e "
-            const be = require('brace-expansion');
-            const expand = typeof be === 'function' ? be : be && (be.default || be.expand);
-            if (typeof expand !== 'function') process.exit(1);
-            const viaDefault = typeof be === 'function' ? be : be && be.default;
-            if (typeof viaDefault !== 'function') process.exit(1);
-            console.log('OK: brace-expansion');
-          "
-
-      - name: Verify Android Play release configuration
+      - name: Verify Android release configuration
         run: pnpm verify:android-release
 
-      - name: Validate types
+      - name: Type check
         run: pnpm check
 
       - name: Run tests
         run: pnpm test
 
   build:
-    name: Build production Android AAB
+    name: Build clean Android AAB
     needs: validate
-    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
       EAS_SKIP_AUTO_FINGERPRINT: "1"
       EAS_NO_VCS: "1"
       EAS_BUILD_NO_EXPO_GO_WARNING: "true"
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -100,16 +76,18 @@ jobs:
           node-version: "22"
           cache: pnpm
 
-      - name: Verify pnpm overrides / lockfile config
-        run: node scripts/verify-pnpm-overrides.cjs
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Require EAS token
+      - name: Require fresh EAS project
         run: |
           if [ -z "$EXPO_TOKEN" ]; then
-            echo "EXPO_TOKEN is required for the production EAS build." >&2
+            echo "EXPO_TOKEN is required." >&2
+            exit 1
+          fi
+          if [ -z "$EAS_PROJECT_ID" ]; then
+            echo "EAS_PROJECT_ID is required for the clean launch track." >&2
+            echo "It must point to the NEW EAS project, never the existing production project." >&2
             exit 1
           fi
 
@@ -120,16 +98,23 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Build production AAB
+      - name: Print clean release identity
+        run: |
+          echo "Package: com.icecreamman.launch"
+          echo "EAS project: $EAS_PROJECT_ID"
+          echo "Profile: production"
+          echo "Artifact: Android App Bundle"
+
+      - name: Build clean production AAB
         run: eas build --platform android --profile production --non-interactive --wait
 
-      - name: Submit production AAB to Google Play
+      - name: Submit clean AAB to Google Play
         if: github.event.inputs.submit == 'true'
         env:
           GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
           if [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
-            echo "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is required when submission is requested." >&2
+            echo "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is required for submission." >&2
             exit 1
           fi
           umask 077
