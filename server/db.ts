@@ -1,6 +1,15 @@
-import { eq, and } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
-import { InsertUser, users, iceCreamRequests, driverProfiles, driverLocationHistory, type InsertIceCreamRequest, type InsertDriverProfile } from "../drizzle/schema";
+import {
+  InsertUser,
+  users,
+  iceCreamRequests,
+  driverProfiles,
+  driverLocationHistory,
+  vendorEntitlements,
+  type InsertIceCreamRequest,
+  type InsertDriverProfile,
+} from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -141,38 +150,96 @@ export async function getDriverRequests(driverId: number) {
 /**
  * Accept a request (assign to driver)
  */
-export async function acceptRequest(requestId: number, driverId: number) {
+export async function acceptRequest(requestId: number, driverId: number): Promise<boolean> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  await db
+  const accepted = await db
     .update(iceCreamRequests)
     .set({
       driverId,
       status: "accepted",
       acceptedAt: new Date(),
+      updatedAt: new Date(),
     })
-    .where(eq(iceCreamRequests.id, requestId));
+    .where(and(eq(iceCreamRequests.id, requestId), eq(iceCreamRequests.status, "waiting")))
+    .returning({ id: iceCreamRequests.id });
+  return accepted.length === 1;
 }
 
-/**
- * Update request status
- */
-export async function updateRequestStatus(
+export async function updateAssignedRequestStatus(
   requestId: number,
-  status: "waiting" | "accepted" | "in_transit" | "completed" | "cancelled",
-) {
+  driverId: number,
+  expectedStatus: "accepted" | "in_transit",
+  nextStatus: "in_transit",
+): Promise<boolean> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const updateData: any = { status };
-  if (status === "completed") {
-    updateData.completedAt = new Date();
-  } else if (status === "cancelled") {
-    updateData.cancelledAt = new Date();
-  }
+  const updated = await db
+    .update(iceCreamRequests)
+    .set({ status: nextStatus, updatedAt: new Date() })
+    .where(
+      and(
+        eq(iceCreamRequests.id, requestId),
+        eq(iceCreamRequests.driverId, driverId),
+        eq(iceCreamRequests.status, expectedStatus),
+      ),
+    )
+    .returning({ id: iceCreamRequests.id });
+  return updated.length === 1;
+}
 
-  await db.update(iceCreamRequests).set(updateData).where(eq(iceCreamRequests.id, requestId));
+export async function cancelCustomerRequest(requestId: number, customerId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const cancelled = await db
+    .update(iceCreamRequests)
+    .set({ status: "cancelled", cancelledAt: new Date(), updatedAt: new Date() })
+    .where(
+      and(
+        eq(iceCreamRequests.id, requestId),
+        eq(iceCreamRequests.customerId, customerId),
+        inArray(iceCreamRequests.status, ["waiting", "accepted"]),
+      ),
+    )
+    .returning({ id: iceCreamRequests.id });
+  return cancelled.length === 1;
+}
+
+export async function completeDriverDelivery(requestId: number, driverId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return db.transaction(async (tx) => {
+    const completed = await tx
+      .update(iceCreamRequests)
+      .set({ status: "completed", completedAt: new Date(), updatedAt: new Date() })
+      .where(
+        and(
+          eq(iceCreamRequests.id, requestId),
+          eq(iceCreamRequests.driverId, driverId),
+          eq(iceCreamRequests.status, "in_transit"),
+        ),
+      )
+      .returning({ price: iceCreamRequests.price });
+    if (completed.length !== 1) return false;
+
+    const updatedProfile = await tx
+      .update(driverProfiles)
+      .set({
+        totalEarnings: sql`${driverProfiles.totalEarnings} + ${completed[0].price}`,
+        totalDeliveries: sql`${driverProfiles.totalDeliveries} + 1`,
+        updatedAt: new Date(),
+      })
+      .where(eq(driverProfiles.id, driverId))
+      .returning({ id: driverProfiles.id });
+    if (updatedProfile.length !== 1) {
+      throw new Error("Driver profile not found while completing delivery");
+    }
+    return true;
+  });
 }
 
 /**
@@ -283,4 +350,53 @@ export async function setDriverOnlineStatus(driverId: number, isOnline: boolean)
       isOnline: isOnline ? 1 : 0,
     })
     .where(eq(driverProfiles.id, driverId));
+}
+
+export async function getVendorEntitlementForUser(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db
+    .select()
+    .from(vendorEntitlements)
+    .where(eq(vendorEntitlements.userId, userId))
+    .limit(1);
+  return result[0] ?? null;
+}
+
+export async function createVendorEntitlement(input: {
+  userId: number;
+  productId: string;
+  purchaseTokenHash: string;
+  orderId: string | null;
+  purchaseTimeMillis: string | null;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const existingForUser = await getVendorEntitlementForUser(input.userId);
+  if (existingForUser) {
+    return { entitlement: existingForUser, created: false };
+  }
+
+  const inserted = await db
+    .insert(vendorEntitlements)
+    .values(input)
+    .onConflictDoNothing()
+    .returning();
+  if (inserted[0]) {
+    return { entitlement: inserted[0], created: true };
+  }
+
+  const tokenMatches = await db
+    .select()
+    .from(vendorEntitlements)
+    .where(eq(vendorEntitlements.purchaseTokenHash, input.purchaseTokenHash))
+    .limit(1);
+  const existingForToken = tokenMatches[0];
+  if (existingForToken?.userId === input.userId) {
+    return { entitlement: existingForToken, created: false };
+  }
+
+  throw new Error("This Google Play purchase has already been used by another account.");
 }

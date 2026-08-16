@@ -4,8 +4,7 @@
 packages:
   - "."
   - "packages/*"
-# Do NOT add an `overrides:` key here. pnpm only reads overrides from this file
-# from v10 onwards; this repo builds on pnpm 9.12.0 (package.json packageManager
-# and eas.json build.base.pnpm), which ignores it silently and drops every
-# security pin. Overrides live in package.json "pnpm.overrides" and are enforced
-# by `pnpm verify:deps`.
+
+# pnpm 9.12.0 is pinned for EAS and resolves overrides from package.json
+# "pnpm.overrides". Keep this file free of an `overrides:` block until the
+# project intentionally upgrades its package-manager contract.

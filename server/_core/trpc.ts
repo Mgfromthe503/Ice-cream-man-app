@@ -1,6 +1,7 @@
 import { NOT_ADMIN_ERR_MSG, UNAUTHED_ERR_MSG } from "../../shared/const.js";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
+import { getDriverProfile } from "../db";
 import type { TrpcContext } from "./context";
 
 const t = initTRPC.context<TrpcContext>().create({
@@ -26,6 +27,24 @@ const requireUser = t.middleware(async (opts) => {
 });
 
 export const protectedProcedure = t.procedure.use(requireUser);
+
+/** Requires a server-side driver profile; client-selected roles are never trusted. */
+export const driverProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  const driverProfile = await getDriverProfile(ctx.user.id);
+  if (!driverProfile) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "A verified vendor profile is required for this action.",
+    });
+  }
+
+  return next({
+    ctx: {
+      ...ctx,
+      driverProfile,
+    },
+  });
+});
 
 export const adminProcedure = t.procedure.use(
   t.middleware(async (opts) => {

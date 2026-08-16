@@ -97,7 +97,10 @@ const config: ExpoConfig = {
     [
       "expo-audio",
       {
-        microphonePermission: "Allow $(PRODUCT_NAME) to access your microphone.",
+        // The app uses playback only. Do not request microphone access or ship RECORD_AUDIO.
+        microphonePermission: false,
+        recordAudioAndroid: false,
+        enableBackgroundRecording: false,
       },
     ],
     [

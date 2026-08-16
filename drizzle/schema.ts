@@ -115,6 +115,20 @@ export const payments = pgTable("payments", {
  * Daily Sales Table
  * Tracks daily sales and driver performance metrics
  */
+/**
+ * Verified one-time Google Play vendor registrations. Purchase tokens are never
+ * stored; a SHA-256 hash enforces replay protection without retaining the token.
+ */
+export const vendorEntitlements = pgTable("vendor_entitlements", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().unique(),
+  productId: varchar("productId", { length: 191 }).notNull(),
+  purchaseTokenHash: varchar("purchaseTokenHash", { length: 64 }).notNull().unique(),
+  orderId: varchar("orderId", { length: 191 }),
+  purchaseTimeMillis: varchar("purchaseTimeMillis", { length: 32 }),
+  verifiedAt: timestamp("verifiedAt").defaultNow().notNull(),
+});
+
 export const dailySales = pgTable("daily_sales", {
   id: serial("id").primaryKey(),
   driverId: integer("driverId").notNull(),
@@ -130,6 +144,7 @@ export const dailySales = pgTable("daily_sales", {
 // Export types
 export type Payment = typeof payments.$inferSelect;
 export type InsertPayment = typeof payments.$inferInsert;
-
+export type VendorEntitlement = typeof vendorEntitlements.$inferSelect;
+export type InsertVendorEntitlement = typeof vendorEntitlements.$inferInsert;
 export type DailySales = typeof dailySales.$inferSelect;
 export type InsertDailySales = typeof dailySales.$inferInsert;

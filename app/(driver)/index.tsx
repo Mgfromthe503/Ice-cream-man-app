@@ -28,36 +28,31 @@ export default function DriverDashboardScreen() {
   const [activeLocation, setActiveLocation] = useState<string>('');
   const [areaCode, setAreaCode] = useState<string>('');
   const [isAreaCodeSet, setIsAreaCodeSet] = useState(false);
-  const [isRegistered, setIsRegistered] = useState(false);
-  const [isCheckingRegistration, setIsCheckingRegistration] = useState(true);
   const [areaCodeInput, setAreaCodeInput] = useState('');
   const [requests, setRequests] = useState<RequestItem[]>([]);
 
   // Fetch waiting requests from backend
   const { data: waitingRequests, isLoading, refetch } = trpc.requests.getWaiting.useQuery();
+  const driverProfile = trpc.driver.getProfile.useQuery(undefined, { retry: 1 });
   const acceptRequestMutation = trpc.requests.accept.useMutation();
   const completeDeliveryMutation = trpc.driver.completeDelivery.useMutation();
+  const isRegistered = driverProfile.data !== null && driverProfile.data !== undefined;
+  const isCheckingRegistration = driverProfile.isLoading;
 
-  // Load saved area code and check registration
+  // Area-code filtering is a local display preference, never a registration or payment claim.
   useEffect(() => {
-    const loadData = async () => {
+    const loadAreaCode = async () => {
       try {
-        const [savedAreaCode, registered] = await Promise.all([
-          AsyncStorage.getItem('driverAreaCode'),
-          AsyncStorage.getItem('driverIsRegistered'),
-        ]);
+        const savedAreaCode = await AsyncStorage.getItem('driverAreaCode');
         if (savedAreaCode) {
           setAreaCode(savedAreaCode);
           setIsAreaCodeSet(true);
         }
-        setIsRegistered(registered === 'true');
       } catch (error) {
-        console.error('Error loading data:', error);
-      } finally {
-        setIsCheckingRegistration(false);
+        console.error('Error loading area-code preference:', error);
       }
     };
-    loadData();
+    void loadAreaCode();
   }, []);
 
   // Update requests from backend data
@@ -237,10 +232,7 @@ export default function DriverDashboardScreen() {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       
       // Call backend to complete delivery
-      await completeDeliveryMutation.mutateAsync({
-        requestId: activeRequest,
-        amount: 5.0,
-      });
+      await completeDeliveryMutation.mutateAsync({ requestId: activeRequest });
       
       setActiveRequest(null);
       setActiveLocation('');

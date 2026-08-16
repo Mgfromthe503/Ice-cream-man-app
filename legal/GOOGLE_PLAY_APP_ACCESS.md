@@ -1,123 +1,63 @@
 # Google Play Console — App Access Instructions
 
-**Paste this into: Google Play Console → App Content → App Access**
+Use this document to prepare the **App access** response in Google Play Console. It is a release checklist, not a source of credentials. Do not paste passwords, purchase tokens, service-account JSON, or private reviewer details into this file or the public store listing.
 
----
+## App access status
 
-## App Access Type: All functionality is available without special access
+The released app requires secure sign-in before a customer or vendor can access protected functionality. Select the App access option that indicates restricted functionality and provide the reviewer path below **only after it has been tested in the exact internal-test AAB under review**.
 
-The Ice Cream Man is a dual-marketplace app with two user roles (Customer and Driver). Both roles are accessible from the home screen without any login requirement for basic testing. Below are instructions for testing each flow.
+> The previous in-app test-account bypass was intentionally removed. A release must not include a hidden sign-in path, hard-coded reviewer credentials, local payment flags, or a payment bypass.
 
----
+## Reviewer preparation
 
-## Testing Instructions for Reviewers
+Before submitting the release, the release owner must complete the following tasks in the relevant Google Play and identity-provider accounts.
 
-### CUSTOMER FLOW (No Login Required)
+| Task | Required result |
+|---|---|
+| Secure sign-in | Provision the Google Play reviewer identity in the approved OAuth provider, or supply a time-limited reviewer invitation through the provider's approved process. |
+| Vendor billing | Add the reviewer identity to Play Console **License testing** and make `icm_vendor_registration` active for the internal-test track. |
+| Backend verification | Configure `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` in the backend secret manager and confirm that a Play test purchase results in a server-verified entitlement. |
+| Customer and driver testing | Use separate, authenticated identities where the test requires both roles. Do not elevate a customer by changing a device-only role preference. |
 
-1. Open the app
-2. Tap **"Tap to Order Ice Cream →"** on the Customer card
-3. The customer home screen displays with a large pulsing **"I WANT ICE CREAM!"** button
-4. Tap the button to initiate an order
-5. The app will request location permission — grant it
-6. Choose a delivery share mode (Exact Address / Street Only / Meetup Point)
-7. Optionally add delivery instructions
-8. Confirm the order
-9. The summoning animation plays with rotating ice cream facts
-10. After ~20 seconds, the simulated delivery completes
+## Reviewer flow
 
-### DRIVER/VENDOR FLOW (Registration Required — $25 Fee)
+### Customer flow
 
-1. Open the app
-2. Tap **"Start Earning Money →"** on the Ice Cream Vendor card
-3. You will see the **"Register Your Truck First!"** screen
-4. Tap **"Register My Truck"**
-5. Fill in: Name, Truck Name, Truck Color (truck number auto-assigned)
-6. After registration form, the **$25 Google Play Billing** payment screen appears
-7. Complete payment via Google Play test card (use a license tester account)
-8. After payment, enter a zip/area code to set your coverage zone
-9. The dashboard shows incoming customer requests (if any are waiting)
-10. Accept a request → Navigate button opens Google Maps with directions
-11. Complete delivery when within 1000 feet of customer
+1. Open the internal-test build and choose **Continue to secure sign-in**.
+2. Complete the configured OAuth flow using the reviewer identity supplied through the approved channel.
+3. Choose **Customer** after sign-in.
+4. Create a request only with test-safe location data, select the intended sharing mode, and confirm the request.
+5. Verify the requested permission prompts, location disclosure, and cancellation behavior on the test device.
 
-### TEST ACCOUNTS FOR REVIEW (Pre-Configured — No Payment Required)
+### Vendor flow and one-time product
 
-Two test accounts are pre-configured that bypass all registration and payment flows:
+1. Sign in with the approved vendor reviewer identity and choose **Ice Cream Vendor**.
+2. Open vendor registration. The app must show that payment is required until the backend reports a verified entitlement.
+3. Complete the one-time `icm_vendor_registration` purchase through Google Play's license-testing flow. The test purchase must not create a real charge.
+4. Confirm that the app reports success only after the backend verifies and acknowledges the Google Play purchase.
+5. Complete the vendor-profile form, then verify that vendor-only actions are unavailable to a customer identity and available only to a server-side driver profile.
 
-**How to access the test login screen:**
-1. On the initial role-select screen ("Choose your role to get started")
-2. Scroll to the bottom
-3. Tap the small gray **"v1.0.0"** version text at the very bottom of the screen
-4. This opens the hidden Test Login screen
+## Information to enter in Play Console
 
-**Customer Test Account:**
-| Field | Value |
-|-------|-------|
-| Email | Icecream@customertest.com |
-| Password | GoogleTest2026! |
+Enter the current secure sign-in and reviewer access process in the Console. Include a support contact capable of provisioning or unblocking the reviewer, but do not enter reusable credentials in a public repository. If the required OAuth reviewer identity, license-test setup, or server verification is unavailable, mark the release as **not ready for review** and resolve it before submission.
 
-This account bypasses all verification and lands directly on the Customer ordering screen.
+## Current release evidence
 
-**Driver Test Account:**
-| Field | Value |
-|-------|-------|
-| Email | Icecream@driverlogintest.com |
-| Password | GoogleTest2026! |
+Attach or retain the following private release evidence for the submitted version code:
 
-This account bypasses the $25 registration fee, email verification, and all activation checks. It lands directly on the operational Driver Dashboard with a pre-registered truck (ICM-9999, area code 97005), ready to accept incoming customer requests.
+| Evidence | Expected result |
+|---|---|
+| Secure sign-in test | An unauthenticated user is redirected to sign-in; no test-login endpoint is reachable. |
+| Customer authorization test | A customer cannot call driver-only queries or mutations. |
+| Vendor purchase test | A valid license-test purchase is verified server-side; a fabricated or reused token is rejected. |
+| Restore test | A prior purchase is restored only after repeat server verification. |
+| Privacy and permission test | The actual runtime permissions and data flows match the current Data safety form and Privacy Policy. |
 
-**Alternative (License Tester for real billing flow):**
-If you want to test the actual $25 Google Play Billing flow, add your reviewer's Google account as a License Tester in Google Play Console (Setup → License testing) with Payment Response set to RESPOND_NORMALLY (uses test card, no real charge).
+## Data safety and privacy review
 
-### DEMO MODE (If No Active Drivers Available)
+The statements in [Data Safety](DATA_SAFETY.md) and [Privacy Policy](PRIVACY_POLICY.md) must be reconciled with the actual SDK and network inventory before release. In particular, review location collection and sharing, any analytics or map provider, purchase history, retention, account deletion, and the public privacy-policy URL. Do not claim immediate deletion, encrypted transport, or third-party data sharing behavior that has not been validated in the release environment.
 
-When testing the Customer flow, if no real Drivers are online, the app uses a simulated delivery timeline:
-- 8 seconds: Driver accepts your order
-- 15 seconds: Driver is nearby
-- 20 seconds: Delivery arrives
+## References
 
-This ensures the reviewer can experience the full customer journey without needing a second device.
-
----
-
-## Key Features to Verify
-
-| Feature | Where to Find |
-|---------|---------------|
-| Location permission prompt | Customer order flow (with prominent disclosure modal shown first) |
-| Google Play Billing ($25 fee) | Driver registration flow |
-| Push notifications | Driver receives alert when customer orders |
-| Maps navigation | Driver dashboard → Accept request → Navigate button |
-| Privacy controls | Customer chooses Exact/Street/Meetup before each order |
-| Data deletion | Customer location wiped from Driver device on delivery completion |
-| Battery optimization | Polling pauses when app is backgrounded |
-
----
-
-## Privacy Policy URL
-
-Host the Privacy Policy at a publicly accessible URL before submitting to Play Console.
-Options (choose one):
-- GitHub Pages: `https://mgfromthe503.github.io/Ice-cream-man-app/legal/PRIVACY_POLICY`
-- Your own domain: `https://theicecreamman.app/privacy`
-
-Enter this URL in Google Play Console under **App content > Privacy policy**.
-
-(Also accessible in-app via Profile screens)
-
----
-
-## Data Safety Declarations
-
-| Question | Answer |
-|----------|--------|
-| Does your app collect or share user data? | Yes |
-| Is all collected data encrypted in transit? | Yes (HTTPS/TLS) |
-| Do you provide a way for users to request data deletion? | Yes (email request) |
-| Does your app collect precise location? | Yes (for delivery navigation) |
-| Does your app collect approximate location? | Yes (for area matching) |
-| Is location data shared with other users? | Yes (Customer → Driver during active delivery only) |
-| Is location data processed ephemerally? | Yes (deleted on delivery completion) |
-
----
-
-*This document is ready to paste into Google Play Console's App Access section.*
+[1]: https://support.google.com/googleplay/android-developer/answer/9859455 "Google Play Console Help: App access requirements"
+[2]: https://developer.android.com/google/play/billing/test "Android Developers: Test Google Play Billing"

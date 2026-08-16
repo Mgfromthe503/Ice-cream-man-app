@@ -8,11 +8,6 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { applySecurityMiddleware } from "../security";
-import { validateTestCredentials, findTestAccount } from "../test-accounts";
-import { upsertUser } from "../db";
-import { sdk } from "./sdk";
-import { COOKIE_NAME, ONE_YEAR_MS } from "../../shared/const.js";
-import { getSessionCookieOptions } from "./cookies";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -81,101 +76,6 @@ async function startServer() {
 
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, timestamp: Date.now() });
-  });
-
-  // ============================================
-  // TEST ACCOUNT LOGIN (Google Play Reviewer)
-  // Bypasses OAuth, email verification, and payment
-  // Rate limited: 5 attempts per minute per IP to prevent brute-force
-  // ============================================
-  const testLoginAttempts = new Map<string, { count: number; resetAt: number }>();
-
-  app.post("/api/auth/test-login", async (req, res) => {
-    try {
-      // Rate limiting: max 5 attempts per minute per IP
-      const clientIp = req.ip || req.socket.remoteAddress || "unknown";
-      const now = Date.now();
-      const windowMs = 60000; // 1 minute
-      const maxAttempts = 5;
-
-      const record = testLoginAttempts.get(clientIp);
-      if (record && now < record.resetAt) {
-        if (record.count >= maxAttempts) {
-          const retryAfter = Math.ceil((record.resetAt - now) / 1000);
-          res.status(429).json({
-            error: "Too many login attempts. Please try again later.",
-            retryAfter,
-          });
-          return;
-        }
-        record.count++;
-      } else {
-        testLoginAttempts.set(clientIp, { count: 1, resetAt: now + windowMs });
-      }
-
-      // Cleanup stale entries every 100 requests to prevent memory leak
-      if (testLoginAttempts.size > 100) {
-        for (const [ip, entry] of testLoginAttempts) {
-          if (now > entry.resetAt) testLoginAttempts.delete(ip);
-        }
-      }
-
-      const { email, password } = req.body || {};
-      if (!email || !password) {
-        res.status(400).json({ error: "Email and password are required" });
-        return;
-      }
-
-      const account = validateTestCredentials(email, password);
-      if (!account) {
-        res.status(401).json({ error: "Invalid credentials" });
-        return;
-      }
-
-      // Upsert the test user into the database (if DB available)
-      try {
-        await upsertUser({
-          openId: account.openId,
-          name: account.displayName,
-          email: account.email,
-          loginMethod: "test_account",
-          lastSignedIn: new Date(),
-          role: account.role === "driver" ? "admin" : undefined,
-        });
-      } catch (dbErr) {
-        // DB may not be available in local dev — continue anyway
-        console.warn("[TestLogin] DB upsert skipped:", dbErr);
-      }
-
-      // Generate a REAL signed JWT session token (same as OAuth flow)
-      const sessionToken = await sdk.createSessionToken(account.openId, {
-        name: account.displayName,
-        expiresInMs: ONE_YEAR_MS,
-      });
-
-      // Set session cookie (same as OAuth callback)
-      const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-
-      // Return the test account info with pre-seeded state
-      res.json({
-        success: true,
-        user: {
-          id: account.openId,
-          openId: account.openId,
-          name: account.displayName,
-          email: account.email,
-          role: account.role,
-        },
-        // Include driver pre-seeded state so client can hydrate immediately
-        driverProfile: account.driverProfile || null,
-        // Real signed session token for native app Bearer auth
-        sessionToken,
-      });
-    } catch (error) {
-      console.error("[TestLogin] Error:", error);
-      res.status(500).json({ error: "Login failed" });
-    }
   });
 
   // Privacy Policy — publicly accessible URL for Google Play Console

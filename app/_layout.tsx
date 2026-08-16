@@ -31,28 +31,32 @@ export const unstable_settings = {
 };
 
 function RootLayoutNav() {
-  const { userRole, isLoading } = useAuth();
+  const { userRole, isAuthenticated, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
     if (isLoading) return;
 
-    const inAuthGroup = segments[0] === "(customer)" || segments[0] === "(driver)";
+    const inProductGroup = segments[0] === "(customer)" || segments[0] === "(driver)";
+    const inOAuthCallback = segments[0] === "oauth";
+    const inLogin = segments[0] === "login";
+    const inRoleSelect = segments[0] === "role-select";
 
-    if (!userRole && inAuthGroup) {
-      router.replace("/role-select");
-    } else if (!userRole && segments[0] === "(tabs)") {
-      // First app open — show role selection (no login required)
-      router.replace("/role-select");
-    } else if (userRole && !inAuthGroup && segments[0] !== "oauth") {
-      if (userRole === "customer") {
-        router.replace("/(customer)");
-      } else if (userRole === "driver") {
-        router.replace("/(driver)");
-      }
+    if (!isAuthenticated) {
+      if (!inLogin && !inOAuthCallback) router.replace("/login");
+      return;
     }
-  }, [userRole, segments, isLoading]);
+
+    if (!userRole) {
+      if (!inRoleSelect && !inOAuthCallback) router.replace("/role-select");
+      return;
+    }
+
+    if (!inProductGroup && !inOAuthCallback) {
+      router.replace(userRole === "customer" ? "/(customer)" : "/(driver)");
+    }
+  }, [isAuthenticated, isLoading, router, segments, userRole]);
 
   return (
     <>

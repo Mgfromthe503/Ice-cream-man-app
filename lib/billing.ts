@@ -1,18 +1,8 @@
-/**
- * Google Play Billing Integration (expo-iap v5.0.0 + Billing Library 9.1.0)
- * 
- * This module handles the $25 one-time Ice Cream Man vendor registration fee
- * via Google Play Billing. Payment goes directly to the developer's Google Play
- * Developer account.
- */
+import { Platform } from "react-native";
+import { isRateLimited } from "./security";
 
-import { Platform } from 'react-native';
-import { validatePurchaseToken, createSecureReceipt, isRateLimited, generateTransactionFingerprint } from './security';
-
-export const VENDOR_REGISTRATION_PRODUCT_ID = 'icm_vendor_registration';
-export const REGISTRATION_PRICE = 25.00;
-export const GOOGLE_CUT_PERCENT = 15;
-export const DEVELOPER_RECEIVES = REGISTRATION_PRICE * (1 - GOOGLE_CUT_PERCENT / 100);
+export const VENDOR_REGISTRATION_PRODUCT_ID = "icm_vendor_registration";
+export const REGISTRATION_PRICE = 25;
 
 export interface PurchaseResult {
   success: boolean;
@@ -21,125 +11,125 @@ export interface PurchaseResult {
   error?: string;
 }
 
-/**
- * Initialize Google Play Billing connection.
- */
+/** Native Google Play Billing connection. Vendor registration is unavailable on web. */
 export async function initializeBilling(): Promise<boolean> {
-  if (Platform.OS === 'web') return false;
+  if (Platform.OS === "web") return false;
 
   try {
-    const ExpoIap = require('expo-iap');
+    const ExpoIap = require("expo-iap");
     await ExpoIap.initConnection();
     return true;
   } catch (error) {
-    console.error('[Billing] Connection failed:', error);
+    console.error("[Billing] Connection failed", error);
     return false;
   }
 }
 
-/**
- * Get the vendor registration product details.
- */
 export async function getRegistrationProduct() {
-  if (Platform.OS === 'web') {
-    return {
-      productId: VENDOR_REGISTRATION_PRODUCT_ID,
-      title: 'Ice Cream Man Vendor Registration',
-      description: 'One-time registration fee to become an Ice Cream Man vendor.',
-      price: '$25.00',
-      localizedPrice: '$25.00',
-      currency: 'USD',
-    };
-  }
+  if (Platform.OS === "web") return null;
 
   try {
-    const ExpoIap = require('expo-iap');
-    const products = await ExpoIap.getProducts({
-      skus: [VENDOR_REGISTRATION_PRODUCT_ID]
-    });
-    return products?.[0] || null;
+    const ExpoIap = require("expo-iap");
+    const products = await ExpoIap.getProducts({ skus: [VENDOR_REGISTRATION_PRODUCT_ID] });
+    return products?.[0] ?? null;
   } catch (error) {
-    console.error('[Billing] Failed to get product:', error);
+    console.error("[Billing] Failed to load the registration product", error);
     return null;
   }
 }
 
 /**
- * Purchase the vendor registration using expo-iap v5.0.0 API.
+ * Starts Google Play Billing and returns the opaque purchase token. The caller
+ * must send it to the backend and wait for server verification before granting
+ * registration access or persisting any entitlement state.
  */
 export async function purchaseRegistration(): Promise<PurchaseResult> {
-  if (isRateLimited('purchase_registration', 3, 60000)) {
-    return { success: false, transactionId: null, purchaseToken: null, error: 'Too many attempts.' };
+  if (Platform.OS === "web") {
+    return {
+      success: false,
+      transactionId: null,
+      purchaseToken: null,
+      error: "Vendor registration is only available in the Android app.",
+    };
   }
-
-  if (Platform.OS === 'web') {
-    const simId = `web_${Date.now()}`;
-    const simToken = `token_${Date.now()}`;
-    await createSecureReceipt(simId, VENDOR_REGISTRATION_PRODUCT_ID, simToken);
-    return { success: true, transactionId: simId, purchaseToken: simToken };
+  if (isRateLimited("purchase_registration", 3, 60_000)) {
+    return { success: false, transactionId: null, purchaseToken: null, error: "Too many attempts." };
   }
 
   try {
-    const ExpoIap = require('expo-iap');
-    const obfuscatedAccountId = generateTransactionFingerprint();
-    
-    // expo-iap v5.0.0 request shape (Google Play Billing Library 9.1.0 compatible)
+    const ExpoIap = require("expo-iap");
     const purchase = await ExpoIap.requestPurchase({
-      request: {
-        sku: VENDOR_REGISTRATION_PRODUCT_ID,
-        obfuscatedAccountId,
-        obfuscatedProfileId: 'vendor-registration',
-      },
+      request: { sku: VENDOR_REGISTRATION_PRODUCT_ID },
     });
-
-    if (purchase) {
-      if (!validatePurchaseToken(purchase.purchaseToken)) {
-        return { success: false, transactionId: null, purchaseToken: null, error: 'Invalid token.' };
-      }
-
-      // Acknowledge the purchase
-      await ExpoIap.finishTransaction({
-        purchase,
-        isConsumable: false,
-      });
-
-      const transactionId = purchase.transactionId || purchase.orderId;
-      await createSecureReceipt(transactionId, VENDOR_REGISTRATION_PRODUCT_ID, purchase.purchaseToken);
-
-      return { success: true, transactionId, purchaseToken: purchase.purchaseToken };
+    const purchaseToken = typeof purchase?.purchaseToken === "string" ? purchase.purchaseToken : null;
+    if (!purchase || !purchaseToken) {
+      return { success: false, transactionId: null, purchaseToken: null, error: "Purchase was not completed." };
     }
 
-    return { success: false, transactionId: null, purchaseToken: null, error: 'Purchase not completed' };
-  } catch (error: any) {
-    if (error.code === 'E_USER_CANCELLED') {
-      return { success: false, transactionId: null, purchaseToken: null, error: 'Cancelled' };
+    return {
+      success: true,
+      transactionId: purchase.transactionId ?? purchase.orderId ?? null,
+      purchaseToken,
+    };
+  } catch (error: unknown) {
+    const code = typeof error === "object" && error !== null && "code" in error ? (error as { code?: string }).code : undefined;
+    if (code === "E_USER_CANCELLED") {
+      return { success: false, transactionId: null, purchaseToken: null, error: "Cancelled" };
     }
-    return { success: false, transactionId: null, purchaseToken: null, error: error.message };
+    return {
+      success: false,
+      transactionId: null,
+      purchaseToken: null,
+      error: error instanceof Error ? error.message : "The purchase could not be started.",
+    };
   }
 }
 
-/**
- * Check if the user has already purchased.
- */
-export async function checkExistingPurchase(): Promise<boolean> {
-  if (Platform.OS === 'web') return false;
+/** Return a restorable Play purchase token; server verification is still required. */
+export async function getExistingRegistrationPurchase(): Promise<PurchaseResult> {
+  if (Platform.OS === "web") {
+    return { success: false, transactionId: null, purchaseToken: null, error: "Not available on web." };
+  }
 
   try {
-    const ExpoIap = require('expo-iap');
+    const ExpoIap = require("expo-iap");
     const purchases = await ExpoIap.getAvailablePurchases();
-    return purchases.some((p: any) => p.productId === VENDOR_REGISTRATION_PRODUCT_ID);
+    const purchase = purchases.find((item: { productId?: string }) => item.productId === VENDOR_REGISTRATION_PRODUCT_ID);
+    const purchaseToken = typeof purchase?.purchaseToken === "string" ? purchase.purchaseToken : null;
+    return purchaseToken
+      ? {
+          success: true,
+          transactionId: purchase.transactionId ?? purchase.orderId ?? null,
+          purchaseToken,
+        }
+      : { success: false, transactionId: null, purchaseToken: null, error: "No prior purchase was found." };
   } catch (error) {
-    return false;
+    console.error("[Billing] Failed to restore a purchase", error);
+    return { success: false, transactionId: null, purchaseToken: null, error: "Unable to restore the purchase." };
   }
 }
 
-/**
- * End the billing connection.
- */
-export async function endBillingConnection(): Promise<void> {
-  if (Platform.OS === 'web') return;
+export async function finishVerifiedRegistrationPurchase(purchaseToken: string): Promise<void> {
+  if (Platform.OS === "web") return;
+
   try {
-    const ExpoIap = require('expo-iap');
+    const ExpoIap = require("expo-iap");
+    await ExpoIap.finishTransaction({
+      purchase: { productId: VENDOR_REGISTRATION_PRODUCT_ID, purchaseToken },
+      isConsumable: false,
+    });
+  } catch (error) {
+    // The backend acknowledgement is authoritative. Client finalization can be retried during restore.
+    console.warn("[Billing] Client transaction finalization will be retried", error);
+  }
+}
+
+export async function endBillingConnection(): Promise<void> {
+  if (Platform.OS === "web") return;
+  try {
+    const ExpoIap = require("expo-iap");
     await ExpoIap.endConnection();
-  } catch (error) {}
+  } catch (error) {
+    console.warn("[Billing] Failed to close the billing connection", error);
+  }
 }

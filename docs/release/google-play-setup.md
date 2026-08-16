@@ -37,6 +37,10 @@ The driver registration flow expects the one-time product identifier configured 
 | Availability | Active for the test or release track being used. |
 | Test path | Exercised by a permitted Play test account before production promotion. |
 
+The app grants vendor access only after its backend verifies the opaque purchase token with the Google Play Developer API, acknowledges an unacknowledged one-time purchase, and persists a one-time token hash. Before internal testing, enable the Android Publisher API for the same Google Cloud project and grant the service account access to this Play app. Set `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` only in the backend's approved secret manager; it must contain the service-account JSON and must never be added to source control, EAS public variables, app configuration, or a client bundle.
+
+> The GitHub Actions submission secret is separate from the running backend configuration. Both may use appropriately scoped service accounts, but the backend must have its own managed secret before vendor registration is enabled.
+
 ## Configure automated submission
 
 Automated submission is optional. The manual workflows can create EAS builds with only the Expo token, but submission requires a Google Play service-account JSON secret.
@@ -92,6 +96,7 @@ production artifact.
 | EAS credentials and ownership | EAS account and credential management for the configured project |
 | Required GitHub Actions secrets | Repository Actions secrets settings |
 | Store declarations and reviewer flow | Play Console and the linked `legal/` materials |
+| Backend purchase verification | A Google Play test purchase produces a server-verified entitlement without storing the raw token |
 | Automated submission permissions | A controlled production-profile test or an authorized account review |
 
 ## Related documentation

@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Pressable, Alert, ActivityIndicator, Platform } from 'react-native';
-import { ScreenContainer } from '@/components/screen-container';
-import { useColors } from '@/hooks/use-colors';
-import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Haptics from 'expo-haptics';
-import { LinearGradient } from 'expo-linear-gradient';
-import { FactTicker } from '@/components/fact-ticker';
+import React, { useEffect, useState } from "react";
+import { View, Text, ScrollView, Pressable, Alert, ActivityIndicator, Platform } from "react-native";
+import { ScreenContainer } from "@/components/screen-container";
+import { useColors } from "@/hooks/use-colors";
+import { useRouter } from "expo-router";
+import * as Haptics from "expo-haptics";
+import { LinearGradient } from "expo-linear-gradient";
+import { FactTicker } from "@/components/fact-ticker";
+import { trpc } from "@/lib/trpc";
 import {
+  endBillingConnection,
+  finishVerifiedRegistrationPurchase,
+  getExistingRegistrationPurchase,
   initializeBilling,
   purchaseRegistration,
-  checkExistingPurchase,
-  endBillingConnection,
-  REGISTRATION_PRICE,
   VENDOR_REGISTRATION_PRODUCT_ID,
-} from '@/lib/billing';
+} from "@/lib/billing";
 
 export default function VendorPaymentScreen() {
   const colors = useColors();
@@ -22,49 +22,33 @@ export default function VendorPaymentScreen() {
   const [loading, setLoading] = useState(false);
   const [billingReady, setBillingReady] = useState(false);
   const [paid, setPaid] = useState(false);
-  const [checkingPurchase, setCheckingPurchase] = useState(true);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const paymentStatus = trpc.payment.getPaymentStatus.useQuery(undefined, { retry: 1 });
+  const verifyRegistration = trpc.payment.verifyRegistration.useMutation();
+  const checkingPurchase = paymentStatus.isLoading;
 
-  // Initialize billing and check for existing purchase
   useEffect(() => {
-    const init = async () => {
-      try {
-        // Check local storage first
-        const alreadyPaid = await AsyncStorage.getItem('vendorRegistrationPaid');
-        if (alreadyPaid === 'true') {
-          setPaid(true);
-          setCheckingPurchase(false);
-          return;
-        }
-
-        // Initialize Google Play Billing
-        const ready = await initializeBilling();
-        setBillingReady(ready || Platform.OS === 'web');
-
-        // Check if user already purchased (restore purchase)
-        if (ready) {
-          const hasPurchase = await checkExistingPurchase();
-          if (hasPurchase) {
-            await AsyncStorage.setItem('vendorRegistrationPaid', 'true');
-            setPaid(true);
-          }
-        }
-      } catch (error) {
-        console.error('[Payment] Init error:', error);
-        // On web, billing is simulated so always "ready"
-        if (Platform.OS === 'web') {
-          setBillingReady(true);
-        }
-      } finally {
-        setCheckingPurchase(false);
-      }
-    };
-    init();
-
+    void initializeBilling().then(setBillingReady);
     return () => {
-      endBillingConnection();
+      void endBillingConnection();
     };
   }, []);
+
+  useEffect(() => {
+    if (!paymentStatus.isLoading) {
+      setPaid(paymentStatus.data?.registrationPaid === true);
+    }
+  }, [paymentStatus.data?.registrationPaid, paymentStatus.isLoading]);
+
+  const verifyPurchaseToken = async (purchaseToken: string) => {
+    await verifyRegistration.mutateAsync({
+      productId: VENDOR_REGISTRATION_PRODUCT_ID,
+      purchaseToken,
+    });
+    await finishVerifiedRegistrationPurchase(purchaseToken);
+    await paymentStatus.refetch();
+    setPaid(true);
+  };
 
   const handlePayment = async () => {
     if (!termsAccepted) {
@@ -78,34 +62,19 @@ export default function VendorPaymentScreen() {
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       }
 
-      // Trigger Google Play Billing purchase
       const result = await purchaseRegistration();
-
-      if (result.success) {
-        // Mark as paid locally
-        await AsyncStorage.setItem('vendorRegistrationPaid', 'true');
-        await AsyncStorage.setItem('vendorTransactionId', result.transactionId || '');
-        await AsyncStorage.setItem('vendorPurchaseToken', result.purchaseToken || '');
-
-        setPaid(true);
-
-        if (Platform.OS !== 'web') {
+      if (result.success && result.purchaseToken) {
+        await verifyPurchaseToken(result.purchaseToken);
+        if (Platform.OS !== "web") {
           await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }
-
         Alert.alert(
-          '🎉 Payment Successful!',
-          'Your $25 registration fee has been processed via Google Play. You are now an active Ice Cream Man vendor!\n\nProceeed to register your truck details.',
-          [{ text: 'Register My Truck!', onPress: () => router.push('/(driver)/register') }]
+          "Payment verified",
+          "Google Play confirmed your registration. You can now register your truck details.",
+          [{ text: "Register my truck", onPress: () => router.push("/(driver)/register") }],
         );
-      } else if (result.error === 'Purchase cancelled by user') {
-        // User cancelled - no alert needed
-      } else {
-        Alert.alert(
-          'Payment Failed',
-          result.error || 'Something went wrong. Please try again.',
-          [{ text: 'OK' }]
-        );
+      } else if (result.error !== "Cancelled") {
+        Alert.alert("Payment failed", result.error || "Something went wrong. Please try again.");
       }
     } catch (error: any) {
       console.error('[Payment] Error:', error);
@@ -118,16 +87,16 @@ export default function VendorPaymentScreen() {
   const handleRestorePurchase = async () => {
     setLoading(true);
     try {
-      const hasPurchase = await checkExistingPurchase();
-      if (hasPurchase) {
-        await AsyncStorage.setItem('vendorRegistrationPaid', 'true');
-        setPaid(true);
-        Alert.alert('✅ Purchase Restored!', 'Your registration has been restored successfully.');
-      } else {
-        Alert.alert('No Purchase Found', 'We couldn\'t find a previous purchase on this Google account.');
+      const purchase = await getExistingRegistrationPurchase();
+      if (!purchase.success || !purchase.purchaseToken) {
+        Alert.alert("No purchase found", purchase.error || "We could not find a previous purchase on this Google account.");
+        return;
       }
+      await verifyPurchaseToken(purchase.purchaseToken);
+      Alert.alert("Purchase restored", "Google Play confirmed your registration.");
     } catch (error) {
-      Alert.alert('Error', 'Failed to restore purchase. Please try again.');
+      console.error("[Payment] Restore verification failed", error);
+      Alert.alert("Restore failed", "We could not verify this purchase. Please try again later.");
     } finally {
       setLoading(false);
     }
