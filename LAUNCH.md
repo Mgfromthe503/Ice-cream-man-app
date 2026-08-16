@@ -77,9 +77,16 @@ Add at: **GitHub → Repo Settings → Secrets and variables → Actions → New
 5. Click **Run workflow**
 
 The workflow will:
-- Run `pnpm check` (TypeScript) and `pnpm test` (Vitest)
+- Run `pnpm verify:android-release`, `pnpm check` (TypeScript), and `pnpm test` (Vitest)
 - Build an AAB via `eas build --platform android --profile production --non-interactive --wait`
 - Submit to Play internal track via `eas submit --platform android --latest --non-interactive`
+
+`pnpm verify:android-release` requires the explicit Google Play Billing Library
+`8.1.0` dependency and R8 release minification. The resulting production AAB
+carries the R8 mapping file that Google Play reads automatically for App Bundles
+built with Android Gradle Plugin 4.1 or later. Do not submit a previously built
+or rejected AAB after changing this configuration; build a new production
+artifact so EAS allocates a new Android version code.
 
 ### 4b. Local build + submit (manual fallback)
 
@@ -167,6 +174,7 @@ Google typically reviews within **1–3 business days** for new apps.
 
 ## 9. Pre-Flight Final Checklist
 
+- [ ] `pnpm verify:android-release` passes (Billing Library and R8/AAB preflight)
 - [ ] `pnpm check` passes (TypeScript — no errors)
 - [ ] `pnpm test` passes (all 152 tests green)
 - [ ] `config/app-identity.js` — EAS project ID matches Expo dashboard

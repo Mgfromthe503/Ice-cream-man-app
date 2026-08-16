@@ -48,7 +48,43 @@ eas build --platform android --profile production
 eas submit --platform android --profile production --latest
 ```
 
-## 5) When builds keep failing
+## 5) Billing Library and deobfuscation preflight
+
+Before submitting an Android production build, run:
+
+```bash
+pnpm verify:android-release
+```
+
+The preflight verifies that the generated Android project will use the explicit
+Google Play Billing Library `8.1.0` dependency (well above the `6.0.1` minimum
+reported by Play Console), retains `com.android.vending.BILLING`, and enables
+R8 minification and resource shrinking for release builds. The same command is
+run in the repository validation workflow before a manual EAS build can start.
+
+The production profile creates an Android App Bundle, not an APK. Because the
+project uses Android Gradle Plugin through Expo's current Android tooling and
+R8 is enabled, the generated AAB contains its `mapping.txt` deobfuscation file;
+Google Play automatically reads it from app bundles built with Android Gradle
+Plugin 4.1 or later. See [Google Play's deobfuscation guidance](https://support.google.com/googleplay/android-developer/answer/9848633?hl=en).
+
+> Play Console evaluates the uploaded artifact, not this repository's source.
+> Do not reuse the rejected version-code `10020` bundle. Trigger a new
+> production AAB build after this configuration is on `main`; EAS will assign a
+> new version code because `eas.json` enables `autoIncrement`.
+
+If a newly downloaded production AAB still shows the mapping warning, inspect
+it before upload:
+
+```bash
+unzip -l path/to/app.aab | grep 'BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map'
+```
+
+If that file is absent, stop the release and inspect the EAS **Run gradlew**
+logs. Do not upload a manually created or stale AAB in place of the new EAS
+production artifact.
+
+## 6) When builds keep failing
 
 1. Ensure validation passes in CI (`pnpm check`, `pnpm test`).
 2. Ensure lockfile is current after dependency override changes (`pnpm install` and commit `pnpm-lock.yaml`).
