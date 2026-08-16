@@ -88,7 +88,7 @@ export function sanitizeInput(input: string): string {
   let previous: string;
   do {
     previous = sanitized;
-    sanitized = sanitized.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+    sanitized = sanitized.replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, '');
   } while (sanitized !== previous);
 
   // Remove any remaining tag delimiters to prevent HTML injection.
