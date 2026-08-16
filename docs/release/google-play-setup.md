@@ -37,6 +37,10 @@ The driver registration flow expects the one-time product identifier configured 
 | Availability | Active for the test or release track being used. |
 | Test path | Exercised by a permitted Play test account before production promotion. |
 
+The app grants vendor access only after its backend verifies the opaque purchase token with the Google Play Developer API, acknowledges an unacknowledged one-time purchase, and persists a one-time token hash. Before internal testing, enable the Android Publisher API for the same Google Cloud project and grant the service account access to this Play app. Set `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` only in the backend's approved secret manager; it must contain the service-account JSON and must never be added to source control, EAS public variables, app configuration, or a client bundle.
+
+> The GitHub Actions submission secret is separate from the running backend configuration. Both may use appropriately scoped service accounts, but the backend must have its own managed secret before vendor registration is enabled.
+
 ## Configure automated submission
 
 Automated submission is optional. The manual workflows can create EAS builds with only the Expo token, but submission requires a Google Play service-account JSON secret.
@@ -49,6 +53,41 @@ Automated submission is optional. The manual workflows can create EAS builds wit
 
 The current workflows accept `GOOGLE_SERVICE_ACCOUNT_KEY` as a legacy fallback, but new configuration should use `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`. Never commit service-account JSON or Android signing material to the repository.
 
+## Verify billing and deobfuscation configuration
+
+Before submitting an Android production build, run:
+
+```bash
+pnpm verify:android-release
+```
+
+The preflight verifies that the repository is configured to generate an Android
+project with the explicit Google Play Billing Library `8.1.0` dependency,
+matching Billing KTX dependency, `com.android.vending.BILLING` permission, and
+R8 minification and resource shrinking enabled for release builds. Both manual
+EAS workflows execute this check before starting a cloud build.
+
+The production profile creates an Android App Bundle, not an APK. With Android
+Gradle Plugin 4.1 or later, Google Play automatically reads the R8
+`mapping.txt` file stored in the bundle. See [Google Play's deobfuscation
+guidance](https://support.google.com/googleplay/android-developer/answer/9848633?hl=en).
+
+> Play Console evaluates the uploaded artifact, not the source repository.
+> Do not reuse the rejected version-code `10020` bundle. After this
+> configuration is on `main`, create a new production AAB so EAS assigns a new
+> Android version code.
+
+If a newly downloaded production AAB still shows the mapping warning, inspect
+it before upload:
+
+```bash
+unzip -l path/to/app.aab | grep 'BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map'
+```
+
+If the file is absent, stop the release and inspect the EAS **Run gradlew**
+logs. Do not substitute a manually created or stale AAB for the new EAS
+production artifact.
+
 ## Verify setup before a release
 
 | Verification | Where to check |
@@ -57,6 +96,7 @@ The current workflows accept `GOOGLE_SERVICE_ACCOUNT_KEY` as a legacy fallback, 
 | EAS credentials and ownership | EAS account and credential management for the configured project |
 | Required GitHub Actions secrets | Repository Actions secrets settings |
 | Store declarations and reviewer flow | Play Console and the linked `legal/` materials |
+| Backend purchase verification | A Google Play test purchase produces a server-verified entitlement without storing the raw token |
 | Automated submission permissions | A controlled production-profile test or an authorized account review |
 
 ## Related documentation

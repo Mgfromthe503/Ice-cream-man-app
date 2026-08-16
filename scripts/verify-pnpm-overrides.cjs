@@ -7,11 +7,10 @@
  *    is the usual cause; it only surfaces on the EAS worker.
  *
  * 2. Overrides declared in pnpm-workspace.yaml. pnpm only reads `overrides`
- *    from pnpm-workspace.yaml starting with v10. This repo builds on
+ *    from pnpm-workspace.yaml starting with v10. This repository builds on
  *    pnpm 9.12.0 (package.json packageManager + eas.json build.base.pnpm),
- *    where that key is silently ignored — every security override stops
- *    applying and brace-expansion floats back to 5.x, which re-breaks Gradle
- *    codegen (see docs/records/eas-android-codegen.md).
+ *    where that key is ignored. Keep security overrides in package.json
+ *    `pnpm.overrides` until the package-manager contract changes.
  *
  * Dependency-free on purpose: this runs before/independently of node_modules.
  */
@@ -21,7 +20,7 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
-const BRACE_EXPANSION_PIN = "2.1.3";
+const BRACE_EXPANSION_PIN = "2.1.4";
 
 const errors = [];
 
@@ -62,12 +61,10 @@ function parseOverridesBlock(yaml) {
   const overrides = {};
   for (const line of lines.slice(start + 1)) {
     if (line.trim() === "" || line.trim().startsWith("#")) continue;
-    if (!/^\s/.test(line)) break; // dedented back to a top-level key
+    if (!/^\s/.test(line)) break;
     const separator = line.lastIndexOf(": ");
     if (separator === -1) continue;
-    overrides[unquote(line.slice(0, separator))] = unquote(
-      line.slice(separator + 2),
-    );
+    overrides[unquote(line.slice(0, separator))] = unquote(line.slice(separator + 2));
   }
   return overrides;
 }
@@ -78,15 +75,10 @@ function pnpmMajor(packageManager) {
 }
 
 function diffOverrides(expected, actual) {
-  const keys = [
-    ...new Set([...Object.keys(expected), ...Object.keys(actual)]),
-  ].sort();
+  const keys = [...new Set([...Object.keys(expected), ...Object.keys(actual)])].sort();
   return keys
     .filter((key) => expected[key] !== actual[key])
-    .map(
-      (key) =>
-        `  ${key}: package.json=${expected[key] ?? "(absent)"} lockfile=${actual[key] ?? "(absent)"}`,
-    );
+    .map((key) => `  ${key}: package.json=${expected[key] ?? "(absent)"} lockfile=${actual[key] ?? "(absent)"}`);
 }
 
 function checkWorkspaceOverrides(major) {
@@ -126,28 +118,19 @@ function checkBraceExpansionPin(expected) {
     fail(
       `package.json pnpm.overrides pins brace-expansion to ` +
         `${expected["brace-expansion"] ?? "(absent)"}; must be ${BRACE_EXPANSION_PIN} ` +
-      `(security-patched; preload + postinstall patch handle Gradle CJS interop). See docs/records/eas-android-codegen.md.`,
+        `(security-patched; preload + postinstall patch handle Gradle CJS interop). See docs/records/eas-android-codegen.md.`,
     );
   }
 
-  const installed = path.join(
-    ROOT,
-    "node_modules",
-    "brace-expansion",
-    "package.json",
-  );
+  const installed = path.join(ROOT, "node_modules", "brace-expansion", "package.json");
   if (!fs.existsSync(installed)) {
-    log(
-      "node_modules/brace-expansion absent — skipping resolved-version check.",
-    );
+    log("node_modules/brace-expansion absent — skipping resolved-version check.");
     return;
   }
 
   const version = JSON.parse(fs.readFileSync(installed, "utf8")).version;
   if (version !== BRACE_EXPANSION_PIN) {
-    fail(
-      `Resolved brace-expansion is ${version}, expected ${BRACE_EXPANSION_PIN}.`,
-    );
+    fail(`Resolved brace-expansion is ${version}, expected ${BRACE_EXPANSION_PIN}.`);
   }
 }
 
@@ -157,9 +140,7 @@ function main() {
   const major = pnpmMajor(pkg.packageManager);
 
   if (Object.keys(expected).length === 0) {
-    fail(
-      'package.json has no "pnpm.overrides" — the security overrides are not applied.',
-    );
+    fail('package.json has no "pnpm.overrides" — the security overrides are not applied.');
   }
 
   checkWorkspaceOverrides(major);
@@ -171,9 +152,7 @@ function main() {
     process.exit(1);
   }
 
-  log(
-    `OK — ${Object.keys(expected).length} overrides in sync with pnpm-lock.yaml.`,
-  );
+  log(`OK — ${Object.keys(expected).length} overrides in sync with pnpm-lock.yaml.`);
 }
 
 main();

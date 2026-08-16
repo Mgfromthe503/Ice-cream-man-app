@@ -80,6 +80,9 @@ jobs:
             console.log('OK: expand({a,b}) =>', expand('{a,b}'));
           "
 
+      - name: Verify Android Play release configuration
+        run: pnpm verify:android-release
+
       - name: Check EXPO_TOKEN
         id: token
         run: |

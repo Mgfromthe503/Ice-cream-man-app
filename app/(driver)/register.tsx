@@ -1,11 +1,11 @@
 import { View, Text, Pressable, ScrollView, TextInput, Alert, ActivityIndicator, Platform } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import * as Haptics from 'expo-haptics';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { FactTicker } from '@/components/fact-ticker';
+import { trpc } from '@/lib/trpc';
 
 interface DriverRegistration {
   fullName: string;
@@ -16,19 +16,16 @@ interface DriverRegistration {
   truckNumber: string;
 }
 
-// Generate a unique truck number (ICM-XXXX format)
-function generateTruckNumber(): string {
-  const num = Math.floor(1000 + Math.random() * 9000);
-  return `ICM-${num}`;
-}
-
 export default function DriverRegisterScreen() {
   const colors = useColors();
   const router = useRouter();
-  const [isRegistered, setIsRegistered] = useState(false);
-  const [isPaid, setIsPaid] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const paymentStatus = trpc.payment.getPaymentStatus.useQuery(undefined, { retry: 1 });
+  const driverProfile = trpc.driver.getProfile.useQuery(undefined, { retry: 1 });
+  const createProfile = trpc.driver.createProfile.useMutation();
+  const isRegistered = driverProfile.data !== null && driverProfile.data !== undefined;
+  const isPaid = paymentStatus.data?.registrationPaid === true;
+  const isLoading = paymentStatus.isLoading || driverProfile.isLoading;
   const [form, setForm] = useState<DriverRegistration>({
     fullName: '',
     truckName: '',
@@ -37,31 +34,6 @@ export default function DriverRegisterScreen() {
     areaCode: '',
     truckNumber: '',
   });
-
-  // Check if driver is already registered AND has paid
-  useEffect(() => {
-    const checkStatus = async () => {
-      try {
-        const [saved, paidStatus] = await Promise.all([
-          AsyncStorage.getItem('driverRegistration'),
-          AsyncStorage.getItem('vendorRegistrationPaid'),
-        ]);
-        
-        if (saved) {
-          const data = JSON.parse(saved);
-          setForm(data);
-          setIsRegistered(true);
-        }
-        
-        setIsPaid(paidStatus === 'true');
-      } catch (error) {
-        console.error('Error checking registration:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    checkStatus();
-  }, []);
 
   const handleRegister = async () => {
     // Validate required fields
@@ -84,26 +56,21 @@ export default function DriverRegisterScreen() {
 
     setIsSaving(true);
     try {
-      // Auto-assign a truck number
-      const truckNumber = generateTruckNumber();
-      const registrationData = { ...form, truckNumber };
+      const profile = await createProfile.mutateAsync({
+        vehicleType: form.truckName.trim(),
+        licensePlate: form.truckNumber.trim() || undefined,
+      });
+      await driverProfile.refetch();
 
-      // Save registration locally
-      await AsyncStorage.setItem('driverRegistration', JSON.stringify(registrationData));
-      await AsyncStorage.setItem('driverAreaCode', form.areaCode);
-      await AsyncStorage.setItem('driverIsRegistered', 'true');
-      await AsyncStorage.setItem('driverTruckNumber', truckNumber);
-
-      if (Platform.OS !== 'web') {
+      if (Platform.OS !== "web") {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
-      setForm(registrationData);
-      setIsRegistered(true);
+      setForm((current) => ({ ...current, truckNumber: current.truckNumber || `ICM-${profile.id}` }));
 
       Alert.alert(
-        '🎉 Registration Complete!',
-        `Welcome aboard, ${form.fullName}!\n\nYour assigned truck number is:\n\n🚚 ${truckNumber}\n\nYour truck "${form.truckName}" is now active in the ${form.areaCode} area. You'll start receiving ice cream requests!`,
-        [{ text: 'Start Driving!', onPress: () => router.replace('/(driver)') }]
+        "Registration complete",
+        "Your vendor profile is now active. Keep your profile details current before accepting customer requests.",
+        [{ text: "Start driving", onPress: () => router.replace("/(driver)") }],
       );
     } catch (error) {
       console.error('Error saving registration:', error);
@@ -114,7 +81,7 @@ export default function DriverRegisterScreen() {
   };
 
   const handleEditRegistration = () => {
-    setIsRegistered(false);
+    router.replace("/(driver)/profile");
   };
 
   if (isLoading) {

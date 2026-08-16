@@ -23,6 +23,7 @@ Before requesting an Android build, start from the intended commit on the intend
 ```bash
 pnpm install --frozen-lockfile
 pnpm verify:deps
+pnpm verify:android-release
 pnpm check
 pnpm lint
 pnpm test
@@ -36,6 +37,7 @@ Review the working tree after validation. A production release should not includ
 | Application identity | The values in `config/app-identity.js` are the intended registered values. |
 | Versioning | `app.config.ts` contains the intended user-visible version. EAS manages remote application versioning and the production profile enables Android auto-increment. |
 | Build profile | `production` produces an Android App Bundle for store distribution. `preview` and `production-apk` produce APK-oriented internal artifacts; `development` creates a development-client APK. |
+| Billing and mapping | `pnpm verify:android-release` confirms Billing Library `8.1.0`, R8 release minification, resource shrinking, and AAB production settings. Use a newly built AAB; never resubmit the rejected version-code `10020` artifact. |
 | Play product | The configured product identifier and Play product are aligned before testing driver registration. |
 | Store materials | Privacy, data-safety, listing, and reviewer-access content have been reviewed for the release. |
 | Secrets | Required repository secrets exist; their values are not exposed in logs or source control. |
@@ -54,7 +56,7 @@ Never commit an Expo token, Android keystore, `.jks` file, `.p12` file, or servi
 
 ## Recommended release path: GitHub Actions
 
-Use **EAS Build and Submit** because it validates TypeScript and tests before it creates a cloud build.
+Use **EAS Build and Submit** because it validates the Android Play release configuration, TypeScript, and tests before it creates a cloud build.
 
 1. Open **Actions** in the repository and select **EAS Build and Submit**.
 2. Select **Run workflow** and choose the release branch.
@@ -88,7 +90,8 @@ Submission places the artifact in the configured Google Play track; it does not 
 
 | Verify after submission | Why it matters |
 |---|---|
-| Artifact is associated with the intended package and version | Confirms the correct build reached the intended Play app. |
+| Artifact is associated with the intended package and version | Confirms the correct fresh build reached the intended Play app. |
+| Play Billing and deobfuscation checks clear | Confirms Play evaluated the new AAB rather than the rejected version-code `10020` artifact. App Bundles built with Android Gradle Plugin 4.1 or later carry the R8 mapping file that Play reads automatically. |
 | Internal-testing access works | Confirms testers can install and exercise the release candidate. |
 | In-app product behavior is tested in the intended track | Confirms the billing integration is configured for the release context. |
 | Privacy, Data Safety, listing, and app-access entries are current | Keeps the console declaration aligned with the distributed app. |
