@@ -69,7 +69,7 @@ jobs:
             throw new Error(`Expo credential query failed: ${JSON.stringify(body.errors ?? body)}`);
           }
 
-          const credentials = body.data?.app?.byFullName?.androidAppCredentials ?? [];
+          const credentials = body.data?.app?.byId?.androidAppCredentials ?? [];
           if (credentials.length === 0) {
             throw new Error('No Android app credentials were returned for com.icecreamman.app.');
           }
