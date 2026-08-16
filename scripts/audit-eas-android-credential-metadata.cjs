@@ -6,59 +6,57 @@ if (!token) {
   process.exit(1);
 }
 
+const projectIds = {
+  current: "5bf9c92f-2974-422e-b6cb-958d6f7ae469",
+  historical: "a7392ba6-c4a2-455d-b03c-9bc0233b7b12",
+};
+
+const credentialFields = `
+  id
+  applicationIdentifier
+  isLegacy
+  androidAppBuildCredentialsList {
+    id
+    name
+    isDefault
+    isLegacy
+    androidKeystore {
+      id
+      type
+      keyAlias
+      md5CertificateFingerprint
+      sha1CertificateFingerprint
+      sha256CertificateFingerprint
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
 const query = `
   query AndroidCredentialMetadata {
     app {
-      byFullName(fullName: "@mgfromthe503/the-ice-cream-man-app") {
+      currentProject: byId(appId: "${projectIds.current}") {
         id
-        current: androidAppCredentials(filter: {
+        currentCredentials: androidAppCredentials(filter: {
           applicationIdentifier: "com.icecreamman.app"
           legacyOnly: false
-        }) {
-          id
-          applicationIdentifier
-          isLegacy
-          androidAppBuildCredentialsList {
-            id
-            name
-            isDefault
-            isLegacy
-            androidKeystore {
-              id
-              type
-              keyAlias
-              md5CertificateFingerprint
-              sha1CertificateFingerprint
-              sha256CertificateFingerprint
-              createdAt
-              updatedAt
-            }
-          }
-        }
-        legacy: androidAppCredentials(filter: {
+        }) { ${credentialFields} }
+        legacyCredentials: androidAppCredentials(filter: {
           applicationIdentifier: "com.icecreamman.app"
           legacyOnly: true
-        }) {
-          id
-          applicationIdentifier
-          isLegacy
-          androidAppBuildCredentialsList {
-            id
-            name
-            isDefault
-            isLegacy
-            androidKeystore {
-              id
-              type
-              keyAlias
-              md5CertificateFingerprint
-              sha1CertificateFingerprint
-              sha256CertificateFingerprint
-              createdAt
-              updatedAt
-            }
-          }
-        }
+        }) { ${credentialFields} }
+      }
+      historicalProject: byId(appId: "${projectIds.historical}") {
+        id
+        currentCredentials: androidAppCredentials(filter: {
+          applicationIdentifier: "com.icecreamman.app"
+          legacyOnly: false
+        }) { ${credentialFields} }
+        legacyCredentials: androidAppCredentials(filter: {
+          applicationIdentifier: "com.icecreamman.app"
+          legacyOnly: true
+        }) { ${credentialFields} }
       }
     }
   }
@@ -90,6 +88,17 @@ function sanitizeCredential(credential) {
   };
 }
 
+function sanitizeProject(project) {
+  if (!project) {
+    return null;
+  }
+  return {
+    id: project.id,
+    currentCredentials: (project.currentCredentials ?? []).map(sanitizeCredential),
+    legacyCredentials: (project.legacyCredentials ?? []).map(sanitizeCredential),
+  };
+}
+
 async function main() {
   const response = await fetch("https://api.expo.dev/graphql", {
     method: "POST",
@@ -109,17 +118,11 @@ async function main() {
     throw new Error(`Expo credential metadata query failed: ${result.errors.map(({ message }) => message).join("; ")}`);
   }
 
-  const app = result.data?.app?.byFullName;
-  if (!app) {
-    throw new Error("The configured EAS project was not found.");
-  }
-
   console.log(
     JSON.stringify(
       {
-        appId: app.id,
-        currentCredentials: (app.current ?? []).map(sanitizeCredential),
-        legacyCredentials: (app.legacy ?? []).map(sanitizeCredential),
+        currentProject: sanitizeProject(result.data?.app?.currentProject),
+        historicalProject: sanitizeProject(result.data?.app?.historicalProject),
       },
       null,
       2
