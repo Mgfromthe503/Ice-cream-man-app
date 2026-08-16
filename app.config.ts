@@ -1,4 +1,3 @@
-// Load environment variables with proper priority (system > .env)
 import "./scripts/load-env.js";
 import type { ExpoConfig } from "expo/config";
 import {
@@ -14,7 +13,7 @@ const config: ExpoConfig = {
   name: APP_NAME,
   slug: APP_SLUG,
   owner: EXPO_OWNER,
-  version: "1.0.15",
+  version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: APP_SCHEME,
@@ -42,7 +41,6 @@ const config: ExpoConfig = {
       "ACCESS_FINE_LOCATION",
       "ACCESS_COARSE_LOCATION",
     ],
-    // Queries block for Android 11+ (API 30+) package visibility.
     // @ts-expect-error Expo's Android config type does not yet expose queries.
     queries: {
       schemes: ["google.navigation", "geo", "comgooglemaps"],
@@ -134,11 +132,15 @@ const config: ExpoConfig = {
     typedRoutes: true,
     reactCompiler: true,
   },
-  extra: {
-    eas: {
-      projectId: EAS_PROJECT_ID,
-    },
-  },
+  ...(EAS_PROJECT_ID
+    ? {
+        extra: {
+          eas: {
+            projectId: EAS_PROJECT_ID,
+          },
+        },
+      }
+    : {}),
 };
 
 export default config;
