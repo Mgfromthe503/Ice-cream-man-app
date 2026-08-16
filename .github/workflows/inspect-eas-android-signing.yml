@@ -23,11 +23,11 @@ jobs:
           const endpoint = 'https://api.expo.dev/graphql';
           const query = `
             query AndroidSigningCredentials(
-              $projectFullName: String!
+              $appId: ID!
               $applicationIdentifier: String!
             ) {
               app {
-                byFullName(fullName: $projectFullName) {
+                byId(appId: $appId) {
                   androidAppCredentials(
                     filter: { applicationIdentifier: $applicationIdentifier }
                   ) {
@@ -58,7 +58,7 @@ jobs:
             body: JSON.stringify({
               query,
               variables: {
-                projectFullName: 'mgfromthe503/the-ice-cream-man-app',
+                appId: '5bf9c92f-2974-422e-b6cb-958d6f7ae469',
                 applicationIdentifier: 'com.icecreamman.app',
               },
             }),
