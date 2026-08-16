@@ -23,7 +23,7 @@ jobs:
           const endpoint = 'https://api.expo.dev/graphql';
           const query = `
             query AndroidSigningCredentials(
-              $appId: ID!
+              $appId: String!
               $applicationIdentifier: String!
             ) {
               app {
