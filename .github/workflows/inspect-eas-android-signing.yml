@@ -2,6 +2,9 @@ name: Inspect EAS Android Signing
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - chore/inspect-eas-android-keystore
 
 permissions:
   contents: read
