@@ -28,8 +28,11 @@ jobs:
             ) {
               app {
                 byId(appId: $appId) {
-                  androidAppCredentials(
-                    filter: { applicationIdentifier: $applicationIdentifier }
+                  legacy: androidAppCredentials(
+                    filter: {
+                      applicationIdentifier: $applicationIdentifier
+                      legacyOnly: true
+                    }
                   ) {
                     applicationIdentifier
                     isLegacy
@@ -69,9 +72,9 @@ jobs:
             throw new Error(`Expo credential query failed: ${JSON.stringify(body.errors ?? body)}`);
           }
 
-          const credentials = body.data?.app?.byId?.androidAppCredentials ?? [];
+          const credentials = body.data?.app?.byId?.legacy ?? [];
           if (credentials.length === 0) {
-            throw new Error('No Android app credentials were returned for com.icecreamman.app.');
+            throw new Error('No legacy Android app credentials were returned for com.icecreamman.app.');
           }
 
           for (const credential of credentials) {
