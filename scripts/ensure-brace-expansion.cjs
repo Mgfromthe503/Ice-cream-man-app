@@ -15,7 +15,7 @@
  * for minimatch's default-export call path.
  *
  * See: https://github.com/expo/eas-cli/issues/3695
- *      docs/triage-eas-android-codegen.md
+ *      docs/records/eas-android-codegen.md
  *
  * This script runs via package.json "eas-build-pre-install" on EAS workers
  * and can be run locally before Android builds.
