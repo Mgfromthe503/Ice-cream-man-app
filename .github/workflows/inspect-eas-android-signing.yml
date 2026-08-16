@@ -10,13 +10,13 @@ permissions:
   contents: read
 
 jobs:
-  inspect:
-    name: Inspect Expo Android credential fingerprints
+  inspect-expo-credential:
+    name: Inspect Expo Android credential fingerprint
     runs-on: ubuntu-latest
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
     steps:
-      - name: Read managed Android signing fingerprints
+      - name: Read managed Android signing fingerprint
         shell: bash
         run: |
           node <<'NODE'
@@ -28,22 +28,17 @@ jobs:
             ) {
               app {
                 byId(appId: $appId) {
-                  legacy: androidAppCredentials(
+                  androidAppCredentials(
                     filter: {
                       applicationIdentifier: $applicationIdentifier
-                      legacyOnly: true
+                      legacyOnly: false
                     }
                   ) {
-                    applicationIdentifier
-                    isLegacy
                     androidAppBuildCredentialsList {
                       name
                       isDefault
                       androidKeystore {
                         sha1CertificateFingerprint
-                        sha256CertificateFingerprint
-                        createdAt
-                        updatedAt
                       }
                     }
                   }
@@ -51,7 +46,6 @@ jobs:
               }
             }
           `;
-
           const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
@@ -66,26 +60,85 @@ jobs:
               },
             }),
           });
-
           const body = await response.json();
           if (!response.ok || body.errors?.length) {
             throw new Error(`Expo credential query failed: ${JSON.stringify(body.errors ?? body)}`);
           }
-
-          const credentials = body.data?.app?.byId?.legacy ?? [];
-          if (credentials.length === 0) {
-            throw new Error('No legacy Android app credentials were returned for com.icecreamman.app.');
-          }
-
-          for (const credential of credentials) {
-            console.log(`Application: ${credential.applicationIdentifier}`);
-            console.log(`Legacy: ${credential.isLegacy}`);
-            for (const buildCredential of credential.androidAppBuildCredentialsList ?? []) {
-              const keystore = buildCredential.androidKeystore;
-              console.log(`Profile: ${buildCredential.name}; default=${buildCredential.isDefault}`);
-              console.log(`SHA-1: ${keystore?.sha1CertificateFingerprint ?? 'none'}`);
-              console.log(`SHA-256: ${keystore?.sha256CertificateFingerprint ?? 'none'}`);
-              console.log(`Updated: ${keystore?.updatedAt ?? 'none'}`);
+          for (const record of body.data?.app?.byId?.androidAppCredentials ?? []) {
+            for (const credential of record.androidAppBuildCredentialsList ?? []) {
+              console.log(`Expo profile ${credential.name}; default=${credential.isDefault}`);
+              console.log(`Expo SHA-1: ${credential.androidKeystore?.sha1CertificateFingerprint ?? 'none'}`);
             }
           }
+          NODE
+
+  detect-existing-keystore-secret:
+    name: Detect existing Android keystore secret
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      KEYSTORE: ${{ secrets.KEYSTORE }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      UPLOAD_KEYSTORE_BASE64: ${{ secrets.UPLOAD_KEYSTORE_BASE64 }}
+      UPLOAD_KEYSTORE: ${{ secrets.UPLOAD_KEYSTORE }}
+      UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
+      UPLOAD_KEY_ALIAS: ${{ secrets.UPLOAD_KEY_ALIAS }}
+      UPLOAD_KEY_PASSWORD: ${{ secrets.UPLOAD_KEY_PASSWORD }}
+    steps:
+      - name: Check non-secret certificate fingerprints only
+        shell: bash
+        run: |
+          node <<'NODE'
+          const { execFileSync } = require('node:child_process');
+          const { writeFileSync, mkdtempSync, rmSync } = require('node:fs');
+          const { tmpdir } = require('node:os');
+          const { join } = require('node:path');
+
+          const expected = '8961BC4053C121FFA41F584698A5C5114B9B2EBF';
+          const groups = [
+            ['ANDROID', process.env.ANDROID_KEYSTORE_BASE64 || process.env.ANDROID_KEYSTORE, process.env.ANDROID_KEYSTORE_PASSWORD, process.env.ANDROID_KEY_ALIAS, process.env.ANDROID_KEY_PASSWORD],
+            ['KEYSTORE', process.env.KEYSTORE_BASE64 || process.env.KEYSTORE, process.env.KEYSTORE_PASSWORD, process.env.KEY_ALIAS, process.env.KEY_PASSWORD],
+            ['UPLOAD', process.env.UPLOAD_KEYSTORE_BASE64 || process.env.UPLOAD_KEYSTORE, process.env.UPLOAD_KEYSTORE_PASSWORD, process.env.UPLOAD_KEY_ALIAS, process.env.UPLOAD_KEY_PASSWORD],
+          ];
+
+          let inspected = 0;
+          let matched = false;
+          for (const [label, encoded, storePassword, alias, keyPassword] of groups) {
+            if (!encoded || !storePassword || !alias || !keyPassword) {
+              console.log(`${label}: no complete keystore secret group configured`);
+              continue;
+            }
+            const directory = mkdtempSync(join(tmpdir(), 'android-keystore-'));
+            const path = join(directory, 'candidate.keystore');
+            try {
+              writeFileSync(path, Buffer.from(encoded, 'base64'), { mode: 0o600 });
+              const output = execFileSync('keytool', [
+                '-list', '-v', '-keystore', path, '-alias', alias,
+                '-storepass', storePassword, '-keypass', keyPassword,
+              ], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+              const match = output.match(/SHA1:\s*([0-9A-F:]+)/i);
+              if (!match) throw new Error('keytool did not report a SHA-1 certificate fingerprint');
+              const sha1 = match[1].replace(/:/g, '').toUpperCase();
+              console.log(`${label}: SHA-1 ${match[1].toUpperCase()}`);
+              inspected += 1;
+              if (sha1 === expected) {
+                console.log(`${label}: MATCHES GOOGLE PLAY REQUIRED UPLOAD CERTIFICATE`);
+                matched = true;
+              }
+            } catch (error) {
+              console.log(`${label}: configured but could not be verified`);
+            } finally {
+              rmSync(directory, { recursive: true, force: true });
+            }
+          }
+          if (matched) process.exit(0);
+          if (inspected > 0) process.exit(2);
+          process.exit(3);
           NODE
