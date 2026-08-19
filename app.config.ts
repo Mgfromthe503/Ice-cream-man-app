@@ -14,7 +14,7 @@ const config: ExpoConfig = {
   name: APP_NAME,
   slug: APP_SLUG,
   owner: EXPO_OWNER,
-  version: "1.0.14",
+  version: "1.0.15",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: APP_SCHEME,
@@ -36,7 +36,7 @@ const config: ExpoConfig = {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: APP_BUNDLE_ID,
-    versionCode: 10014,
+    versionCode: 10015,
     permissions: [
       "POST_NOTIFICATIONS",
       "com.android.vending.BILLING",
