@@ -1,7 +1,0 @@
-# Isolated workspace so the desktop package can keep its own locked toolchain.
-packages:
-  - "."
-
-# Permit the trusted esbuild lifecycle script required by Vite.
-allowBuilds:
-  esbuild: true
