@@ -1,8 +1,6 @@
-# Monorepo workspace. The Expo app lives at the repository root; Red Reaper AI
-# is isolated under apps/red-reaper-desktop with its own release workflow.
+# The Ice Cream Expo application lives at the repository root.
 packages:
   - "."
-  - "apps/*"
   - "packages/*"
 
 # pnpm 11 reads project settings from this file. Keep registry credentials in

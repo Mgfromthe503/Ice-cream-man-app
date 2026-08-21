@@ -3,7 +3,7 @@
  *
  * 1. `pnpm-workspace.yaml` is the pnpm 11 source of truth for resolver settings.
  * 2. `pnpm-lock.yaml` must record the exact same override map.
- * 3. Local, desktop CI, and EAS builds must use one pnpm release.
+ * 3. Local, CI, and EAS builds must use the pinned pnpm release.
  *
  * Dependency-free on purpose: this runs before node_modules is available.
  */
@@ -123,27 +123,6 @@ function checkToolchainAlignment(rootPackage) {
   if (easVersion !== packageManager.version) {
     fail(
       `eas.json uses pnpm ${easVersion ?? "(absent)"}; expected ${packageManager.version}.`,
-    );
-  }
-
-  const desktopPackage = readJson("apps/red-reaper-desktop/package.json");
-  if (desktopPackage.packageManager !== rootPackage.packageManager) {
-    fail(
-      `Desktop packageManager is ${desktopPackage.packageManager ?? "(absent)"}; ` +
-        `expected ${rootPackage.packageManager}.`,
-    );
-  }
-
-  const desktopWorkflow =
-    readFile(".github/workflows/red-reaper-desktop-release.yml") || "";
-  const workflowVersion =
-    /pnpm\/action-setup@v4[\s\S]*?version:\s*([0-9.]+)/.exec(
-      desktopWorkflow,
-    )?.[1];
-  if (workflowVersion !== packageManager.version) {
-    fail(
-      `Desktop workflow uses pnpm ${workflowVersion ?? "(absent)"}; ` +
-        `expected ${packageManager.version}.`,
     );
   }
 
