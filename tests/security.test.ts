@@ -44,6 +44,21 @@ describe("Security Module - Client Side", () => {
       expect(result).toContain("delivery note");
     });
 
+    it("removes spaced and mixed-case event-handler assignments", () => {
+      const input = `Photo OnError = "alert(1)" onfocus='steal focus' delivery note`;
+      const result = security.sanitizeInput(input);
+      expect(result.toLowerCase()).not.toContain("onerror");
+      expect(result.toLowerCase()).not.toContain("onfocus");
+      expect(result).toContain("delivery note");
+    });
+
+    it("does not join safe fragments into an event-handler assignment", () => {
+      const input = "Photo o<n>nerror=alert(1) delivery note";
+      const result = security.sanitizeInput(input);
+      expect(result.toLowerCase()).not.toContain("onerror=");
+      expect(result).toContain("delivery note");
+    });
+
     it("enforces plain text for malformed and overlapping markup", () => {
       const input = 'Hello <<script>alert("xss")<</script> World';
       const result = security.sanitizeInput(input);

@@ -49,6 +49,7 @@ allowBuilds:
   "@swc/core": true
   esbuild: true
   sharp: true
+  unrs-resolver: true
 
 patchedDependencies:
   image-size@1.2.1: patches/image-size@1.2.1.patch

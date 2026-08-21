@@ -67,6 +67,87 @@ export async function secureDelete(key: string): Promise<void> {
 // INPUT SANITIZATION
 // ============================================
 
+function stripMarkup(value: string): string {
+  let plainText = "";
+  let insideTag = false;
+
+  for (const character of value) {
+    if (character === "<") {
+      insideTag = true;
+      continue;
+    }
+
+    if (character === ">") {
+      if (insideTag) plainText += " ";
+      insideTag = false;
+      continue;
+    }
+
+    if (!insideTag) plainText += character;
+  }
+
+  return plainText;
+}
+
+function isAsciiLetter(character: string | undefined): boolean {
+  if (!character) return false;
+  const code = character.charCodeAt(0);
+  return (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+}
+
+function isWordCharacter(character: string | undefined): boolean {
+  if (!character) return false;
+  const code = character.charCodeAt(0);
+  return (
+    isAsciiLetter(character) || (code >= 48 && code <= 57) || character === "_"
+  );
+}
+
+function stripEventHandlerAssignments(value: string): string {
+  let plainText = "";
+  let index = 0;
+
+  while (index < value.length) {
+    const startsAtWordBoundary =
+      index === 0 || !isWordCharacter(value[index - 1]);
+    const startsWithOn =
+      value[index]?.toLowerCase() === "o" &&
+      value[index + 1]?.toLowerCase() === "n";
+
+    if (startsAtWordBoundary && startsWithOn) {
+      let cursor = index + 2;
+      while (isAsciiLetter(value[cursor])) cursor += 1;
+
+      const hasHandlerName = cursor > index + 2;
+      while (/\s/.test(value[cursor] ?? "")) cursor += 1;
+
+      if (hasHandlerName && value[cursor] === "=") {
+        cursor += 1;
+        while (/\s/.test(value[cursor] ?? "")) cursor += 1;
+
+        const quote =
+          value[cursor] === '"' || value[cursor] === "'" ? value[cursor] : null;
+        if (quote) {
+          cursor += 1;
+          while (cursor < value.length && value[cursor] !== quote) cursor += 1;
+          if (value[cursor] === quote) cursor += 1;
+        } else {
+          while (cursor < value.length && !/\s/.test(value[cursor]))
+            cursor += 1;
+        }
+
+        index = cursor;
+        continue;
+      }
+    }
+
+    plainText += value[index];
+    index += 1;
+  }
+
+  return plainText;
+}
+
 /**
  * Normalize user-authored delivery notes as plain text before sending them to
  * the server. This is a defense-in-depth measure; server-side validation and
@@ -75,26 +156,19 @@ export async function secureDelete(key: string): Promise<void> {
 export function sanitizeInput(input: string): string {
   if (!input || typeof input !== "string") return "";
 
-  return (
-    input
-      // Remove null bytes and ASCII control characters other than whitespace.
-      .replace(/\0/g, "")
-      .replace(/[\u0001-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
-      // Delivery notes are plain text. Removing both tag delimiters prevents
-      // malformed, nested, or overlapping markup from becoming executable HTML.
-      .replace(/[<>]/g, "")
-      // Remove event-handler-like assignments, including unquoted values.
-      .replace(/\bon[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s]+)/gi, "")
-      // Remove common injection-oriented keywords following a quote or separator.
-      .replace(
-        /(['";])\s*(DROP|DELETE|UPDATE|INSERT|ALTER|EXEC|EXECUTE|UNION|SELECT)\s/gi,
-        "$1",
-      )
-      // Remove shell metacharacters that are not useful in delivery notes.
-      .replace(/[;&|`$]/g, "")
-      .trim()
-      .slice(0, 1000)
-  );
+  const withoutControls = input
+    .replace(/\0/g, "")
+    .replace(/[\u0001-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "");
+  const plainText = stripEventHandlerAssignments(stripMarkup(withoutControls));
+
+  return plainText
+    .replace(
+      /(['";])\s*(DROP|DELETE|UPDATE|INSERT|ALTER|EXEC|EXECUTE|UNION|SELECT)\s/gi,
+      "$1",
+    )
+    .replace(/[;&|`$]/g, "")
+    .trim()
+    .slice(0, 1000);
 }
 
 /**
