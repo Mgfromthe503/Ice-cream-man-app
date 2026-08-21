@@ -13,6 +13,10 @@ This directory organizes project documentation by the work a reader needs to com
 | Configure the required Google Play resources and secrets | [Google Play setup reference](release/google-play-setup.md) |
 | Resolve a native Android or EAS build issue | [Android and EAS troubleshooting](troubleshooting/android-eas-builds.md) |
 | Understand intended product and UI direction | [Product design reference](design/product-design.md) |
+| Understand the Red Reaper AI local-first desktop architecture | [Red Reaper AI foundation](architecture/red-reaper-ai-foundation.md) |
+| Prepare the Red Reaper AI local model runtime and safe coding workflow | [Red Reaper AI local setup](architecture/red-reaper-ai-local-setup.md) |
+| Review the Red Reaper AI initial validation evidence | [Red Reaper AI validation notes](architecture/red-reaper-ai-validation-notes.md) |
+| Build a one-tap Windows installer artifact or release | [Red Reaper AI Windows release procedure](release/red-reaper-windows-desktop.md) |
 
 ## Guide catalog
 
@@ -24,6 +28,10 @@ This directory organizes project documentation by the work a reader needs to com
 | Troubleshooting | [Android and EAS troubleshooting](troubleshooting/android-eas-builds.md) | First-response checklist for dependency, EAS, and workflow failures. |
 | Architecture | [Backend reference](../server/README.md) | Server ownership, API conventions, authentication, database, and environment variables. |
 | Product design | [Product design reference](design/product-design.md) | Screen inventory, design language, and product-flow guidance. |
+| Architecture | [Red Reaper AI foundation](architecture/red-reaper-ai-foundation.md) | Local-first desktop architecture, product scope, and trust boundaries. |
+| Architecture | [Red Reaper AI local setup](architecture/red-reaper-ai-local-setup.md) | Guided local-runtime setup and approval-based coding-agent workflow. |
+| Architecture | [Red Reaper AI validation notes](architecture/red-reaper-ai-validation-notes.md) | Initial interface smoke-test observations and validation limitations. |
+| Release | [Red Reaper AI Windows release procedure](release/red-reaper-windows-desktop.md) | Build and validate a Windows installer artifact before optional public release publication. |
 | Historical engineering record | [EAS Android codegen record](records/eas-android-codegen.md) | Context for the `brace-expansion` codegen compatibility safeguards. |
 | Legal and store operations | [Legal directory](../legal/) | Privacy, terms, listing content, data safety, and reviewer-access materials. |
 
