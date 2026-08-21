@@ -4,15 +4,15 @@ This guide explains how to install, run, validate, and make routine database cha
 
 ## Prerequisites
 
-Use Node.js **22** and pnpm **9.12.0**. The EAS build configuration pins Node.js 22.14.0 and pnpm 9.12.0; aligning local tooling with those versions minimizes differences between local and release environments.
+Use Node.js **22** and pnpm **11.22.0**. The EAS build configuration pins Node.js 22.14.0 and pnpm 11.22.0; aligning local tooling with those versions minimizes differences between local, CI, desktop, Render, and release environments.
 
-| Requirement | How to verify |
-|---|---|
-| Git | `git --version` |
-| Node.js 22 | `node --version` |
-| pnpm 9.12.0 | `pnpm --version` |
-| Android Studio and an Android device/emulator | Required only for local Android native builds. |
-| Xcode and an iOS simulator/device | Required only for local iOS native builds on macOS. |
+| Requirement                                   | How to verify                                       |
+| --------------------------------------------- | --------------------------------------------------- |
+| Git                                           | `git --version`                                     |
+| Node.js 22                                    | `node --version`                                    |
+| pnpm 11.22.0                                  | `pnpm --version`                                    |
+| Android Studio and an Android device/emulator | Required only for local Android native builds.      |
+| Xcode and an iOS simulator/device             | Required only for local iOS native builds on macOS. |
 
 ## Install the repository
 
@@ -36,14 +36,14 @@ pnpm dev
 
 This command runs the Express API in watch mode and starts Expo for the client. Use the command variants below when working on only one part of the application.
 
-| Command | Expected result |
-|---|---|
-| `pnpm dev` | Starts API watch mode and the Expo development server together. |
-| `pnpm dev:server` | Starts only the API server in development watch mode. |
-| `pnpm dev:metro` | Starts only Expo/Metro for the client. |
-| `pnpm android` | Runs the Android native project through Expo. |
-| `pnpm ios` | Runs the iOS native project through Expo on macOS. |
-| `pnpm qr` | Generates a QR-code utility output for device testing. |
+| Command           | Expected result                                                 |
+| ----------------- | --------------------------------------------------------------- |
+| `pnpm dev`        | Starts API watch mode and the Expo development server together. |
+| `pnpm dev:server` | Starts only the API server in development watch mode.           |
+| `pnpm dev:metro`  | Starts only Expo/Metro for the client.                          |
+| `pnpm android`    | Runs the Android native project through Expo.                   |
+| `pnpm ios`        | Runs the iOS native project through Expo on macOS.              |
+| `pnpm qr`         | Generates a QR-code utility output for device testing.          |
 
 Expo Go is suitable for supported JavaScript and Expo-module features. Use a development build when validating native capabilities that Expo Go does not include, including Google Play Billing.
 
@@ -58,14 +58,14 @@ pnpm test
 pnpm build
 ```
 
-| Command | What it verifies |
-|---|---|
-| `pnpm check` | TypeScript compilation without emitting files. |
-| `pnpm lint` | The Expo ESLint configuration. |
-| `pnpm test` | The Vitest test suite in non-watch mode. |
-| `pnpm build` | Production bundling of the API server to `dist/`. |
-| `pnpm verify:deps` | Dependency override and lockfile safeguards used by the Android build workflow. |
-| `pnpm format` | Applies Prettier formatting to the working tree. Review the resulting diff before committing. |
+| Command            | What it verifies                                                                              |
+| ------------------ | --------------------------------------------------------------------------------------------- |
+| `pnpm check`       | TypeScript compilation without emitting files.                                                |
+| `pnpm lint`        | The Expo ESLint configuration.                                                                |
+| `pnpm test`        | The Vitest test suite in non-watch mode.                                                      |
+| `pnpm build`       | Production bundling of the API server to `dist/`.                                             |
+| `pnpm verify:deps` | Dependency override and lockfile safeguards used by the Android build workflow.               |
+| `pnpm format`      | Applies Prettier formatting to the working tree. Review the resulting diff before committing. |
 
 ## Work with the database
 
@@ -95,10 +95,10 @@ Then follow the [contribution workflow](../CONTRIBUTING.md). If the change affec
 
 ## Related documentation
 
-| Topic | Document |
-|---|---|
-| Documentation navigation | [Documentation index](README.md) |
-| Contributor requirements | [Contributing guide](../CONTRIBUTING.md) |
-| Backend and environment variables | [Backend reference](../server/README.md) |
-| Android release process | [Android and Google Play release runbook](release/android-google-play.md) |
-| Android build failures | [Android and EAS troubleshooting](troubleshooting/android-eas-builds.md) |
+| Topic                             | Document                                                                  |
+| --------------------------------- | ------------------------------------------------------------------------- |
+| Documentation navigation          | [Documentation index](README.md)                                          |
+| Contributor requirements          | [Contributing guide](../CONTRIBUTING.md)                                  |
+| Backend and environment variables | [Backend reference](../server/README.md)                                  |
+| Android release process           | [Android and Google Play release runbook](release/android-google-play.md) |
+| Android build failures            | [Android and EAS troubleshooting](troubleshooting/android-eas-builds.md)  |

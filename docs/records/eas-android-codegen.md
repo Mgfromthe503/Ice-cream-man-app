@@ -17,22 +17,22 @@ The failure involved the CommonJS interoperation path between `minimatch` and `b
 
 `minimatch` may call `brace-expansion` through a TypeScript default-import compatibility path. Some CommonJS module shapes expose a named `expand` function without a callable `default` export, causing that call path to fail. The repository treats this as a build-tool compatibility issue and verifies that the installed module can satisfy the expected default-import shape.
 
-| Concern | Current repository safeguard |
-|---|---|
-| Dependency resolution | `package.json` pins `brace-expansion` and declares pnpm overrides. |
-| Lockfile drift | `scripts/verify-pnpm-overrides.cjs` checks override and lockfile consistency before dependency installation. |
-| Installed module interoperation | `scripts/patch-brace-expansion-cjs.cjs` repairs the CommonJS shape when required. |
-| EAS lifecycle | `eas-build-pre-install` and `eas-build-post-install` run the guard and patch scripts. |
-| CI workflow | Both manual EAS workflows verify dependency safeguards and run the compatibility patch after installation. |
-| EAS auto-fingerprinting | The base EAS profile sets `EAS_SKIP_AUTO_FINGERPRINT=1`. |
+| Concern                         | Current repository safeguard                                                                                 |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Dependency resolution           | `package.json` pins `brace-expansion` and declares pnpm overrides.                                           |
+| Lockfile drift                  | `scripts/verify-pnpm-overrides.cjs` checks override and lockfile consistency before dependency installation. |
+| Installed module interoperation | `scripts/patch-brace-expansion-cjs.cjs` repairs the CommonJS shape when required.                            |
+| EAS lifecycle                   | `eas-build-pre-install` and `eas-build-post-install` run the guard and patch scripts.                        |
+| CI workflow                     | Both manual EAS workflows verify dependency safeguards and run the compatibility patch after installation.   |
+| EAS auto-fingerprinting         | The base EAS profile sets `EAS_SKIP_AUTO_FINGERPRINT=1`.                                                     |
 
 > **Important:** the current `eas.json` does not inject a `NODE_OPTIONS` preload. The active approach relies on dependency pinning, lifecycle hooks, and the post-install compatibility patch.
 
 ## Why the lockfile matters
 
-The EAS workflows install with `pnpm install --frozen-lockfile`. If package overrides change without a matching `pnpm-lock.yaml` update, the build either fails with a lockfile configuration mismatch or resolves an unintended dependency graph. Keep `package.json` and `pnpm-lock.yaml` synchronized.
+The EAS workflows install with `pnpm install --frozen-lockfile`. If package overrides change without a matching `pnpm-lock.yaml` update, the build either fails with a lockfile configuration mismatch or resolves an unintended dependency graph. Keep `pnpm-workspace.yaml` and `pnpm-lock.yaml` synchronized.
 
-The repository uses pnpm 9.12.0 for EAS builds. Its active overrides are maintained in `package.json`, where the verification script expects them.
+The repository uses pnpm 11.22.0 across local development, CI, EAS, desktop builds, and Render. Active pnpm overrides and non-auth install settings are maintained in `pnpm-workspace.yaml`, as required by pnpm 11.
 
 ## Required maintenance workflow
 
@@ -42,10 +42,10 @@ When an intentional dependency or override change affects this compatibility are
 pnpm install
 pnpm verify:deps
 pnpm test
-git diff -- package.json pnpm-lock.yaml
+git diff -- package.json pnpm-workspace.yaml pnpm-lock.yaml eas.json
 ```
 
-Review the dependency diff, commit the package manifest and lockfile together, then validate the relevant Android build path. Do not remove the guard or patch merely to make a local installation proceed.
+Review the dependency diff, commit the workspace settings and lockfile together, then validate the relevant Android build path. Do not remove the guard or patch merely to make a local installation proceed.
 
 ## Verification
 
@@ -70,11 +70,11 @@ Remove or simplify these safeguards only after all of the following have been de
 
 ## Related files
 
-| File | Role |
-|---|---|
-| [`package.json`](../../package.json) | Pins and pnpm overrides. |
-| [`scripts/verify-pnpm-overrides.cjs`](../../scripts/verify-pnpm-overrides.cjs) | Verifies override and lockfile expectations. |
-| [`scripts/ensure-brace-expansion.cjs`](../../scripts/ensure-brace-expansion.cjs) | Performs the pre-install / local guard. |
-| [`scripts/patch-brace-expansion-cjs.cjs`](../../scripts/patch-brace-expansion-cjs.cjs) | Repairs and verifies CommonJS interoperation. |
-| [`eas.json`](../../eas.json) | Defines EAS lifecycle hooks and base build environment. |
-| [EAS Build workflow](../../.github/workflows/eas-build.yml) | Applies safeguards in the manual build workflow. |
+| File                                                                                   | Role                                                    |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| [`package.json`](../../package.json)                                                   | Pins and pnpm overrides.                                |
+| [`scripts/verify-pnpm-overrides.cjs`](../../scripts/verify-pnpm-overrides.cjs)         | Verifies override and lockfile expectations.            |
+| [`scripts/ensure-brace-expansion.cjs`](../../scripts/ensure-brace-expansion.cjs)       | Performs the pre-install / local guard.                 |
+| [`scripts/patch-brace-expansion-cjs.cjs`](../../scripts/patch-brace-expansion-cjs.cjs) | Repairs and verifies CommonJS interoperation.           |
+| [`eas.json`](../../eas.json)                                                           | Defines EAS lifecycle hooks and base build environment. |
+| [EAS Build workflow](../../.github/workflows/eas-build.yml)                            | Applies safeguards in the manual build workflow.        |

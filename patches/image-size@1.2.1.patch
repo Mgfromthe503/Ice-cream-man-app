@@ -1,0 +1,59 @@
+diff --git a/dist/types/icns.js b/dist/types/icns.js
+index f2bfafef3723cb423b110304815e56e3f97f81e0..26f8d2b6da315095f549049d84dced1953b897d5 100644
+--- a/dist/types/icns.js
++++ b/dist/types/icns.js
+@@ -64,6 +64,8 @@ const ICON_TYPE_SIZE = {
+     ic10: 1024,
+ };
+ function readImageHeader(input, imageOffset) {
++    if (imageOffset + SIZE_HEADER > input.length)
++        throw new TypeError('Invalid ICNS entry header');
+     const imageLengthOffset = imageOffset + ENTRY_LENGTH_OFFSET;
+     return [
+         (0, utils_1.toUTF8String)(input, imageOffset, imageLengthOffset),
+@@ -74,15 +76,22 @@ function getImageSize(type) {
+     const size = ICON_TYPE_SIZE[type];
+     return { width: size, height: size, type };
+ }
++function advanceImageOffset(imageOffset, entryLength, fileLength) {
++    if (entryLength < SIZE_HEADER || imageOffset + entryLength > fileLength)
++        throw new TypeError('Invalid ICNS entry length');
++    return imageOffset + entryLength;
++}
+ exports.ICNS = {
+     validate: (input) => (0, utils_1.toUTF8String)(input, 0, 4) === 'icns',
+     calculate(input) {
+         const inputLength = input.length;
+         const fileLength = (0, utils_1.readUInt32BE)(input, FILE_LENGTH_OFFSET);
++        if (fileLength < SIZE_HEADER || fileLength > inputLength)
++            throw new TypeError('Invalid ICNS file length');
+         let imageOffset = SIZE_HEADER;
+         let imageHeader = readImageHeader(input, imageOffset);
+         let imageSize = getImageSize(imageHeader[0]);
+-        imageOffset += imageHeader[1];
++        imageOffset = advanceImageOffset(imageOffset, imageHeader[1], fileLength);
+         if (imageOffset === fileLength)
+             return imageSize;
+         const result = {
+@@ -93,7 +102,7 @@ exports.ICNS = {
+         while (imageOffset < fileLength && imageOffset < inputLength) {
+             imageHeader = readImageHeader(input, imageOffset);
+             imageSize = getImageSize(imageHeader[0]);
+-            imageOffset += imageHeader[1];
++            imageOffset = advanceImageOffset(imageOffset, imageHeader[1], fileLength);
+             result.images.push(imageSize);
+         }
+         return result;
+diff --git a/dist/types/jxl.js b/dist/types/jxl.js
+index f557b0aea7e679d2cb84d9915e957dd2254eba97..fefe921adf5dab2496e8b4dd0ff938904131c7aa 100644
+--- a/dist/types/jxl.js
++++ b/dist/types/jxl.js
+@@ -24,7 +24,7 @@ function extractPartialStreams(input) {
+         if (!jxlpBox)
+             break;
+         partialStreams.push(input.slice(jxlpBox.offset + 12, jxlpBox.offset + jxlpBox.size));
+-        offset = jxlpBox.offset + jxlpBox.size;
++        offset = jxlpBox.offset + (jxlpBox.size > 0 ? jxlpBox.size : 8);
+     }
+     return partialStreams;
+ }

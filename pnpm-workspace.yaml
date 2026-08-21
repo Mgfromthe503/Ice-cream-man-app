@@ -1,10 +1,62 @@
-# Monorepo workspace. The existing Expo app lives at the repository root;
-# Red Reaper AI is isolated in apps/red-reaper-desktop so its desktop toolchain
-# does not alter the mobile application's runtime contract.
+# Monorepo workspace. The Expo app lives at the repository root; Red Reaper AI
+# is isolated under apps/red-reaper-desktop with its own release workflow.
 packages:
   - "."
   - "apps/*"
   - "packages/*"
-# pnpm 9.12.0 is pinned for EAS and resolves overrides from package.json
-# "pnpm.overrides". Keep this file free of an `overrides:` block until the
-# project intentionally upgrades its package-manager contract.
+
+# pnpm 11 reads project settings from this file. Keep registry credentials in
+# .npmrc and never commit tokens or private registry passwords here.
+nodeLinker: hoisted
+publicHoistPattern:
+  - "*brace-expansion*"
+  - "*minimatch*"
+shamefullyHoist: true
+pmOnFail: error
+
+# Security overrides are centralized here so local, CI, and EAS installs use
+# the same patched transitive dependency graph.
+overrides:
+  axios: "^1.18.1"
+  "@xmldom/xmldom": "^0.9.8"
+  ajv: "^8.17.1"
+  "@eslint/eslintrc>ajv": "6.12.6"
+  "eslint>ajv": "6.12.6"
+  brace-expansion: "2.1.4"
+  "brace-expansion@>=2.1.0 <3": "2.1.4"
+  "brace-expansion@>=5": "2.1.4"
+  esbuild: "^0.28.1"
+  fast-uri: "3.1.5"
+  flatted: "^3.4.2"
+  form-data: "^4.0.4"
+  js-yaml: "4.3.1"
+  nanoid: "3.3.18"
+  node-forge: "^1.3.1"
+  path-to-regexp: "^8.2.0"
+  picomatch: "^4.0.3"
+  postcss: "8.5.23"
+  qs: "^6.14.1"
+  rollup: "^4.59.0"
+  shell-quote: "^1.8.3"
+  tar: "^7.5.21"
+  undici: "6.28.0"
+  uuid: "^11.1.1"
+
+# Lifecycle scripts are deny-by-default in pnpm 11. These packages require
+# their official build steps to provide native or platform binaries.
+allowBuilds:
+  "@expo/ngrok": true
+  "@swc/core": true
+  esbuild: true
+  sharp: true
+
+patchedDependencies:
+  image-size@1.2.1: patches/image-size@1.2.1.patch
+
+# The registry has no patched image-size release. These exact advisories are
+# locally mitigated by the patched dependency above and covered by timeout-based
+# malicious-input regression tests in tests/image-size-security-patch.test.ts.
+auditConfig:
+  ignoreGhsas:
+    - GHSA-w3rx-r6r6-pgpr
+    - GHSA-5p2g-fcmc-qvqq

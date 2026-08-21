@@ -28,7 +28,7 @@ services:
     name: ice-cream-man-api
     runtime: node
     plan: free
-    buildCommand: npm install -g pnpm@9.12.0 && pnpm install --no-frozen-lockfile && pnpm build
+    buildCommand: npm install -g pnpm@11.22.0 && pnpm install --frozen-lockfile && pnpm build
     startCommand: pnpm start
     healthCheckPath: /api/health
     autoDeploy: true
@@ -36,6 +36,8 @@ services:
       # ── Runtime ─────────────────────────────────────────────────────────
       - key: NODE_ENV
         value: production
+      - key: NODE_VERSION
+        value: 22.14.0
       - key: PORT
         value: 3000
 
@@ -50,16 +52,16 @@ services:
       # A long random secret used to sign session JWTs and cookies
       # Generate one with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
       - key: JWT_SECRET
-        sync: false   # enter this in the Render dashboard
+        sync: false # enter this in the Render dashboard
 
       # ── OAuth (Forge / built-in auth portal) ─────────────────────────────
       # These come from your Expo/Forge project settings
       - key: APP_ID
-        sync: false   # your Expo APP_ID (same as EXPO_PUBLIC_APP_ID)
+        sync: false # your Expo APP_ID (same as EXPO_PUBLIC_APP_ID)
       - key: OAUTH_SERVER_URL
-        sync: false   # e.g. https://auth.expo.io  (same host as EXPO_PUBLIC_OAUTH_SERVER_URL)
+        sync: false # e.g. https://auth.expo.io  (same host as EXPO_PUBLIC_OAUTH_SERVER_URL)
       - key: OWNER_OPEN_ID
-        sync: false   # your Expo owner open-id (same as EXPO_PUBLIC_OWNER_OPEN_ID)
+        sync: false # your Expo owner open-id (same as EXPO_PUBLIC_OWNER_OPEN_ID)
 
       # ── Internal Forge API (optional — only needed if using built-in features) ──
       - key: BUILT_IN_FORGE_API_URL
