@@ -6,23 +6,26 @@ This reference lists the configuration that must exist before the repository can
 
 The Play app, Expo project, and checked-in configuration must describe the same application. Do not edit these values in this document; verify them in the source files below.
 
-| Value | Source of truth |
-|---|---|
+| Value                                                                   | Source of truth                                          |
+| ----------------------------------------------------------------------- | -------------------------------------------------------- |
 | App name, Android package, Expo slug, owner, and EAS project identifier | [`config/app-identity.js`](../../config/app-identity.js) |
-| User-visible version and Android native configuration | [`app.config.ts`](../../app.config.ts) |
-| Build profiles and Play track configuration | [`eas.json`](../../eas.json) |
+| User-visible version and Android native configuration                   | [`app.config.ts`](../../app.config.ts)                   |
+| Build profiles and Play track configuration                             | [`eas.json`](../../eas.json)                             |
 
 ## Configure Google Play Console
 
 Before an automated or local Play submission, an authorized account holder must create or select the Play app that uses the registered Android package. Complete the store information required for the intended release and keep each declaration aligned with the distributed app.
 
-| Console area | Repository reference |
-|---|---|
-| Store listing | [Google Play listing content](../../legal/GOOGLE_PLAY_LISTING.md) |
-| Privacy policy | [Privacy Policy](../../legal/PRIVACY_POLICY.md); host it at a publicly accessible URL before entering it in Play Console. |
-| Data Safety | [Data Safety reference](../../legal/DATA_SAFETY.md) |
-| App access and reviewer instructions | [Google Play app access](../../legal/GOOGLE_PLAY_APP_ACCESS.md) |
-| Release notes | The release-note material in [Google Play listing content](../../legal/GOOGLE_PLAY_LISTING.md), adapted to the actual release. |
+| Console area                         | Repository reference                                                                                                                                                                |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Store listing copy                   | [Google Play listing content](../../legal/GOOGLE_PLAY_LISTING.md)                                                                                                                   |
+| Store listing icon                   | [`assets/icons/play-store/play-store-512.png`](../../assets/icons/play-store/play-store-512.png) and its [`asset-manifest.json`](../../assets/icons/play-store/asset-manifest.json) |
+| Privacy policy                       | [Privacy Policy](../../legal/PRIVACY_POLICY.md); host it at a publicly accessible URL before entering it in Play Console.                                                           |
+| Data Safety                          | [Data Safety reference](../../legal/DATA_SAFETY.md)                                                                                                                                 |
+| App access and reviewer instructions | [Google Play app access](../../legal/GOOGLE_PLAY_APP_ACCESS.md)                                                                                                                     |
+| Release notes                        | The release-note material in [Google Play listing content](../../legal/GOOGLE_PLAY_LISTING.md), adapted to the actual release.                                                      |
+
+Upload the dedicated 512×512 listing icon without adding rounded corners or a baked shadow; Google Play applies its own mask and presentation. Capture screenshots from the exact release candidate after its backend and billing flows are working, and do not substitute mock screens for unverified runtime behavior.
 
 The app's internal testing track should have an appropriate tester group before a release candidate is submitted. Verify that the reviewer and tester flows described in the app-access material still work in the build being released.
 
@@ -30,12 +33,12 @@ The app's internal testing track should have an appropriate tester group before 
 
 The driver registration flow expects the one-time product identifier configured by the application. Confirm the product is active in Play Console and that its identifier matches the application configuration before testing the billing flow.
 
-| Check | Expected state |
-|---|---|
-| Product identifier | Matches the identifier used by the application. |
-| Product type | A one-time product suitable for the registration flow. |
-| Availability | Active for the test or release track being used. |
-| Test path | Exercised by a permitted Play test account before production promotion. |
+| Check              | Expected state                                                          |
+| ------------------ | ----------------------------------------------------------------------- |
+| Product identifier | Matches the identifier used by the application.                         |
+| Product type       | A one-time product suitable for the registration flow.                  |
+| Availability       | Active for the test or release track being used.                        |
+| Test path          | Exercised by a permitted Play test account before production promotion. |
 
 The app grants vendor access only after its backend verifies the opaque purchase token with the Google Play Developer API, acknowledges an unacknowledged one-time purchase, and persists a one-time token hash. Before internal testing, enable the Android Publisher API for the same Google Cloud project and grant the service account access to this Play app. Set `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` only in the backend's approved secret manager; it must contain the service-account JSON and must never be added to source control, EAS public variables, app configuration, or a client bundle.
 
@@ -90,20 +93,20 @@ production artifact.
 
 ## Verify setup before a release
 
-| Verification | Where to check |
-|---|---|
-| Identity and package alignment | `config/app-identity.js`, `app.config.ts`, Expo project, and Play Console app |
-| EAS credentials and ownership | EAS account and credential management for the configured project |
-| Required GitHub Actions secrets | Repository Actions secrets settings |
-| Store declarations and reviewer flow | Play Console and the linked `legal/` materials |
-| Backend purchase verification | A Google Play test purchase produces a server-verified entitlement without storing the raw token |
-| Automated submission permissions | A controlled production-profile test or an authorized account review |
+| Verification                         | Where to check                                                                                   |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Identity and package alignment       | `config/app-identity.js`, `app.config.ts`, Expo project, and Play Console app                    |
+| EAS credentials and ownership        | EAS account and credential management for the configured project                                 |
+| Required GitHub Actions secrets      | Repository Actions secrets settings                                                              |
+| Store declarations and reviewer flow | Play Console and the linked `legal/` materials                                                   |
+| Backend purchase verification        | A Google Play test purchase produces a server-verified entitlement without storing the raw token |
+| Automated submission permissions     | A controlled production-profile test or an authorized account review                             |
 
 ## Related documentation
 
-| Topic | Document |
-|---|---|
-| Release procedure | [Android and Google Play release runbook](android-google-play.md) |
-| Android build failures | [Android and EAS troubleshooting](../troubleshooting/android-eas-builds.md) |
-| Store and compliance materials | [Legal directory](../../legal/) |
-| Documentation navigation | [Documentation index](../README.md) |
+| Topic                          | Document                                                                    |
+| ------------------------------ | --------------------------------------------------------------------------- |
+| Release procedure              | [Android and Google Play release runbook](android-google-play.md)           |
+| Android build failures         | [Android and EAS troubleshooting](../troubleshooting/android-eas-builds.md) |
+| Store and compliance materials | [Legal directory](../../legal/)                                             |
+| Documentation navigation       | [Documentation index](../README.md)                                         |

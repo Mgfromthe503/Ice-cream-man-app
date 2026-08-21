@@ -1,6 +1,10 @@
 ﻿# Dependencies
 node_modules/
 
+# Rust / Tauri build outputs
+**/target/
+**/src-tauri/gen/schemas/
+
 # Expo
 .expo/
 dist/
@@ -11,9 +15,12 @@ expo-env.d.ts
 android/
 ios/
 *.jks
+*.keystore
 *.p8
 *.p12
 *.mobileprovision
+google-service-account.json
+service-account*.json
 *.orig.*
 
 # Metro / bundler
