@@ -96,7 +96,7 @@ production artifact.
 | Identity and package alignment | `config/app-identity.js`, `app.config.ts`, Expo project, and Play Console app |
 | EAS credentials and ownership | EAS account and credential management for the configured project |
 | Required GitHub Actions secrets | Repository Actions secrets settings |
-| Store declarations and reviewer flow | Play Console and the linked `legal/` materials; confirm the **Financial features** declaration is **My app doesn't provide any financial features** for the current Food & Drink dispatch app. |
+| Store declarations and reviewer flow | Play Console and the linked `legal/` materials. Confirm each declaration accurately reflects the released app; do not change a declaration merely to clear a rejection. For an organization-account enforcement, preserve the complete Policy status issue details and follow [the investigation guide](../../legal/PLAY_CONSOLE_CONTENT_DECLARATIONS.md). |
 | Backend purchase verification | A Google Play test purchase produces a server-verified entitlement without storing the raw token |
 | Automated submission permissions | A controlled production-profile test or an authorized account review |
 

@@ -1,41 +1,32 @@
-# Google Play App Content Declarations
+# Play Console Organization-Account Investigation
 
-This document records the Play Console answers supported by the current source code and store listing for **The Ice Cream Man**. It is a release-control reference only: the Play Console account owner must enter and save the answers in Play Console before submitting another bundle.
+This document records the evidence available for the **Play Console Requirements** rejection of **The Ice Cream Man**. It does **not** prescribe a particular App content answer or claim that changing a declaration resolves the rejection. Play Console may enforce this policy from the app, its listing, its review materials, and the developer account; the rejection wording does not identify the exact field or trigger.
 
-## App identity and purpose
+## Verified policy scope
 
-| Field | Approved value |
-| --- | --- |
-| Android package | `com.icecreamman.app` |
-| Store category | Food & Drink |
-| App purpose | A local dispatch and marketplace app that connects independent ice-cream vendors with customers requesting physical ice cream deliveries. |
-| Regulated financial service | None. The app does not provide banking, lending, wage advances, credit, insurance, money transfers, wallets, investment, cryptocurrency, or financial advice. |
+Google's current Play Console Requirements policy limits organization-only distribution to four service types: **financial products and services**, **health apps**, apps approved to use **`VpnService`**, and **government apps**. A Food & Drink category, Google Play Billing integration, a normal payments profile, or a personal developer account are not independently listed as organization-only triggers.
 
-The app's driver dashboard may display business-performance metrics such as hours, completed requests, and estimated earnings. Those analytics do not turn the app into a financial product or service. Google Play Billing is used only for the one-time purchase of in-app Driver Dashboard access; it does not make the app a mobile-payment or digital-wallet provider.
+## Repository audit
 
-## Required Play Console answers
-
-| Play Console declaration | Answer for the current app | Rationale |
+| Area reviewed | Evidence on the current main branch | Assessment |
 | --- | --- | --- |
-| **Financial features** | **My app doesn't provide any financial features** | No listed finance feature is implemented. Do not select *Mobile payments and digital wallets*, *Money transfer and wire services*, *Earned wage advances*, *Other*, or any banking, lending, trading, insurance, or cryptocurrency option merely because the app uses Google Play Billing for app access. |
-| **Health apps** | **The app does not have any health features** | The app does not use Health Connect, health permissions, medical features, clinical services, nutrition management, or health research. |
-| **Government apps** | **No** | The app is not developed by, for, or on behalf of a government agency. |
-| **VPN declaration** | **No** | The Android configuration does not request or use `VpnService`. |
-| **App category** | **Food & Drink** | The primary user-facing service is coordination of physical ice cream sales and delivery. |
+| Store category | The checked-in listing identifies the app as **Food & Drink**. | Not an organization-only category under the Play Console Requirements policy. |
+| Android configuration | The effective Android permissions are notifications, Google Play Billing, fine/coarse location, and audio settings. No health permission or `VpnService` capability is configured. | Does not support a health or VPN classification. |
+| Government function | No government affiliation, agency service, or government API is implemented. | Does not support a government-app classification. |
+| Financial function | The client uses Google Play Billing only for a one-time Driver Dashboard entitlement. It does not provide a wallet, transfer service, loan, bank account, investment, insurance, or cryptocurrency function. | The repository does not establish a regulated financial-service feature. |
+| Misleading client text removed in this branch | The old Driver Terms stated that the app provided an 85/15 revenue split and that Google Play Console paid drivers to linked bank accounts. | Those statements were inaccurate: Google Play pays the developer's own Play proceeds, not the app's drivers. They could make the app appear to facilitate payout or money-transfer activity and have been removed. |
 
-## Release gate
+## Required next review step
 
-Before every Play submission, the release owner must compare the built app and listing with these declarations. If the app later adds any in-app customer checkout, driver payout, payment collection, money transfer, lending, insurance, or health/VPN/government functionality, this document and the affected Play Console declarations must be reviewed before release.
+1. Open **Policy status** for the rejected version and expand the exact enforcement item and its linked email. Preserve a screenshot of the complete **Issue details** section, including every listed area and any reviewer note.
+2. If the App content declarations already accurately reflect the app, do **not** toggle them merely to clear an error. Record their current values instead.
+3. Compare the store listing, reviewer instructions, and the fresh build against the four organization-only categories above. Ensure they do not state or imply that the app holds, splits, transfers, advances, pays out, or manages driver money.
+4. If the enforcement still identifies only **Developer Account** after this correction and no actual organization-only feature exists, submit an appeal or support request through Policy status. State that the app is a Food & Drink dispatch app; it has no health, VPN, government, banking, money-transfer, lending, investment, wallet, insurance, or cryptocurrency feature; and ask Google to identify the specific classification behind the enforcement.
+5. Do not repeatedly resubmit the same rejected artifact while the enforcement is unresolved. When Google confirms the classification or the appeal is resolved, use a newly built AAB with a higher version code.
 
-> Do not reuse a rejected AAB. After correcting the Play Console declarations, build and upload a new Android App Bundle with a higher version code.
-
-## Repository evidence
-
-The public Expo configuration declares notification, Google Play Billing, and fine/coarse location permissions. It does not declare health permissions or a VPN capability. The approved store listing identifies the product as a **Food & Drink** app. The user-facing driver terms explicitly distinguish the app-access purchase from customer food-order collection and driver payouts.
-
-## Sources
+## Source links
 
 1. [Google Play Console Requirements](https://support.google.com/googleplay/android-developer/answer/10788890?hl=en)
-2. [Financial features declaration](https://support.google.com/googleplay/android-developer/answer/13849271?hl=en)
+2. [Google Play Financial Services policy](https://support.google.com/googleplay/android-developer/answer/9876821?hl=en)
 3. [Google Play Payments policy](https://support.google.com/googleplay/android-developer/answer/10281818?hl=en)
-4. [Google Play Billing overview](https://developer.android.com/google/play/billing)
+4. [Check your app's policy status](https://support.google.com/googleplay/android-developer/answer/9842754?hl=en)
