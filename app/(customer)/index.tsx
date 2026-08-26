@@ -12,6 +12,7 @@ import { DriversWantedBanner } from '@/components/drivers-wanted-banner';
 import { ETADisplay } from '@/components/eta-messaging';
 import { useAudioPlayer } from 'expo-audio';
 import { FactTicker } from '@/components/fact-ticker';
+import { ParentSafetyModal } from '@/components/parent-safety-modal';
 import { Image as ExpoImage } from 'expo-image';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { isWithinSafetyZone, calculateDistance, formatDistance } from '@/lib/gps-safety';
@@ -41,6 +42,8 @@ export default function CustomerHomeScreen() {
   const [showDeliveryOptions, setShowDeliveryOptions] = useState(false);
   const [shareMode, setShareMode] = useState<'exact' | 'street' | 'meetup'>('street');
   const [deliveryInstructions, setDeliveryInstructions] = useState('');
+  const [showParentSafety, setShowParentSafety] = useState(false);
+  const [parentSafetyAcknowledged, setParentSafetyAcknowledged] = useState(false);
 
   // Pulsing glow animation for the big button
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -105,16 +108,29 @@ export default function CustomerHomeScreen() {
 
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 
-      // Show delivery options modal
-      setShowDeliveryOptions(true);
+      // Every request starts with a parent-aware, real-world safety reminder.
+      setParentSafetyAcknowledged(false);
+      setShowParentSafety(true);
     } catch (error) {
       console.error('Order error:', error);
     }
   };
 
+  const handleContinueAfterSafety = () => {
+    if (!parentSafetyAcknowledged) return;
+    setShowParentSafety(false);
+    setShowDeliveryOptions(true);
+  };
+
   const handleConfirmOrder = async () => {
     try {
       const location = userLocation;
+      if (!parentSafetyAcknowledged) {
+        setShowDeliveryOptions(false);
+        setShowParentSafety(true);
+        Alert.alert('Parent check-in needed', 'Please ask a parent or guardian before sending a neighborhood request.');
+        return;
+      }
       if (!location) {
         Alert.alert('Location needed', 'Please enable location services so we can send an ice cream truck to you.');
         setShowDeliveryOptions(false);
@@ -133,6 +149,7 @@ export default function CustomerHomeScreen() {
       }
 
       setShowDeliveryOptions(false);
+      setParentSafetyAcknowledged(false);
       setRequestStatus('summoning');
 
       // Build address based on share mode
@@ -455,7 +472,17 @@ export default function CustomerHomeScreen() {
                 )}
               </View>
 
-              {/* Fun Facts Ticker - rotates every 4 seconds */}
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setShowParentSafety(true)}
+                style={({ pressed }) => [{ opacity: pressed ? 0.75 : 1 }]}
+                className="mt-5 bg-primary/10 border border-primary/25 rounded-xl px-4 py-3"
+              >
+                <Text className="text-primary font-bold text-center">🛟 Safety & Parent Guide</Text>
+                <Text className="text-xs text-muted text-center mt-1">A quick grown-up check-in keeps the fun extra sweet.</Text>
+              </Pressable>
+
+              {/* Gentle rotating facts and safety tips — no flashing or urgent prompts. */}
               <View style={{ marginTop: 16 }}>
                 <FactTicker variant="card" />
               </View>
@@ -485,6 +512,18 @@ export default function CustomerHomeScreen() {
         }}
       />
 
+      <ParentSafetyModal
+        visible={showParentSafety}
+        acknowledged={parentSafetyAcknowledged}
+        onAcknowledgedChange={setParentSafetyAcknowledged}
+        onContinue={handleContinueAfterSafety}
+        onClose={() => {
+          setShowParentSafety(false);
+          setParentSafetyAcknowledged(false);
+        }}
+        continueLabel="Continue to delivery details"
+      />
+
       {/* Delivery Options Modal */}
       <Modal
         visible={showDeliveryOptions}
@@ -495,7 +534,12 @@ export default function CustomerHomeScreen() {
         <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <View className="bg-background rounded-t-3xl p-6" style={{ maxHeight: '80%' }}>
             <Text className="text-xl font-bold text-foreground text-center mb-1">Delivery Details</Text>
-            <Text className="text-sm text-muted text-center mb-5">How should the driver find you?</Text>
+            <Text className="text-sm text-muted text-center mb-3">How should the driver find you?</Text>
+            <View className="bg-primary/10 border border-primary/25 rounded-xl p-3 mb-5">
+              <Text className="text-xs text-foreground text-center leading-5">
+                🛟 Parent safety tip: Street Name Only is the default. Keep order notes free of phone numbers, school details, and other private information.
+              </Text>
+            </View>
 
             {/* Share Mode Options */}
             <View className="gap-3 mb-5">
@@ -543,12 +587,15 @@ export default function CustomerHomeScreen() {
               onPress={handleConfirmOrder}
               className="bg-primary rounded-xl p-4 mb-3"
             >
-              <Text className="text-white font-bold text-center text-lg">🍦 Send My Order!</Text>
+              <Text className="text-white font-bold text-center text-lg">🍦 Send My Request!</Text>
             </TouchableOpacity>
 
             {/* Cancel */}
             <TouchableOpacity
-              onPress={() => setShowDeliveryOptions(false)}
+              onPress={() => {
+                setShowDeliveryOptions(false);
+                setParentSafetyAcknowledged(false);
+              }}
               className="p-3"
             >
               <Text className="text-muted font-medium text-center">Cancel</Text>

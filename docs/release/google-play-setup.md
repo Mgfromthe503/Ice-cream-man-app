@@ -23,6 +23,7 @@ Before an automated or local Play submission, an authorized account holder must 
 | Data Safety | [Data Safety reference](../../legal/DATA_SAFETY.md) |
 | App access and reviewer instructions | [Google Play app access](../../legal/GOOGLE_PLAY_APP_ACCESS.md) |
 | Play Console content declarations | [Play Console content declarations](../../legal/PLAY_CONSOLE_CONTENT_DECLARATIONS.md). The account owner must save these accurate answers in Play Console; source-code changes alone cannot modify a Play Console declaration. |
+| Child safety and parent guidance | [Child Safety and Parent Guidance](../../legal/CHILD_SAFETY_AND_PARENT_GUIDANCE.md). Verify the released request flow, target-audience selection, privacy policy, Data safety declaration, and reviewer path remain consistent. This safety acknowledgment is not age verification or verifiable parental consent. |
 | Release notes | The release-note material in [Google Play listing content](../../legal/GOOGLE_PLAY_LISTING.md), adapted to the actual release. |
 
 The app's internal testing track should have an appropriate tester group before a release candidate is submitted. Verify that the reviewer and tester flows described in the app-access material still work in the build being released.
