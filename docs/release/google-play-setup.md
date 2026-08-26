@@ -22,6 +22,7 @@ Before an automated or local Play submission, an authorized account holder must 
 | Privacy policy | [Privacy Policy](../../legal/PRIVACY_POLICY.md); host it at a publicly accessible URL before entering it in Play Console. |
 | Data Safety | [Data Safety reference](../../legal/DATA_SAFETY.md) |
 | App access and reviewer instructions | [Google Play app access](../../legal/GOOGLE_PLAY_APP_ACCESS.md) |
+| Play Console content declarations | [Play Console content declarations](../../legal/PLAY_CONSOLE_CONTENT_DECLARATIONS.md). The account owner must save these accurate answers in Play Console; source-code changes alone cannot modify a Play Console declaration. |
 | Release notes | The release-note material in [Google Play listing content](../../legal/GOOGLE_PLAY_LISTING.md), adapted to the actual release. |
 
 The app's internal testing track should have an appropriate tester group before a release candidate is submitted. Verify that the reviewer and tester flows described in the app-access material still work in the build being released.
@@ -95,7 +96,7 @@ production artifact.
 | Identity and package alignment | `config/app-identity.js`, `app.config.ts`, Expo project, and Play Console app |
 | EAS credentials and ownership | EAS account and credential management for the configured project |
 | Required GitHub Actions secrets | Repository Actions secrets settings |
-| Store declarations and reviewer flow | Play Console and the linked `legal/` materials |
+| Store declarations and reviewer flow | Play Console and the linked `legal/` materials; confirm the **Financial features** declaration is **My app doesn't provide any financial features** for the current Food & Drink dispatch app. |
 | Backend purchase verification | A Google Play test purchase produces a server-verified entitlement without storing the raw token |
 | Automated submission permissions | A controlled production-profile test or an authorized account review |
 
