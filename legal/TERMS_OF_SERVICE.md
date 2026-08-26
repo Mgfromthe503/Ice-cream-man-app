@@ -183,7 +183,7 @@ You agree to indemnify, defend, and hold harmless Mindy Gaines, The Ice Cream Ma
 
 ## 11. Advertising
 
-The App displays advertisements through Google AdMob. By using the App, you consent to receiving advertisements. You may opt out of personalized advertising through your device settings.
+The App currently does not display advertisements. If advertising is introduced in the future, this section will be updated accordingly.
 
 ---
 

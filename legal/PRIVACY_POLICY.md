@@ -17,13 +17,13 @@ By downloading, installing, or using the App, you agree to the collection and us
 
 ---
 
-## 2. Dual-Marketplace Architecture
+## 2. Two User Roles
 
-The Ice Cream Man operates as a **dual-marketplace platform** connecting two distinct user roles within a single application:
+The Ice Cream Man serves two types of users within a single application:
 
 | Role | Description | Key Data Interactions |
 |------|-------------|----------------------|
-| **Customer** | Orders ice cream delivery to their location | Shares location data (at their chosen precision) with assigned Driver |
+| **Customer** | Requests ice cream delivery to their location | Shares location data (at their chosen precision) with assigned Driver |
 | **Driver/Vendor** | Receives and fulfills customer delivery requests | Shares real-time GPS location for proximity verification and navigation |
 
 Each role has different data collection requirements, retention periods, and privacy controls as described below.
@@ -157,7 +157,7 @@ The Ice Cream Man is designed for use by all ages. However, we do not knowingly 
 
 ## 9. Vendor Screening Disclosure
 
-The Ice Cream Man does NOT perform background checks, criminal history checks, driving record checks, or any other form of screening on vendors who register through the App. Vendor registration requires only payment of the registration fee and completion of the registration form. Users interact with vendors at their own discretion.
+The Ice Cream Man does NOT perform background checks, criminal history checks, driving record checks, or any other form of screening on vendors who register through the App. Vendor registration requires only payment of the registration fee and completion of the registration form. Users interact with vendors at their own discretion and should exercise normal precautions.
 
 ---
 
