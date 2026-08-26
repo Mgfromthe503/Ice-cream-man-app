@@ -106,7 +106,10 @@ const config: ExpoConfig = {
     [
       "expo-video",
       {
-        supportsBackgroundPlayback: true,
+        // The app has no background video-playback feature. Enabling this option
+        // injects the Android mediaPlayback foreground service and its Play
+        // declaration requirement, so it must remain disabled.
+        supportsBackgroundPlayback: false,
         supportsPictureInPicture: true,
       },
     ],
