@@ -19,7 +19,7 @@ The failure involved the CommonJS interoperation path between `minimatch` and `b
 
 | Concern                         | Current repository safeguard                                                                                 |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Dependency resolution           | `package.json` pins `brace-expansion` and declares pnpm overrides.                                           |
+| Dependency resolution           | `package.json` pins `brace-expansion`; `pnpm-workspace.yaml` declares pnpm overrides.                        |
 | Lockfile drift                  | `scripts/verify-pnpm-overrides.cjs` checks override and lockfile consistency before dependency installation. |
 | Installed module interoperation | `scripts/patch-brace-expansion-cjs.cjs` repairs the CommonJS shape when required.                            |
 | EAS lifecycle                   | `eas-build-pre-install` and `eas-build-post-install` run the guard and patch scripts.                        |
