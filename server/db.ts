@@ -1,4 +1,4 @@
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import {
   InsertUser,
@@ -7,9 +7,14 @@ import {
   driverProfiles,
   driverLocationHistory,
   vendorEntitlements,
+  driverAvailability,
+  requestEvents,
   type InsertIceCreamRequest,
   type InsertDriverProfile,
+  type User,
+  type IceCreamRequest,
 } from "../drizzle/schema";
+import type { RequestStatus } from "../shared/dispatch-policy";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -399,4 +404,158 @@ export async function createVendorEntitlement(input: {
   }
 
   throw new Error("This Google Play purchase has already been used by another account.");
+}
+
+// ============= SECURITY FUNCTIONS =============
+
+/** Strip sensitive fields from user before sending to client */
+export function toSafeUser(user: User) {
+  const { passwordHash: _hash, failedLoginAttempts: _attempts, lockedUntil: _lock, ...safeUser } = user;
+  return safeUser;
+}
+
+/** Record a failed login attempt; locks account after 5 failures for 15 minutes */
+export async function recordFailedLogin(user: User) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const attempts = (user.failedLoginAttempts ?? 0) + 1;
+  const lockedUntil = attempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null;
+  await db
+    .update(users)
+    .set({ failedLoginAttempts: lockedUntil ? 0 : attempts, lockedUntil })
+    .where(eq(users.id, user.id));
+}
+
+/** Reset failed login attempts on successful login */
+export async function recordSuccessfulLogin(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(users)
+    .set({ failedLoginAttempts: 0, lockedUntil: null, lastSignedIn: new Date() })
+    .where(eq(users.id, userId));
+}
+
+// ============= DRIVER AVAILABILITY =============
+
+export async function getDriverAvailability(driverId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(driverAvailability).where(eq(driverAvailability.driverId, driverId)).limit(1);
+  return result[0] ?? null;
+}
+
+export async function setDriverAvailability(input: { driverId: number; available: boolean; latitude?: number; longitude?: number }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .insert(driverAvailability)
+    .values({
+      driverId: input.driverId,
+      available: input.available,
+      latitude: input.latitude,
+      longitude: input.longitude,
+    })
+    .onConflictDoUpdate({
+      target: driverAvailability.driverId,
+      set: {
+        available: input.available,
+        latitude: input.latitude,
+        longitude: input.longitude,
+        updatedAt: new Date(),
+      },
+    });
+  return getDriverAvailability(input.driverId);
+}
+
+// ============= REQUEST EVENTS (AUDIT TRAIL) =============
+
+export async function logRequestEvent(input: { requestId: number; actorId?: number; fromStatus?: RequestStatus; toStatus: RequestStatus; note?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(requestEvents).values({
+    requestId: input.requestId,
+    actorId: input.actorId,
+    fromStatus: input.fromStatus,
+    toStatus: input.toStatus,
+    note: input.note,
+  });
+}
+
+// ============= DISPATCH FUNCTIONS =============
+
+/** Get active request for a customer (waiting, accepted, in_transit, or arrived) */
+export async function getCustomerActiveRequest(customerId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db
+    .select()
+    .from(iceCreamRequests)
+    .where(
+      and(
+        eq(iceCreamRequests.customerId, customerId),
+        inArray(iceCreamRequests.status, ["waiting", "accepted", "in_transit", "arrived"]),
+      ),
+    )
+    .orderBy(desc(iceCreamRequests.createdAt))
+    .limit(1);
+  return result[0] ?? null;
+}
+
+/** Get active request for a driver (accepted, in_transit, or arrived) */
+export async function getDriverActiveRequest(driverId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db
+    .select()
+    .from(iceCreamRequests)
+    .where(
+      and(
+        eq(iceCreamRequests.driverId, driverId),
+        inArray(iceCreamRequests.status, ["accepted", "in_transit", "arrived"]),
+      ),
+    )
+    .orderBy(desc(iceCreamRequests.acceptedAt))
+    .limit(1);
+  return result[0] ?? null;
+}
+
+/**
+ * Atomic driver acceptance with guard.
+ * Only one driver can win a pending request.
+ * Returns the accepted request or a reason code on failure.
+ */
+export async function acceptRequestAtomic(
+  requestId: number,
+  driverId: number,
+): Promise<{ accepted: true; request: IceCreamRequest } | { accepted: false; reason: "ACTIVE_ASSIGNMENT" | "NO_LONGER_AVAILABLE" }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Guard: driver already has an active assignment
+  if (await getDriverActiveRequest(driverId)) {
+    return { accepted: false, reason: "ACTIVE_ASSIGNMENT" };
+  }
+
+  // Atomic update: only if still waiting and no driver assigned
+  const result = await db
+    .update(iceCreamRequests)
+    .set({ driverId, status: "accepted", acceptedAt: new Date(), updatedAt: new Date() })
+    .where(
+      and(
+        eq(iceCreamRequests.id, requestId),
+        eq(iceCreamRequests.status, "waiting"),
+        isNull(iceCreamRequests.driverId),
+      ),
+    )
+    .returning();
+
+  if (result.length !== 1) {
+    return { accepted: false, reason: "NO_LONGER_AVAILABLE" };
+  }
+
+  // Log the event
+  await logRequestEvent({ requestId, actorId: driverId, fromStatus: "waiting", toStatus: "accepted" });
+
+  return { accepted: true, request: result[0] };
 }

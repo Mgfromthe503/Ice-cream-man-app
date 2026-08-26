@@ -1,8 +1,10 @@
-import { serial, pgTable, pgEnum, text, timestamp, varchar, doublePrecision, decimal, integer } from "drizzle-orm/pg-core";
+import { serial, pgTable, pgEnum, text, timestamp, varchar, doublePrecision, decimal, integer, index, uniqueIndex, boolean } from "drizzle-orm/pg-core";
 
 export const roleEnum = pgEnum("role", ["user", "admin"]);
 export const shareModeEnum = pgEnum("share_mode", ["exact", "street", "meetup"]);
-export const requestStatusEnum = pgEnum("request_status", ["waiting", "accepted", "in_transit", "completed", "cancelled"]);
+export const requestStatusEnum = pgEnum("request_status", ["waiting", "accepted", "in_transit", "arrived", "completed", "cancelled"]);
+export const appRoleEnum = pgEnum("app_role", ["customer", "driver"]);
+export const driverApprovalEnum = pgEnum("driver_approval", ["not_requested", "pending", "approved", "suspended"]);
 
 /**
  * Core user table backing auth flow.
@@ -10,21 +12,21 @@ export const requestStatusEnum = pgEnum("request_status", ["waiting", "accepted"
  * Columns use camelCase to match both database fields and generated types.
  */
 export const users = pgTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
   id: serial("id").primaryKey(),
-  /** OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
+  passwordHash: varchar("passwordHash", { length: 255 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: roleEnum("role").default("user").notNull(),
+  appRole: appRoleEnum("appRole").default("customer").notNull(),
+  driverApproval: driverApprovalEnum("driverApproval").default("not_requested").notNull(),
+  failedLoginAttempts: integer("failedLoginAttempts").default(0).notNull(),
+  lockedUntil: timestamp("lockedUntil"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
-});
+}, (table) => [uniqueIndex("users_email_idx").on(table.email)]);
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -141,6 +143,33 @@ export const dailySales = pgTable("daily_sales", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
+/**
+ * Driver Availability Table
+ * Dedicated availability toggle separate from driver profile
+ */
+export const driverAvailability = pgTable("driver_availability", {
+  id: serial("id").primaryKey(),
+  driverId: integer("driverId").notNull().unique(),
+  available: boolean("available").default(false).notNull(),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (table) => [index("driver_availability_updated_idx").on(table.updatedAt)]);
+
+/**
+ * Request Events Table
+ * Full audit trail for every state transition on a request
+ */
+export const requestEvents = pgTable("request_events", {
+  id: serial("id").primaryKey(),
+  requestId: integer("requestId").notNull(),
+  actorId: integer("actorId"),
+  fromStatus: requestStatusEnum("fromStatus"),
+  toStatus: requestStatusEnum("toStatus").notNull(),
+  note: varchar("note", { length: 280 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [index("request_events_request_idx").on(table.requestId, table.createdAt)]);
+
 // Export types
 export type Payment = typeof payments.$inferSelect;
 export type InsertPayment = typeof payments.$inferInsert;
@@ -148,3 +177,7 @@ export type VendorEntitlement = typeof vendorEntitlements.$inferSelect;
 export type InsertVendorEntitlement = typeof vendorEntitlements.$inferInsert;
 export type DailySales = typeof dailySales.$inferSelect;
 export type InsertDailySales = typeof dailySales.$inferInsert;
+export type DriverAvailability = typeof driverAvailability.$inferSelect;
+export type InsertDriverAvailability = typeof driverAvailability.$inferInsert;
+export type RequestEvent = typeof requestEvents.$inferSelect;
+export type InsertRequestEvent = typeof requestEvents.$inferInsert;

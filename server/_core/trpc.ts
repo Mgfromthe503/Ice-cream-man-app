@@ -1,7 +1,7 @@
 import { NOT_ADMIN_ERR_MSG, UNAUTHED_ERR_MSG } from "../../shared/const.js";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import { getDriverProfile } from "../db";
+import { getDriverProfile, toSafeUser } from "../db";
 import type { TrpcContext } from "./context";
 
 const t = initTRPC.context<TrpcContext>().create({
@@ -42,6 +42,24 @@ export const driverProcedure = protectedProcedure.use(async ({ ctx, next }) => {
     ctx: {
       ...ctx,
       driverProfile,
+    },
+  });
+});
+
+/** Requires approved driver status (appRole=driver, driverApproval=approved) */
+export const approvedDriverProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  const user = ctx.user;
+  if (user.appRole !== "driver" || user.driverApproval !== "approved") {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Driver access has not been approved.",
+    });
+  }
+
+  return next({
+    ctx: {
+      ...ctx,
+      user,
     },
   });
 });
