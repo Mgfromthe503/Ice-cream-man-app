@@ -90,10 +90,16 @@ const config: ExpoConfig = {
     [
       "expo-location",
       {
+        // Location updates run only while the app is active. Keeping the
+        // foreground service disabled avoids requesting Android 14 FGS
+        // permissions when there is no background-navigation feature.
         isAndroidBackgroundLocationEnabled: false,
-        isAndroidForegroundServiceEnabled: true,
+        isAndroidForegroundServiceEnabled: false,
       },
     ],
+    // Must run after expo-location so the library manifest cannot re-add
+    // unused Android foreground-service permissions.
+    "./plugins/withoutLocationForegroundService",
     [
       "expo-audio",
       {
