@@ -45,17 +45,17 @@ export default function TermsOfServiceScreen() {
 
         {/* Section 2 */}
         <Section title="2. Description of Service" colors={colors}>
-          The Ice Cream Man is a dual-marketplace mobile application that connects independent ice cream vendors ("Drivers") with customers ("Customers") seeking on-demand ice cream delivery. The App facilitates real-time location sharing, order management, and payment processing between Drivers and Customers.
+          The Ice Cream Man is a dual-marketplace mobile application that connects independent ice cream vendors ("Drivers") with customers ("Customers") seeking on-demand ice cream delivery. The App facilitates real-time location sharing and order-management tools. It is not a bank, payment processor, money transmitter, digital wallet, lender, or driver-payout service.
         </Section>
 
         {/* Section 3 */}
         <Section title="3. Driver Registration & Payment" colors={colors}>
           To register as a Driver on the platform, you must:{'\n\n'}
           • Complete the Driver registration form with accurate personal and vehicle information{'\n'}
-          • Pay a one-time, non-refundable registration fee of $25.00 USD via Google Play Billing{'\n'}
+          • Purchase one-time access to the Driver Dashboard through Google Play Billing{'\n'}
           • Agree to these Terms of Service, Privacy Policy, and Vendor Agreement{'\n'}
           • Maintain a valid driver's license and appropriate vehicle insurance{'\n\n'}
-          The registration fee grants you lifetime access to the Driver Dashboard and is processed exclusively through Google Play's billing system. No external payment gateways are used. Refunds are handled through Google Play within 48 hours of purchase per Google Play's refund policy.
+          The one-time purchase grants access to the App's Driver Dashboard. Google Play processes that app-access purchase; we do not collect or store card or bank-account details. This purchase does not collect, settle, transfer, or guarantee payment for physical ice cream orders, driver sales, or driver payouts. Refunds are handled through Google Play and any applicable law.
         </Section>
 
         {/* Section 4 */}
@@ -71,12 +71,12 @@ export default function TermsOfServiceScreen() {
 
         {/* Section 5 */}
         <Section title="5. Payment & Financial Terms" colors={colors}>
-          All in-app purchases and registration fees are processed exclusively through Google Play Billing. We do not collect, store, or process credit card numbers, bank account details, or other financial instruments directly.{'\n\n'}
-          • Driver registration: One-time $25.00 USD fee{'\n'}
-          • Customer orders: Pricing set by individual Drivers{'\n'}
-          • Revenue split: 85% to Driver, 15% platform fee{'\n'}
-          • Payouts: Processed through Google Play Console to Driver's linked bank account{'\n\n'}
-          All financial transactions are protected by industry-standard encryption (TLS 1.3), fraud detection, and Google Play's built-in purchase verification.
+          Google Play Billing processes the one-time purchase of access to the Driver Dashboard. We do not collect, store, or process credit-card numbers, bank-account details, digital-wallet balances, or other financial instruments.{'\n\n'}
+          • Driver Dashboard access: One-time $25.00 USD Google Play purchase{'\n'}
+          • Customer food orders: Pricing and collection are determined by the individual Driver outside the App{'\n'}
+          • Driver sales and payouts: Not collected, processed, held, transmitted, or paid out by Google Play or this App{'\n'}
+          • Dashboard metrics: Operational estimates only; they are not a bank balance, wage advance, payment account, or financial-advice service{'\n\n'}
+          Google Play purchase verification protects the Driver Dashboard access purchase. The App's security controls do not transform it into a financial service.
         </Section>
 
         {/* Section 6 */}

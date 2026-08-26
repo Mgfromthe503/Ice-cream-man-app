@@ -26,8 +26,9 @@ Before submitting the release, the release owner must complete the following tas
 1. Open the internal-test build and choose **Continue to secure sign-in**.
 2. Complete the configured OAuth flow using the reviewer identity supplied through the approved channel.
 3. Choose **Customer** after sign-in.
-4. Create a request only with test-safe location data, select the intended sharing mode, and confirm the request.
-5. Verify the requested permission prompts, location disclosure, and cancellation behavior on the test device.
+4. Tap the large customer order button. Verify that the **Sweet Safety Reminder** appears before delivery details, then verify that its continuation button is disabled until the parent/guardian acknowledgment is selected.
+5. Continue with the acknowledgment, create a request only with test-safe location data, select the intended sharing mode, and confirm the request. Verify that **Street Name Only** is selected by default and the delivery-details safety reminder is visible.
+6. Verify the requested permission prompts, location disclosure, parent-aware safety reminder, and cancellation behavior on the test device.
 
 ### Vendor flow and one-time product
 
@@ -52,10 +53,11 @@ Attach or retain the following private release evidence for the submitted versio
 | Vendor purchase test | A valid license-test purchase is verified server-side; a fabricated or reused token is rejected. |
 | Restore test | A prior purchase is restored only after repeat server verification. |
 | Privacy and permission test | The actual runtime permissions and data flows match the current Data safety form and Privacy Policy. |
+| Parent-aware safety test | A customer cannot reach delivery details without the explicit acknowledgment; the customer home screen also exposes Safety & Parent Guide and rotating safety tips. |
 
 ## Data safety and privacy review
 
-The statements in [Data Safety](DATA_SAFETY.md) and [Privacy Policy](PRIVACY_POLICY.md) must be reconciled with the actual SDK and network inventory before release. In particular, review location collection and sharing, any analytics or map provider, purchase history, retention, account deletion, and the public privacy-policy URL. Do not claim immediate deletion, encrypted transport, or third-party data sharing behavior that has not been validated in the release environment.
+The statements in [Data Safety](DATA_SAFETY.md), [Privacy Policy](PRIVACY_POLICY.md), and [Child Safety and Parent Guidance](CHILD_SAFETY_AND_PARENT_GUIDANCE.md) must be reconciled with the actual SDK and network inventory before release. In particular, review location collection and sharing, any analytics or map provider, purchase history, retention, account deletion, the app's target audience, and the public privacy-policy URL. Do not claim immediate deletion, encrypted transport, parental consent, age verification, or third-party data sharing behavior that has not been validated in the release environment.
 
 ## References
 

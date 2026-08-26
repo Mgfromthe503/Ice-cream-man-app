@@ -2,7 +2,7 @@
 
 **The Ice Cream Man**  
 **Effective Date:** June 29, 2026  
-**Last Updated:** June 29, 2026  
+**Last Updated:** August 26, 2026
 **Developer:** Mindy Gaines  
 **Contact:** icecreammanapp@gmail.com  
 **Package:** com.icecreamman.app
@@ -139,19 +139,21 @@ We implement industry-standard security measures including:
 
 ---
 
-## 7. Background Location Disclosure
+## 7. Location Use While the App Is Active
 
-**This app collects location data to enable real-time tracking for ice cream deliveries even when the app is closed or not in use.**
+**The current Android release requests foreground location only. It does not request Android background-location permission and does not run a location foreground service.**
 
-This applies specifically to:
-- **Drivers** who have an active delivery in progress (background location enables continued navigation)
-- **Customers** — location is collected only while the app is in the foreground during order placement
+Location updates are used while the app is active to show nearby trucks, let a customer choose a sharing mode for an active request, and provide delivery-related ETA/proximity features. Users can decline location permission; the app then uses its documented fallback behavior where available. The developer must update this policy, the Data Safety form, and Play Console declarations before enabling background location or a location foreground service in a future release.
 
 ---
 
-## 8. Children's Privacy
+## 8. Children, Parents, and Guardians
 
-The Ice Cream Man is designed for use by all ages. However, we do not knowingly collect personal information from children under 13 without parental consent. If you are a parent or guardian and believe your child has provided us with personal information, please contact us at icecreammanapp@gmail.com and we will take steps to delete such information.
+The Ice Cream Man is a general-audience Food & Drink dispatch app. It is not designed for a child to independently arrange a real-world delivery or share location details. Before each customer request can advance to delivery details, the app shows a plain-language safety reminder and requires an acknowledgment that a parent or guardian knows about the request. This acknowledgment is a practical safety measure only; it is not age verification, verifiable parental consent, or a substitute for parental supervision.
+
+The reminder encourages families to use the least precise location-sharing option that works for them, avoid placing phone numbers, school details, or other private information in order notes, and cancel a request/tell a trusted adult if something feels wrong. A parent or guardian who believes that a child has provided personal information without their permission may contact us at icecreammanapp@gmail.com to request deletion.
+
+Because location and delivery instructions can be sensitive, the developer will not represent the app as a child-directed service without first obtaining legal advice, reassessing the target audience, and making every required change to the app’s data practices and Play Console declarations.
 
 ---
 
