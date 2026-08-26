@@ -84,7 +84,7 @@ jobs:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
       EAS_SKIP_AUTO_FINGERPRINT: "1"
       EAS_NO_VCS: "1"
-      EAS_BUILD_NO_EXPO_GO_WARNING: "true"
+      EAS_BUILD_NO_EXPO_GO_WARNING: "1"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5

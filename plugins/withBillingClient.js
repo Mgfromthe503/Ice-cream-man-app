@@ -1,22 +1,24 @@
 /**
- * Expo config plugin that injects Google Play Billing Library 8.1.0 and the
+ * Expo config plugin that injects Google Play Billing Library and the
  * R8 rules required by expo-iap/OpenIAP into a generated Android project.
+ *
+ * Google Play requires Billing Library 6.0.1+ with gRPC transport.
+ * This plugin ensures the correct version is injected regardless of
+ * what expo-iap or other dependencies may pull in.
  */
 const { withAppBuildGradle, withDangerousMod } = require("expo/config-plugins");
 const fs = require("fs");
 const path = require("path");
 
-// Google Play currently requires Billing Library 8+ for new app updates.
-// Keep this value centralized so the generated Gradle project and preflight
-// validation cannot silently diverge.
+// Google Play requires Billing Library 6.0.1+ for new app updates.
+// Version 8.1.0 is the latest stable with full gRPC support.
 const BILLING_VERSION = "8.1.0";
 const BILLING_DEPENDENCIES = [
   `    implementation "com.android.billingclient:billing:${BILLING_VERSION}"`,
   `    implementation "com.android.billingclient:billing-ktx:${BILLING_VERSION}"`,
 ].join("\n");
 
-// Remove direct declarations first so prebuild remains idempotent and cannot
-// leave a stale direct Billing Library version beside the required one.
+// Remove ALL existing billing declarations (any version) to prevent conflicts
 const BILLING_DEPENDENCY_PATTERN =
   /^\s*implementation\s+["']com\.android\.billingclient:billing(?:-ktx)?:[^"']+["']\s*\r?\n?/gm;
 
@@ -108,10 +110,31 @@ function withR8Enabled(config) {
   });
 }
 
+/**
+ * Force billing library version in build.gradle ext block to prevent
+ * any dependency from overriding it.
+ */
+function withBillingVersionForced(config) {
+  return withAppBuildGradle(config, (config) => {
+    const contents = config.modResults.contents;
+
+    // Add ext block with billing version if not present
+    if (!contents.includes("billingLibraryVersion")) {
+      config.modResults.contents = contents.replace(
+        /android\s*\{/,
+        `android {\n    ext {\n        billingLibraryVersion = "${BILLING_VERSION}"\n    }`
+      );
+    }
+
+    return config;
+  });
+}
+
 function withBillingClient(config) {
   config = withBillingGradle(config);
   config = withBillingProguard(config);
   config = withR8Enabled(config);
+  config = withBillingVersionForced(config);
   return config;
 }
 
