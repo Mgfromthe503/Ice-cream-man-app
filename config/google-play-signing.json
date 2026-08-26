@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "owner": "mgfromthe503",
+    "slug": "the-ice-cream-man-app",
+    "projectId": "5bf9c92f-2974-422e-b6cb-958d6f7ae469"
+  },
+  "android": {
+    "packageName": "com.icecreamman.app",
+    "credentialsSource": "remote"
+  },
+  "googlePlay": {
+    "expectedUploadCertificateSha1": "89:61:BC:40:53:C1:21:FF:A4:1F:58:46:98:A5:C5:11:4B:9B:2E:BF"
+  }
+}

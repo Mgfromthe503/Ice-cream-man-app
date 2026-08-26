@@ -34,8 +34,12 @@
     "production": {
       "extends": "base",
       "distribution": "store",
+      "buildArtifactPaths": [
+        "android/app/build/outputs/mapping/release/mapping.txt"
+      ],
       "android": {
         "buildType": "app-bundle",
+        "credentialsSource": "remote",
         "autoIncrement": true,
         "resourceClass": "medium"
       }

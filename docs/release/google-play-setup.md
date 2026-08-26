@@ -47,46 +47,46 @@ Automated submission is optional. The manual workflows can create EAS builds wit
 
 1. Create or select a service account that has the required access to the target Play application.
 2. Generate the service-account JSON through the approved Google Cloud and Play Console process.
-3. Add its full JSON contents as the GitHub Actions repository secret `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`.
-4. Add an Expo access token for the owning Expo account as the repository secret `EXPO_TOKEN`.
+3. Add its full JSON contents as the GitHub Actions repository secret `GOOGLEPLAYSERVICEACCOUNT`. The workflow also accepts `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` and `GOOGLE_SERVICE_ACCOUNT_KEY` for compatibility.
+4. Add an Expo access token for the owning Expo account as the repository secret `EXPO_TOKEN`. The workflow also accepts `EXPOTOKEN` for compatibility.
 5. Use **EAS Build and Submit** with the `production` profile and `submit=true` when ready.
 
-The current workflows accept `GOOGLE_SERVICE_ACCOUNT_KEY` as a legacy fallback, but new configuration should use `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`. Never commit service-account JSON or Android signing material to the repository.
+Never commit service-account JSON or Android signing material to the repository. The workflow writes the service-account JSON to a permission-restricted temporary file, removes it at the end of the job, and uses it only for the requested submission and R8 mapping upload.
 
 ## Verify billing and deobfuscation configuration
 
-Before submitting an Android production build, run:
+Before manually dispatching an Android production build, run:
 
 ```bash
 pnpm verify:android-release
+pnpm verify:play-signing
 ```
 
-The preflight verifies that the repository is configured to generate an Android
-project with the explicit Google Play Billing Library `8.1.0` dependency,
-matching Billing KTX dependency, `com.android.vending.BILLING` permission, and
-R8 minification and resource shrinking enabled for release builds. Both manual
-EAS workflows execute this check before starting a cloud build.
+The Android preflight verifies the explicit Google Play Billing Library `8.1.0`
+dependency, matching Billing KTX dependency, `com.android.vending.BILLING`
+permission, R8 minification/resource shrinking, production AAB configuration,
+remote version-code incrementing, and retention of `mapping.txt` as an EAS
+build artifact. The signing preflight compares only public EAS certificate
+metadata with the upload-certificate SHA-1 recorded in
+`config/google-play-signing.json`; it does not download a keystore or read a
+private credential. CI runs the signing check immediately before `eas build`.
 
-The production profile creates an Android App Bundle, not an APK. With Android
-Gradle Plugin 4.1 or later, Google Play automatically reads the R8
-`mapping.txt` file stored in the bundle. See [Google Play's deobfuscation
-guidance](https://support.google.com/googleplay/android-developer/answer/9848633?hl=en).
+The production profile creates an Android App Bundle, not an APK. When
+`submit=true`, the workflow submits the exact completed EAS build, downloads
+its retained `mapping.txt` artifact, and attaches that mapping to the matching
+Google Play version code through the Android Publisher API. See [Google Play's
+deobfuscation API reference](https://developers.google.com/android-publisher/api-ref/rest/v3/edits.deobfuscationfiles/upload).
 
 > Play Console evaluates the uploaded artifact, not the source repository.
 > Do not reuse the rejected version-code `10020` bundle. After this
 > configuration is on `main`, create a new production AAB so EAS assigns a new
 > Android version code.
 
-If a newly downloaded production AAB still shows the mapping warning, inspect
-it before upload:
-
-```bash
-unzip -l path/to/app.aab | grep 'BUNDLE-METADATA/com.android.tools.build.obfuscation/proguard.map'
-```
-
-If the file is absent, stop the release and inspect the EAS **Run gradlew**
-logs. Do not substitute a manually created or stale AAB for the new EAS
-production artifact.
+If a newly submitted production bundle still shows the mapping warning, inspect
+the EAS **build artifacts** archive for
+`android/app/build/outputs/mapping/release/mapping.txt` and review the mapping
+upload step in the release workflow. Do not substitute a manually created or
+stale mapping file for the new EAS production artifact.
 
 ## Verify setup before a release
 
