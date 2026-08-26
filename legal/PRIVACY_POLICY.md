@@ -139,13 +139,11 @@ We implement industry-standard security measures including:
 
 ---
 
-## 7. Background Location Disclosure
+## 7. Location Use While the App Is Active
 
-**This app collects location data to enable real-time tracking for ice cream deliveries even when the app is closed or not in use.**
+**The current Android release requests foreground location only. It does not request Android background-location permission and does not run a location foreground service.**
 
-This applies specifically to:
-- **Drivers** who have an active delivery in progress (background location enables continued navigation)
-- **Customers** — location is collected only while the app is in the foreground during order placement
+Location updates are used while the app is active to show nearby trucks, let a customer choose a sharing mode for an active request, and provide delivery-related ETA/proximity features. Users can decline location permission; the app then uses its documented fallback behavior where available. The developer must update this policy, the Data Safety form, and Play Console declarations before enabling background location or a location foreground service in a future release.
 
 ---
 

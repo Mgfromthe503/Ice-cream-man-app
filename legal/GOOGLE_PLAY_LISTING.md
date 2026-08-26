@@ -22,24 +22,17 @@ Remember the joy of hearing the ice cream truck jingle coming down your street? 
 **FOR ICE CREAM TRUCK DRIVERS:**
 • Stop driving around aimlessly hoping to find customers
 • Customers come to YOU - saving gas, time, and money
-• Daily reports show exactly how much more you're earning per hour
-• Track your savings: gas money saved, hours saved, earnings per hour
+• View dispatch activity and delivery-related dashboard insights
+• Organize request activity and route-efficiency information
 • Get matched to customers in YOUR area automatically
-
-📊 **THE NUMBERS DON'T LIE:**
-Drivers using The Ice Cream Man app report:
-• 3x LESS miles driven to make the same sales
-• 200% improvement in hourly earnings
-• Average $15-30/day saved in gas costs
-• 2-4 hours saved per day in aimless driving
 
 🚚💨 **ICE CREAM TRUCK DRIVERS WANTED!** 💨🚚
 Are you an ice cream truck driver? Do you know one? We're actively recruiting drivers in ALL areas! Register your truck in the app and start receiving customer requests immediately. No more guessing where the customers are - they tell YOU where they are!
 
 Benefits for drivers:
-✅ Free to join (one-time $25 registration)
-✅ Keep 85% of all sales
-✅ Daily earnings reports with gas savings calculations
+✅ One-time registration unlocks the Driver Dashboard
+✅ Receive customer request alerts in your coverage area
+✅ Use delivery-related dashboard insights
 ✅ Customers matched to your coverage zone
 ✅ Build your reputation with ratings
 
@@ -55,7 +48,7 @@ Benefits for drivers:
 • Push notifications for new orders
 • Fun ice cream truck jingle plays when ordering
 • Beautiful candy-land themed interface
-• Daily earnings and savings reports
+• Delivery-related dashboard insights
 • Supply/demand balancing (we recruit more drivers when needed)
 • Area code matching for efficient routing
 
@@ -81,6 +74,11 @@ https://theicecreamman.app/privacy
 ---
 
 ## What's New (Release Notes)
+
+**Version 1.0.1**
+• Added parent-aware safety reminders before customer requests
+• Added calmer rotating safety tips and safer location-sharing guidance
+• Improved Play review and privacy materials
 
 **Version 1.0.0**
 • Launch of The Ice Cream Man app!
