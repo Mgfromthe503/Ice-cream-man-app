@@ -15,6 +15,7 @@ ios/
 *.p12
 *.mobileprovision
 *.orig.*
+google-service-account.json
 
 # Metro / bundler
 .metro-health-check*

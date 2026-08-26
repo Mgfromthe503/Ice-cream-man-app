@@ -81,7 +81,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     env:
-      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN || secrets.EXPOTOKEN }}
       EAS_SKIP_AUTO_FINGERPRINT: "1"
       EAS_NO_VCS: "1"
       EAS_BUILD_NO_EXPO_GO_WARNING: "1"
@@ -109,7 +109,7 @@ jobs:
       - name: Require EAS token
         run: |
           if [ -z "$EXPO_TOKEN" ]; then
-            echo "EXPO_TOKEN is required for the production EAS build." >&2
+            echo "EXPO_TOKEN or EXPOTOKEN is required for the production EAS build." >&2
             exit 1
           fi
 
@@ -118,24 +118,58 @@ jobs:
         with:
           expo-version: latest
           eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
+          token: ${{ secrets.EXPO_TOKEN || secrets.EXPOTOKEN }}
+
+      - name: Verify EAS and Google Play signing
+        run: pnpm verify:play-signing
 
       - name: Build production AAB
-        run: eas build --platform android --profile production --non-interactive --wait
+        id: eas_build
+        run: |
+          set -euo pipefail
+          eas build --platform android --profile production --non-interactive --wait --json > eas-build.json
+          node scripts/export-eas-build-metadata.cjs eas-build.json >> "$GITHUB_OUTPUT"
 
-      - name: Submit production AAB to Google Play
+      - name: Submit production AAB and upload R8 mapping
         if: github.event.inputs.submit == 'true'
         env:
-          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLEPLAYSERVICEACCOUNT || secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON || secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+          EAS_BUILD_ID: ${{ steps.eas_build.outputs.build_id }}
+          ANDROID_VERSION_CODE: ${{ steps.eas_build.outputs.version_code }}
+          EAS_BUILD_ARTIFACTS_URL: ${{ steps.eas_build.outputs.build_artifacts_url }}
         run: |
+          set -euo pipefail
           if [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
-            echo "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is required when submission is requested." >&2
+            echo "GOOGLEPLAYSERVICEACCOUNT or GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is required when submission is requested." >&2
             exit 1
           fi
+          if [ -z "$EAS_BUILD_ID" ] || [ -z "$ANDROID_VERSION_CODE" ] || [ -z "$EAS_BUILD_ARTIFACTS_URL" ]; then
+            echo "The completed EAS build metadata is incomplete." >&2
+            exit 1
+          fi
+
           umask 077
-          KEYFILE=$(mktemp)
-          trap 'rm -f "$KEYFILE"' EXIT
+          KEYFILE="google-service-account.json"
+          ARTIFACT_ARCHIVE="$(mktemp)"
+          MAPPING_FILE="$(mktemp --suffix=.txt)"
+          trap 'rm -f "$KEYFILE" "$ARTIFACT_ARCHIVE" "$MAPPING_FILE"' EXIT
           printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > "$KEYFILE"
-          eas submit --platform android --latest --non-interactive \
-            --profile production \
-            --service-account-json "$KEYFILE"
+
+          eas submit --platform android --id "$EAS_BUILD_ID" --non-interactive --wait --profile production
+
+          curl --fail --location --silent --show-error "$EAS_BUILD_ARTIFACTS_URL" --output "$ARTIFACT_ARCHIVE"
+          MAPPING_ENTRY="$(unzip -Z1 "$ARTIFACT_ARCHIVE" | grep -E '(^|/)mapping\.txt$' | head -n 1 || true)"
+          if [ -z "$MAPPING_ENTRY" ]; then
+            echo "The EAS build-artifacts archive does not contain mapping.txt." >&2
+            exit 1
+          fi
+          unzip -p "$ARTIFACT_ARCHIVE" "$MAPPING_ENTRY" > "$MAPPING_FILE"
+          if [ ! -s "$MAPPING_FILE" ]; then
+            echo "The extracted R8 mapping file is empty." >&2
+            exit 1
+          fi
+
+          node scripts/upload-play-deobfuscation.cjs \
+            --keyfile "$KEYFILE" \
+            --version-code "$ANDROID_VERSION_CODE" \
+            --mapping-file "$MAPPING_FILE"

@@ -23,6 +23,7 @@
     "test": "vitest run",
     "verify:deps": "node scripts/verify-pnpm-overrides.cjs",
     "verify:android-release": "node scripts/verify-android-release.cjs",
+    "verify:play-signing": "node scripts/verify-eas-play-signing.cjs",
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
     "android": "expo run:android",
     "ios": "expo run:ios",

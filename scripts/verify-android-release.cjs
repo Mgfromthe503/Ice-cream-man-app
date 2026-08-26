@@ -144,9 +144,16 @@ function main() {
     /"production"\s*:\s*\{[\s\S]*?"autoIncrement"\s*:\s*true/,
     "eas.json production must auto-increment Android version codes.",
   );
+  expectMatch(
+    easConfig,
+    /"buildArtifactPaths"\s*:\s*\[[\s\S]*?mapping\/release\/mapping\.txt/,
+    "eas.json production must retain Android R8 mapping.txt as a build artifact.",
+  );
 
   if (errors.length > 0) {
-    console.error(`[verify-android-release] FAILED\n\n${errors.join("\n\n")}\n`);
+    console.error(
+      `[verify-android-release] FAILED\n\n${errors.join("\n\n")}\n`,
+    );
     process.exit(1);
   }
 
