@@ -2,6 +2,33 @@
 
 This reference lists the configuration that must exist before the repository can submit a production Android build to Google Play. Use the [Android and Google Play release runbook](android-google-play.md) for the release procedure itself.
 
+## Current production release candidate
+
+The following build is a completed, store-distribution Android App Bundle. It was built from the merged production source and is ready for an account owner to upload to **Internal testing** in Play Console. It has **not** been submitted to, reviewed by, or published on Google Play.
+
+| Field | Verified value |
+|---|---|
+| EAS build | [`c7349b99-e900-46af-9765-8dc255709905`](https://expo.dev/accounts/mgfromthe503/projects/the-ice-cream-man-app/builds/c7349b99-e900-46af-9765-8dc255709905) |
+| Downloadable AAB | [Production AAB, version code 10056](https://expo.dev/artifacts/eas/0epYOA2SuU8XHfj8Dz3KNHnSCdfW5Bn9hM0alkDQllk.aab) |
+| Application ID | `com.icecreamman.app` |
+| User-visible version | `1.0.22` |
+| Android version code | `10056` |
+| Source revision | `ebb9a221ed7b9ad27ffe23fa3564be34b4731650` |
+| Distribution | Store (`production` profile) |
+
+### Owner upload sequence
+
+1. Download the AAB above and retain the EAS build link as release evidence.
+2. In Play Console, open **The Ice Cream Man** app (`com.icecreamman.app`) and select **Testing → Internal testing**.
+3. Create a new internal-testing release, upload the AAB, and let Play process the artifact before changing any declaration answers.
+4. Confirm the uploaded artifact reports version code `10056`. Do not reuse the rejected version-code `10020` artifact.
+5. Re-check the exact Policy status cards, including the organization-account enforcement and foreground-service card. The fresh build removes unused foreground-service declarations; if a card persists, use its issue details and appeal/review path rather than guessing at a declaration.
+6. Reconcile App content, Data safety, Target audience and content, Privacy policy, App access, content rating, store listing, and in-app purchase declarations with this released build and the linked `legal/` materials.
+7. Complete an internal-track billing test using an authorized tester. Do not promote the release until the tested customer, driver registration, parent-aware request, and privacy-sharing flows match the declarations.
+8. After internal testing and Console review are clean, create the **Production** release from the same approved artifact, review the final publishing summary, and have the account owner submit it to Google for review.
+
+> Only the account owner can upload an AAB, save Play Console declarations, create a production release, or submit it to Google. This repository guide does not perform those Console actions.
+
 ## Confirm the registered application identity
 
 The Play app, Expo project, and checked-in configuration must describe the same application. Do not edit these values in this document; verify them in the source files below.
