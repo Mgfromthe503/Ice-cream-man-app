@@ -8,6 +8,11 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { applySecurityMiddleware } from "../security";
+import { validateTestCredentials } from "../test-accounts";
+import { upsertUser } from "../db";
+import { sdk } from "./sdk";
+import { COOKIE_NAME, ONE_YEAR_MS } from "../../shared/const.js";
+import { getSessionCookieOptions } from "./cookies";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -73,6 +78,92 @@ async function startServer() {
   applySecurityMiddleware(app);
 
   registerOAuthRoutes(app);
+
+  // ============================================
+  // TEST ACCOUNT LOGIN (Google Play Reviewer)
+  // Lets Google's review team test Customer and Driver flows without OAuth,
+  // email verification, or payment. Rate limited: 5 attempts/min per IP.
+  // ============================================
+  const testLoginAttempts = new Map<string, { count: number; resetAt: number }>();
+
+  app.post("/api/auth/test-login", async (req, res) => {
+    try {
+      const clientIp = req.ip || req.socket.remoteAddress || "unknown";
+      const now = Date.now();
+      const windowMs = 60000;
+      const maxAttempts = 5;
+
+      const record = testLoginAttempts.get(clientIp);
+      if (record && now < record.resetAt) {
+        if (record.count >= maxAttempts) {
+          const retryAfter = Math.ceil((record.resetAt - now) / 1000);
+          res.status(429).json({
+            error: "Too many login attempts. Please try again later.",
+            retryAfter,
+          });
+          return;
+        }
+        record.count++;
+      } else {
+        testLoginAttempts.set(clientIp, { count: 1, resetAt: now + windowMs });
+      }
+
+      if (testLoginAttempts.size > 100) {
+        for (const [ip, entry] of testLoginAttempts) {
+          if (now > entry.resetAt) testLoginAttempts.delete(ip);
+        }
+      }
+
+      const { email, password } = req.body || {};
+      if (!email || !password) {
+        res.status(400).json({ error: "Email and password are required" });
+        return;
+      }
+
+      const account = validateTestCredentials(email, password);
+      if (!account) {
+        res.status(401).json({ error: "Invalid credentials" });
+        return;
+      }
+
+      try {
+        await upsertUser({
+          openId: account.openId,
+          name: account.displayName,
+          email: account.email,
+          loginMethod: "test_account",
+          lastSignedIn: new Date(),
+          role: account.role === "driver" ? "admin" : undefined,
+        });
+      } catch (dbErr) {
+        console.warn("[TestLogin] DB upsert skipped:", dbErr);
+      }
+
+      const sessionToken = await sdk.createSessionToken(account.openId, {
+        name: account.displayName,
+        expiresInMs: ONE_YEAR_MS,
+      });
+
+      const cookieOptions = getSessionCookieOptions(req);
+      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+
+      res.json({
+        success: true,
+        user: {
+          id: account.openId,
+          openId: account.openId,
+          name: account.displayName,
+          email: account.email,
+          role: account.role,
+        },
+        driverProfile: account.driverProfile || null,
+        sessionToken,
+      });
+    } catch (error) {
+      console.error("[TestLogin] Error:", error);
+      res.status(500).json({ error: "Login failed" });
+    }
+  });
 
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, timestamp: Date.now() });
