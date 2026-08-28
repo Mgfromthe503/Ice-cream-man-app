@@ -30,4 +30,6 @@ COPY --from=build /app/package.json ./
 ENV PORT=8080
 EXPOSE 8080
 
-CMD ["npm", "run", "start"]
+# Direct ESM entry (no shell) so Node runs dist/index.mjs as PID 1 and
+# handles Cloud Run lifecycle signals cleanly.
+ENTRYPOINT ["node", "dist/index.mjs"]

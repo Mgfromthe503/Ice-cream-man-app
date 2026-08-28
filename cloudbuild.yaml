@@ -4,13 +4,13 @@ steps:
       - build
       - "--no-cache"
       - "-t"
-      - "us-central1-docker.pkg.dev/$PROJECT_ID/ice-cream-man/ice-cream-man-api:latest"
+      - "us-west1-docker.pkg.dev/$PROJECT_ID/ice-cream-man/ice-cream-man-api:latest"
       - "."
 
   - name: "gcr.io/cloud-builders/docker"
     args:
       - push
-      - "us-central1-docker.pkg.dev/$PROJECT_ID/ice-cream-man/ice-cream-man-api:latest"
+      - "us-west1-docker.pkg.dev/$PROJECT_ID/ice-cream-man/ice-cream-man-api:latest"
 
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: gcloud
@@ -18,17 +18,24 @@ steps:
       - run
       - deploy
       - ice-cream-man-api
-      - "--image=us-central1-docker.pkg.dev/$PROJECT_ID/ice-cream-man/ice-cream-man-api:latest"
-      - "--region=us-central1"
+      - "--image=us-west1-docker.pkg.dev/$PROJECT_ID/ice-cream-man/ice-cream-man-api:latest"
+      - "--region=us-west1"
       - "--platform=managed"
       - "--allow-unauthenticated"
       - "--cpu=1"
       - "--memory=512Mi"
       - "--min-instances=0"
       - "--max-instances=2"
-      - "--set-env-vars=NODE_ENV=production"
-      - "--set-secrets=DATABASE_URL=databases/icecreamman:latest,JWT_SECRET=icm-jwt-secret:latest"
+      - "--port=8080"
+      - "--add-cloudsql-instances=$PROJECT_ID:us-west1:ice-cream-db"
+      - "--set-env-vars=NODE_ENV=production,APP_ID=${_APP_ID},OAUTH_SERVER_URL=${_OAUTH_SERVER_URL},OWNER_OPEN_ID=${_OWNER_OPEN_ID}"
+      - "--set-secrets=DATABASE_URL=databases/icecreamman:latest,JWT_SECRET=icm-jwt-secret:latest,GOOGLE_PLAY_SERVICE_ACCOUNT_JSON=google-play-svc:latest"
       - "--service-account=play-console-service-account-f@$PROJECT_ID.iam.gserviceaccount.com"
 
+substitutions:
+  _APP_ID: "NOT_SET"
+  _OAUTH_SERVER_URL: "NOT_SET"
+  _OWNER_OPEN_ID: "NOT_SET"
+
 images:
-  - "us-central1-docker.pkg.dev/$PROJECT_ID/ice-cream-man/ice-cream-man-api:latest"
+  - "us-west1-docker.pkg.dev/$PROJECT_ID/ice-cream-man/ice-cream-man-api:latest"
