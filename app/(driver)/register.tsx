@@ -215,13 +215,6 @@ export default function DriverRegisterScreen() {
                 </View>
               </View>
 
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <Text style={{ fontSize: 28 }}>📞</Text>
-                <View>
-                  <Text style={{ fontSize: 11, color: colors.muted }}>Phone</Text>
-                  <Text style={{ fontSize: 14, color: colors.foreground }}>{form.phoneNumber}</Text>
-                </View>
-              </View>
             </View>
 
             {/* Payment Status */}
