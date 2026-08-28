@@ -25,7 +25,7 @@ This directory organizes project documentation by the work a reader needs to com
 | Architecture | [Backend reference](../server/README.md) | Server ownership, API conventions, authentication, database, and environment variables. |
 | Product design | [Product design reference](design/product-design.md) | Screen inventory, design language, and product-flow guidance. |
 | Historical engineering record | [EAS Android codegen record](records/eas-android-codegen.md) | Context for the `brace-expansion` codegen compatibility safeguards. |
-| Legal and store operations | [Legal directory](../legal/) | Privacy, terms, listing content, data safety, and reviewer-access materials. |
+| Legal and store operations | [Legal directory](../legal/) | Privacy, terms, listing content, data safety, reviewer-access materials, and the [Play Console content-declaration checklist](../legal/PLAY_CONSOLE_CONTENT_DECLARATIONS.md) for the organization-account rejection. |
 
 ## Documentation conventions
 

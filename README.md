@@ -109,9 +109,14 @@ Store access tokens, Android keystores, and service-account JSON must never be c
 |---|---|
 | [Privacy Policy](legal/PRIVACY_POLICY.md) | End-user privacy practices and disclosures. |
 | [Terms of Service](legal/TERMS_OF_SERVICE.md) | Terms governing use of the application. |
+| [Play Console Compliance](legal/GOOGLE_PLAY_COMPLIANCE.md) | Consolidated, canonical reference for Play submission and resubmission. |
+| [Content Declarations & Resubmission](legal/PLAY_CONSOLE_CONTENT_DECLARATIONS.md) | Exact Play Console declarations to set for the organization-account rejection and how to resubmit. |
 | [Google Play Data Safety](legal/DATA_SAFETY.md) | Play Console data-safety entry reference. |
 | [Google Play Listing](legal/GOOGLE_PLAY_LISTING.md) | Store-listing content and release-note material. |
 | [Google Play App Access](legal/GOOGLE_PLAY_APP_ACCESS.md) | Reviewer access and test-flow instructions. |
+| [Child Safety & Parent Guidance](legal/CHILD_SAFETY_AND_PARENT_GUIDANCE.md) | Parent-aware safety behavior and Families/target-audience guidance. |
+
+Security reporting and the dependency-vulnerability assessment live in [SECURITY.md](SECURITY.md).
 
 ## License
 

@@ -95,6 +95,7 @@ Submission places the artifact in the configured Google Play track; it does not 
 | Internal-testing access works | Confirms testers can install and exercise the release candidate. |
 | In-app product behavior is tested in the intended track | Confirms the billing integration is configured for the release context. |
 | Privacy, Data Safety, listing, and app-access entries are current | Keeps the console declaration aligned with the distributed app. |
+| **Play Console Requirements declarations match the app** | Confirms the Category, **Financial features = none**, Health, Government, and target-audience declarations are accurate so the app is not flagged as requiring an **organization account**. Use the exact checklist in [`legal/PLAY_CONSOLE_CONTENT_DECLARATIONS.md`](../../legal/PLAY_CONSOLE_CONTENT_DECLARATIONS.md). |
 | Release notes are appropriate for the shipped change | Provides accurate change information to reviewers and users. |
 
 ## Recovery and rollback principles
