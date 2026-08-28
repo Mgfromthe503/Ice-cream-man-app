@@ -81,13 +81,6 @@ async function startServer() {
     res.json({ ok: true, timestamp: Date.now() });
   });
 
-  // Privacy Policy — publicly accessible URL for Google Play Console.
-  // Redirects to the canonical live policy on GitHub Pages so the served
-  // text always matches the Data Safety form and app.config.ts declarations.
-  app.get("/privacy-policy", (_req, res) => {
-    res.redirect(301, "https://mgfromthe503.github.io/Ice-cream-man-app/privacy.html");
-  });
-
   app.use(
     "/api/trpc",
     createExpressMiddleware({

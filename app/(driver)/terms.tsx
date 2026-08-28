@@ -4,14 +4,13 @@
  * Displays the full Terms of Service, Privacy Policy, and Vendor Agreement
  * for the Ice Cream Man driver registration. Required for Google Play compliance.
  */
-import { View, Text, ScrollView, Pressable, Linking } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { useRouter } from 'expo-router';
 
 const EFFECTIVE_DATE = 'June 29, 2026';
 const APP_NAME = 'The Ice Cream Man';
-const PRIVACY_POLICY_URL = 'https://mgfromthe503.github.io/Ice-cream-man-app/privacy.html';
 
 export default function TermsOfServiceScreen() {
   const colors = useColors();
@@ -125,13 +124,13 @@ export default function TermsOfServiceScreen() {
           Address: Portland, OR 97005, United States
         </Section>
 
-        {/* Public privacy policy link for users and Google Play review */}
+        {/* Full privacy policy is available inside the app */}
         <Pressable
-          onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+          onPress={() => router.push('/privacy-policy')}
           style={({ pressed }) => [{ alignItems: 'center', marginTop: 4, marginBottom: 12, opacity: pressed ? 0.65 : 1 }]}
         >
           <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '700', textDecorationLine: 'underline' }}>
-            Read the full Privacy Policy online
+            Read the full Privacy Policy
           </Text>
         </Pressable>
 
