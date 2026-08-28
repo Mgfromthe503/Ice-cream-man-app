@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy - The Ice Cream Man</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1f2937; max-width: 800px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 2em; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; }
+  h2 { font-size: 1.4em; margin-top: 32px; color: #111827; }
+  h3 { font-size: 1.1em; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+  th, td { border: 1px solid #d1d5db; padding: 8px 12px; text-align: left; font-size: 0.95em; }
+  th { background: #f3f4f6; }
+  code { background: #f3f4f6; padding: 2px 4px; border-radius: 4px; }
+  .meta { color: #6b7280; font-size: 0.95em; margin-bottom: 24px; }
+  .updated { font-style: italic; }
+</style>
+</head>
+<body>
+
+<h1>Privacy Policy</h1>
+
+<p class="meta">
+  <strong>The Ice Cream Man</strong><br>
+  Effective Date: June 29, 2026<br>
+  Last Updated: August 28, 2026<br>
+  Developer: Mindy Gaines<br>
+  Contact: icecreammanapp@gmail.com<br>
+  Package: com.icecreamman.app
+</p>
+
+<h2>1. Introduction</h2>
+<p>The Ice Cream Man ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application ("The Ice Cream Man" or "App"), available on the Google Play Store.</p>
+<p>By downloading, installing, or using the App, you agree to the collection and use of information in accordance with this Privacy Policy. If you do not agree with the terms of this Privacy Policy, please do not access the App.</p>
+
+<h2>2. Two User Roles</h2>
+<p>The Ice Cream Man serves two types of users within a single application:</p>
+<table>
+  <tr><th>Role</th><th>Description</th><th>Key Data Interactions</th></tr>
+  <tr><td>Customer</td><td>Requests ice cream delivery to their location</td><td>Shares location data (at their chosen precision) with assigned Driver</td></tr>
+  <tr><td>Driver/Vendor</td><td>Receives and fulfills customer delivery requests</td><td>Shares real-time GPS location for proximity verification and navigation</td></tr>
+</table>
+<p>Each role has different data collection requirements, retention periods, and privacy controls as described below.</p>
+
+<h2>3. Information We Collect</h2>
+
+<h3>3.1 Location Data &mdash; Customer Explicit Choice</h3>
+<p>Customers have <strong>explicit control</strong> over what location information is shared with Drivers. Before each order, Customers choose one of three sharing modes:</p>
+<table>
+  <tr><th>Sharing Mode</th><th>What Driver Receives</th><th>GPS Coordinates Shared?</th></tr>
+  <tr><td>Exact Address</td><td>Full street address from GPS reverse geocoding</td><td>Yes &mdash; precise coordinates shared with assigned Driver</td></tr>
+  <tr><td>Street Name Only</td><td>Street name without house number</td><td>Partial &mdash; coordinates used for proximity only, exact address withheld</td></tr>
+  <tr><td>Custom Meetup Point</td><td>Customer-written text description (e.g., "the stop sign on Oak St")</td><td>No &mdash; Driver receives only the text landmark description</td></tr>
+</table>
+<p>Customers may also provide optional <strong>delivery instructions</strong> (free-text). These instructions are visible only to the assigned Driver during the active delivery.</p>
+
+<h3>3.2 Location Data &mdash; Driver</h3>
+<p>Drivers share their GPS location with the system for:</p>
+<ul>
+  <li>Receiving requests from Customers in their registered coverage area (zip code)</li>
+  <li>Enabling the 1000-foot proximity verification required to mark a delivery as complete</li>
+  <li>Providing real-time ETA estimates to waiting Customers</li>
+</ul>
+
+<h3>3.3 Location Data &mdash; Temporary Caching and Immediate Destruction</h3>
+<p><strong>Critical Privacy Safeguard:</strong> Customer location data is temporarily cached locally on the Driver&rsquo;s device (via AsyncStorage) <strong>solely for the duration of active navigation</strong> to the delivery point. The moment a delivery is marked as complete (or cancelled), <strong>all customer location data is automatically and permanently destroyed</strong> from the Driver&rsquo;s device. This includes delivery address/coordinates, delivery instructions text, customer meetup point descriptions, and any cached navigation data.</p>
+<p>No customer location history is retained on any device or server after delivery completion.</p>
+
+<h3>3.4 Payment Information</h3>
+<p>The App uses <strong>Google Play Billing</strong> exclusively for the one-time $25 Driver registration fee. We do not collect, store, or process any credit card numbers, bank account details, or financial credentials directly. All payment processing is handled entirely by Google Play&rsquo;s secure infrastructure. We store only:</p>
+<ul>
+  <li>Transaction ID (for receipt verification)</li>
+  <li>Purchase verification token (encrypted in device Keychain/Keystore)</li>
+</ul>
+
+<h3>3.5 Account Information</h3>
+<table>
+  <tr><th>Data Type</th><th>Purpose</th><th>Required</th></tr>
+  <tr><td>Name</td><td>Account identification and display to other party during delivery</td><td>Yes</td></tr>
+  <tr><td>Email address</td><td>Account authentication (via OAuth)</td><td>Yes</td></tr>
+  <tr><td>Area/Zip code (Drivers)</td><td>Coverage zone matching</td><td>Yes</td></tr>
+  <tr><td>Truck registration info (Drivers)</td><td>Service verification</td><td>Yes</td></tr>
+</table>
+
+<h3>3.6 Device Information</h3>
+<ul>
+  <li>Device platform (Android/iOS/Web) &mdash; UI rendering and feature compatibility</li>
+  <li>App state (foreground/background) &mdash; Battery-efficient polling management</li>
+  <li>Push notification token &mdash; Delivery alerts and order notifications</li>
+</ul>
+
+<h2>4. How We Use Your Information</h2>
+<table>
+  <tr><th>Data Type</th><th>Usage</th><th>Retention</th></tr>
+  <tr><td>Customer GPS coordinates</td><td>Route Driver to delivery location</td><td><strong>Deleted immediately upon delivery completion</strong></td></tr>
+  <tr><td>Customer delivery instructions</td><td>Display to Driver during active delivery</td><td><strong>Deleted immediately upon delivery completion</strong></td></tr>
+  <tr><td>Customer share mode choice</td><td>Determine what info Driver sees</td><td>Session-only; not stored permanently</td></tr>
+  <tr><td>Driver GPS coordinates</td><td>Calculate proximity to Customer (1000ft zone)</td><td>Session-only; not stored permanently</td></tr>
+  <tr><td>Driver area/zip code</td><td>Match Drivers with nearby Customer requests</td><td>Stored locally on Driver&rsquo;s device until changed</td></tr>
+  <tr><td>Registration payment token</td><td>Verify one-time $25 fee was paid</td><td>Stored in device Keychain/Keystore</td></tr>
+  <tr><td>Account information</td><td>Authentication and display</td><td>Until account deletion</td></tr>
+</table>
+
+<h2>5. Information Sharing and Disclosure</h2>
+<p>We do <strong>not</strong> sell, rent, or share your personal data with any third parties for advertising, analytics, or marketing purposes.</p>
+
+<h3>5.1 Between Users (During Active Delivery Only)</h3>
+<table>
+  <tr><th>Shared With</th><th>Data Shared</th><th>Duration</th></tr>
+  <tr><td>Driver</td><td>Customer&rsquo;s location (per chosen sharing mode) + delivery instructions</td><td>Active delivery only &mdash; destroyed on completion</td></tr>
+  <tr><td>Customer</td><td>Driver&rsquo;s first name + real-time ETA</td><td>Active delivery only</td></tr>
+</table>
+
+<h3>5.2 With Service Providers</h3>
+<table>
+  <tr><th>Provider</th><th>Purpose</th><th>Data Shared</th></tr>
+  <tr><td>Google Play Billing</td><td>Process $25 registration fee</td><td>Transaction metadata (no card details)</td></tr>
+  <tr><td>OpenStreetMap Nominatim</td><td>Reverse geocoding (coordinates &rarr; address)</td><td>GPS coordinates (no user identity)</td></tr>
+</table>
+
+<h3>5.3 Legal Requirements</h3>
+<p>We may disclose your information if required by law or in response to valid requests by public authorities (e.g., a court or government agency).</p>
+
+<h2>6. Data Security</h2>
+<ul>
+  <li><strong>OWASP-compliant security headers</strong> on all server responses (HSTS, CSP, X-Frame-Options, etc.)</li>
+  <li><strong>Rate limiting</strong> to prevent abuse (100 requests/minute general; 5 requests/minute for payment endpoints)</li>
+  <li><strong>Input sanitization</strong> to prevent XSS, SQL injection, and command injection attacks</li>
+  <li><strong>Purchase token validation</strong> and tamper-detection for payment receipts</li>
+  <li><strong>Device Keychain/Keystore encryption</strong> for sensitive data (iOS Keychain, Android Keystore)</li>
+  <li><strong>Coordinate validation</strong> to prevent GPS spoofing</li>
+  <li><strong>Automatic data destruction</strong> upon delivery completion</li>
+  <li><strong>Lifecycle-aware polling</strong> that pauses all network activity when app is backgrounded</li>
+</ul>
+
+<h2>7. Location Use While the App Is Active</h2>
+<p><strong>The current Android release requests foreground location only. It does not request Android background-location permission and does not run a location foreground service.</strong></p>
+<p>Location updates are used while the app is active to show nearby trucks, let a customer choose a sharing mode for an active request, and provide delivery-related ETA/proximity features. Users can decline location permission; the app then uses its documented fallback behavior where available. The developer must update this policy, the Data Safety form, and Play Console declarations before enabling background location or a location foreground service in a future release.</p>
+
+<h2>8. Children, Parents, and Guardians</h2>
+<p>The Ice Cream Man is a general-audience Food &amp; Drink dispatch app. It is not designed for a child to independently arrange a real-world delivery or share location details. Before each customer request can advance to delivery details, the app shows a plain-language safety reminder and requires an acknowledgment that a parent or guardian knows about the request. This acknowledgment is a practical safety measure only; it is not age verification, verifiable parental consent, or a substitute for parental supervision.</p>
+<p>A parent or guardian who believes that a child has provided personal information without their permission may contact us at icecreammanapp@gmail.com to request deletion.</p>
+
+<h2>9. Vendor Screening Disclosure</h2>
+<p>The Ice Cream Man does NOT perform background checks, criminal history checks, driving record checks, or any other form of screening on vendors who register through the App. Vendor registration requires only payment of the registration fee and completion of the registration form. Users interact with vendors at their own discretion and should exercise normal precautions.</p>
+
+<h2>10. Your Rights and Choices</h2>
+<table>
+  <tr><th>Right</th><th>Description</th><th>How to Exercise</th></tr>
+  <tr><td>Access</td><td>View your personal data</td><td>In-app profile settings</td></tr>
+  <tr><td>Correction</td><td>Update inaccurate data</td><td>In-app profile settings</td></tr>
+  <tr><td>Deletion</td><td>Request account and data deletion</td><td>Email icecreammanapp@gmail.com</td></tr>
+  <tr><td>Location control</td><td>Change sharing mode per order, or disable location entirely</td><td>In-app delivery options / device settings</td></tr>
+  <tr><td>Data portability</td><td>Export your data</td><td>Email icecreammanapp@gmail.com</td></tr>
+</table>
+
+<h2>11. California Residents (CCPA)</h2>
+<p>If you are a California resident, you have additional rights under the California Consumer Privacy Act:</p>
+<ul>
+  <li>Right to know what personal information is collected</li>
+  <li>Right to know whether personal information is sold or disclosed</li>
+  <li>Right to opt-out of the sale of personal information</li>
+  <li>Right to non-discrimination for exercising your rights</li>
+</ul>
+<p><strong>We do not sell personal information to third parties.</strong></p>
+
+<h2>12. Changes to This Privacy Policy</h2>
+<p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy within the App and updating the "Last Updated" date above.</p>
+
+<h2>13. Contact Us</h2>
+<table>
+  <tr><th>Method</th><th>Details</th></tr>
+  <tr><td>Email</td><td>icecreammanapp@gmail.com</td></tr>
+  <tr><td>Developer</td><td>Mindy Gaines</td></tr>
+  <tr><td>App</td><td>The Ice Cream Man</td></tr>
+  <tr><td>Location</td><td>Beaverton, Oregon, United States</td></tr>
+</table>
+
+<p class="updated"><em>By using The Ice Cream Man app, you acknowledge that you have read and understood this Privacy Policy and agree to its terms.</em></p>
+
+</body>
+</html>
