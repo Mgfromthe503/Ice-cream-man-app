@@ -124,6 +124,16 @@ export default function TermsOfServiceScreen() {
           Address: Portland, OR 97005, United States
         </Section>
 
+        {/* Full privacy policy is available inside the app */}
+        <Pressable
+          onPress={() => router.push('/privacy-policy')}
+          style={({ pressed }) => [{ alignItems: 'center', marginTop: 4, marginBottom: 12, opacity: pressed ? 0.65 : 1 }]}
+        >
+          <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '700', textDecorationLine: 'underline' }}>
+            Read the full Privacy Policy
+          </Text>
+        </Pressable>
+
         {/* Back button */}
         <Pressable
           onPress={() => router.back()}
