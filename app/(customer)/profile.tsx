@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Platform, Linking } from 'react-native';
+import { View, Text, Pressable, ScrollView, Platform, Linking, Alert } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { useAuth } from '@/lib/auth-context';
@@ -11,7 +11,7 @@ import { APP_BUNDLE_ID } from '@/config/app-identity.js';
 
 export default function CustomerProfileScreen() {
   const colors = useColors();
-  const { logout } = useAuth();
+  const { logout, deleteAccount } = useAuth();
   const { userLocation } = useLocation();
   const router = useRouter();
   const [totalOrders, setTotalOrders] = useState(0);
@@ -35,6 +35,28 @@ export default function CustomerProfileScreen() {
     } catch (error) {
       console.error('Logout failed:', error);
     }
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'This permanently deletes your account and all associated data. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteAccount();
+              router.replace('/role-select');
+            } catch (error) {
+              console.error('Delete account failed:', error);
+            }
+          },
+        },
+      ],
+    );
   };
 
   const openPlayStore = () => {

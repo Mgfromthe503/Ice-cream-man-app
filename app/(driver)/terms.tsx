@@ -60,7 +60,7 @@ export default function TermsOfServiceScreen() {
 
         {/* Section 4 */}
         <Section title="4. Location Data & Privacy" colors={colors}>
-          This App collects location data to enable real-time tracking for ice cream deliveries even when the app is closed or not in use.{'\n\n'}
+          This App collects location data to enable real-time tracking for ice cream deliveries while the app is in use.{'\n\n'}
           <Text style={{ fontWeight: '700' }}>Customer Location Sharing:</Text> Customers may choose to share their location in one of three ways:{'\n'}
           • Exact GPS coordinates (precise location){'\n'}
           • Street-level address only{'\n'}
@@ -120,7 +120,7 @@ export default function TermsOfServiceScreen() {
         {/* Section 12 */}
         <Section title="12. Contact Information" colors={colors}>
           For questions about these Terms of Service, please contact us at:{'\n\n'}
-          Email: support@theicecreamman.app{'\n'}
+          Email: mindy.gaines1@gmail.com{'\n'}
           Address: Portland, OR 97005, United States
         </Section>
 

@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Platform, Linking } from 'react-native';
+import { View, Text, Pressable, ScrollView, Platform, Linking, Alert } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { useAuth } from '@/lib/auth-context';
@@ -19,7 +19,7 @@ interface DriverInfo {
 
 export default function DriverProfileScreen() {
   const colors = useColors();
-  const { logout } = useAuth();
+  const { logout, deleteAccount } = useAuth();
   const router = useRouter();
   const [driverInfo, setDriverInfo] = useState<DriverInfo | null>(null);
 
@@ -45,6 +45,28 @@ export default function DriverProfileScreen() {
     } catch (error) {
       console.error('Logout failed:', error);
     }
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'This permanently deletes your account and all associated data. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteAccount();
+              router.replace('/role-select');
+            } catch (error) {
+              console.error('Delete account failed:', error);
+            }
+          },
+        },
+      ],
+    );
   };
 
   const openPlayStore = () => {
@@ -216,6 +238,23 @@ export default function DriverProfileScreen() {
           </Pressable>
 
           <View style={{ marginTop: 'auto' }}>
+            <Pressable
+              onPress={handleDeleteAccount}
+              style={({ pressed }) => [{
+                backgroundColor: colors.surface,
+                borderColor: colors.error,
+                borderWidth: 1,
+                borderRadius: 12,
+                padding: 16,
+                opacity: pressed ? 0.8 : 1,
+                transform: [{ scale: pressed ? 0.97 : 1 }],
+                marginBottom: 10,
+              }]}
+            >
+              <Text style={{ color: colors.error, fontWeight: '700', fontSize: 15, textAlign: 'center' }}>
+                Delete Account
+              </Text>
+            </Pressable>
             <Pressable
               onPress={handleLogout}
               style={({ pressed }) => [{

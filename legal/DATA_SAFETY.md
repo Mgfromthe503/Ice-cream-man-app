@@ -33,7 +33,7 @@
 |-----------|-----------|--------|---------|----------|
 | Name | Yes | Yes (with other users) | App functionality | No |
 | Email address | Yes | No | Account management | No |
-| Phone number | Yes | No | App functionality | Yes |
+| Phone number | No | No | N/A | N/A |
 
 ### Financial Info
 
@@ -54,7 +54,7 @@
 
 | Data Type | Collected | Shared | Purpose | Optional |
 |-----------|-----------|--------|---------|----------|
-| Device or other IDs | Yes | Yes (with Google Analytics) | Analytics | No |
+| Device or other IDs | Yes | No | App functionality (push notifications) | No |
 
 ---
 
@@ -64,8 +64,10 @@
 
 | Third Party | Data Shared | Purpose |
 |-------------|-------------|---------|
-| Google Analytics | Usage data, device info | Analytics |
-| Google Maps | Location data | App functionality |
+| Google Play Billing | Purchase transaction metadata (no card details) | Vendor registration fee processing |
+| OpenStreetMap Nominatim | GPS coordinates (no user identity) | Reverse geocoding |
+
+The app does **not** embed a Google Maps SDK or a Google Analytics SDK. Tapping "Navigate" in the driver flow opens the user's own external maps application; the app does not send location data to a third-party map SDK for analytics or tracking.
 
 > **Note:** This app does not use Google AdMob or any advertising SDK. Do **not** declare AdMob in the Play Console Data Safety form.
 

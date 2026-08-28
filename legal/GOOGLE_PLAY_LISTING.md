@@ -66,14 +66,20 @@ ice cream, ice cream truck, food delivery, local delivery, ice cream delivery, n
 Everyone
 
 ## Contact Email
-support@theicecreamman.app
+mindy.gaines1@gmail.com (NOT support@theicecreamman.app)
 
 ## Privacy Policy URL
-https://theicecreamman.app/privacy
+https://theicecreamman.app/privacy-policy
 
 ---
 
 ## What's New (Release Notes)
+
+**Version 1.0.22**
+• Added in-app Delete Account option (Google Play compliance)
+• Fixed location data claims — background location is disabled
+• Consolidated legal documentation for Google Play resubmission
+• Improved data safety and privacy policy accuracy
 
 **Version 1.0.1**
 • Added parent-aware safety reminders before customer requests

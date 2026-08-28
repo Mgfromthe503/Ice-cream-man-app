@@ -22,6 +22,7 @@ interface AuthContextType {
   isLoading: boolean;
   completeOAuthLogin: (user: User) => Promise<void>;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
   setUserRole: (role: Exclude<UserRole, null>) => Promise<void>;
 }
 
@@ -129,6 +130,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const deleteAccount = async () => {
+    const apiUrl = getApiUrl("/api/auth/delete-account");
+    const token = await getSessionToken();
+
+    try {
+      if (apiUrl) {
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          credentials: "include",
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (!response.ok) {
+          throw new Error("Account deletion failed");
+        }
+      }
+    } catch (error) {
+      console.warn("[Auth] Account deletion could not be completed", error);
+    } finally {
+      await clearLocalSession();
+    }
+  };
+
   const setUserRole = async (role: Exclude<UserRole, null>) => {
     if (!userId) {
       throw new Error("A server-authenticated session is required before choosing an app experience.");
@@ -147,6 +170,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         completeOAuthLogin,
         logout,
+        deleteAccount,
         setUserRole,
       }}
     >

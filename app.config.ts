@@ -100,6 +100,8 @@ const config: ExpoConfig = {
     // Must run after expo-location so the library manifest cannot re-add
     // unused Android foreground-service permissions.
     "./plugins/withoutLocationForegroundService",
+    // Disable cleartext HTTP; API/OAuth backends are HTTPS-only.
+    "./plugins/withoutCleartext",
     [
       "expo-audio",
       {

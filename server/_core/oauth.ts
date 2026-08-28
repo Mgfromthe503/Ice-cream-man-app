@@ -1,6 +1,6 @@
 import { COOKIE_NAME, ONE_YEAR_MS } from "../../shared/const.js";
 import type { Express, Request, Response } from "express";
-import { getUserByOpenId, upsertUser } from "../db";
+import { deleteUserAccount, getUserByOpenId, upsertUser } from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { sdk } from "./sdk";
 
@@ -169,6 +169,20 @@ export function registerOAuthRoutes(app: Express) {
     } catch (error) {
       console.error("[Auth] /api/auth/session failed:", error);
       res.status(401).json({ error: "Invalid token" });
+    }
+  });
+
+  // Permanently delete the authenticated user's account and all associated data.
+  app.post("/api/auth/delete-account", async (req: Request, res: Response) => {
+    try {
+      const user = await sdk.authenticateRequest(req);
+      await deleteUserAccount(user.id);
+      const cookieOptions = getSessionCookieOptions(req);
+      res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[Auth] /api/auth/delete-account failed:", error);
+      res.status(401).json({ error: "Not authenticated" });
     }
   });
 }

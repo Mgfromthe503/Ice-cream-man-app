@@ -4,7 +4,7 @@
 **Effective Date:** June 29, 2026  
 **Last Updated:** August 26, 2026
 **Developer:** Mindy Gaines  
-**Contact:** icecreammanapp@gmail.com  
+**Contact:** mindy.gaines1@gmail.com  
 **Package:** com.icecreamman.app
 
 ---
@@ -151,7 +151,7 @@ Location updates are used while the app is active to show nearby trucks, let a c
 
 The Ice Cream Man is a general-audience Food & Drink dispatch app. It is not designed for a child to independently arrange a real-world delivery or share location details. Before each customer request can advance to delivery details, the app shows a plain-language safety reminder and requires an acknowledgment that a parent or guardian knows about the request. This acknowledgment is a practical safety measure only; it is not age verification, verifiable parental consent, or a substitute for parental supervision.
 
-The reminder encourages families to use the least precise location-sharing option that works for them, avoid placing phone numbers, school details, or other private information in order notes, and cancel a request/tell a trusted adult if something feels wrong. A parent or guardian who believes that a child has provided personal information without their permission may contact us at icecreammanapp@gmail.com to request deletion.
+The reminder encourages families to use the least precise location-sharing option that works for them, avoid placing phone numbers, school details, or other private information in order notes, and cancel a request/tell a trusted adult if something feels wrong. A parent or guardian who believes that a child has provided personal information without their permission may contact us at mindy.gaines1@gmail.com to request deletion.
 
 Because location and delivery instructions can be sensitive, the developer will not represent the app as a child-directed service without first obtaining legal advice, reassessing the target audience, and making every required change to the app’s data practices and Play Console declarations.
 
@@ -169,9 +169,9 @@ The Ice Cream Man does NOT perform background checks, criminal history checks, d
 |-------|-------------|-----------------|
 | Access | View your personal data | In-app profile settings |
 | Correction | Update inaccurate data | In-app profile settings |
-| Deletion | Request account and data deletion | Email icecreammanapp@gmail.com |
+| Deletion | Request account and data deletion | Email mindy.gaines1@gmail.com |
 | Location control | Change sharing mode per order, or disable location entirely | In-app delivery options / device settings |
-| Data portability | Export your data | Email icecreammanapp@gmail.com |
+| Data portability | Export your data | Email mindy.gaines1@gmail.com |
 
 ---
 
@@ -197,7 +197,7 @@ We may update this Privacy Policy from time to time. We will notify you of any c
 
 | Method | Details |
 |--------|---------|
-| Email | icecreammanapp@gmail.com |
+| Email | mindy.gaines1@gmail.com |
 | Developer | Mindy Gaines |
 | App | The Ice Cream Man |
 | Location | Beaverton, Oregon, United States |

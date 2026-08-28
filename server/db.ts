@@ -9,6 +9,8 @@ import {
   vendorEntitlements,
   driverAvailability,
   requestEvents,
+  payments,
+  dailySales,
   type InsertIceCreamRequest,
   type InsertDriverProfile,
   type User,
@@ -93,6 +95,66 @@ export async function getUserByOpenId(openId: string) {
   }
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
   return result.length > 0 ? result[0] : undefined;
+}
+
+/**
+ * Delete a user and all of their associated data (Google Play data-deletion
+ * requirement). This cascades manually because the schema has no foreign-key
+ * relations defined. Requests list the customer by users.id and the driver by
+ * driver_profiles.id, so the driver profile id is resolved first.
+ */
+export async function deleteUserAccount(userId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return db.transaction(async (tx) => {
+    const profile = await tx
+      .select({ id: driverProfiles.id })
+      .from(driverProfiles)
+      .where(eq(driverProfiles.userId, userId))
+      .limit(1);
+    const driverProfileId = profile[0]?.id ?? null;
+
+    // Resolve any request ids referencing the user and delete their events.
+    const requestIds = await tx
+      .select({ id: iceCreamRequests.id })
+      .from(iceCreamRequests)
+      .where(
+        driverProfileId === null
+          ? eq(iceCreamRequests.customerId, userId)
+          : sql`${iceCreamRequests.customerId} = ${userId} OR ${iceCreamRequests.driverId} = ${driverProfileId}`,
+      );
+    const ids = requestIds.map((r) => r.id);
+    if (ids.length > 0) {
+      await tx.delete(requestEvents).where(inArray(requestEvents.requestId, ids));
+    }
+
+    await tx
+      .delete(iceCreamRequests)
+      .where(
+        driverProfileId === null
+          ? eq(iceCreamRequests.customerId, userId)
+          : sql`${iceCreamRequests.customerId} = ${userId} OR ${iceCreamRequests.driverId} = ${driverProfileId}`,
+      );
+
+    if (driverProfileId !== null) {
+      await tx.delete(driverLocationHistory).where(eq(driverLocationHistory.driverId, driverProfileId));
+      await tx.delete(driverAvailability).where(eq(driverAvailability.driverId, driverProfileId));
+      await tx.delete(dailySales).where(eq(dailySales.driverId, driverProfileId));
+      await tx.delete(payments).where(eq(payments.driverId, driverProfileId));
+      await tx.delete(driverProfiles).where(eq(driverProfiles.id, driverProfileId));
+    }
+
+    await tx.delete(vendorEntitlements).where(eq(vendorEntitlements.userId, userId));
+    await tx
+      .delete(requestEvents)
+      .where(
+        sql`${requestEvents.actorId} = ${userId} AND ${requestEvents.requestId} NOT IN (${ids.length ? sql.join(ids.map((i) => sql`${i}`), sql`, `) : sql`0`})`,
+      );
+
+    const deleted = await tx.delete(users).where(eq(users.id, userId)).returning({ id: users.id });
+    return deleted.length === 1;
+  });
 }
 
 // ============= ICE CREAM REQUEST FUNCTIONS =============
@@ -201,7 +263,14 @@ export async function cancelCustomerRequest(requestId: number, customerId: numbe
 
   const cancelled = await db
     .update(iceCreamRequests)
-    .set({ status: "cancelled", cancelledAt: new Date(), updatedAt: new Date() })
+    .set({
+      status: "cancelled",
+      cancelledAt: new Date(),
+      updatedAt: new Date(),
+      // Purge identifying delivery text on cancellation (privacy policy).
+      address: null,
+      deliveryInstructions: null,
+    })
     .where(
       and(
         eq(iceCreamRequests.id, requestId),
@@ -220,7 +289,15 @@ export async function completeDriverDelivery(requestId: number, driverId: number
   return db.transaction(async (tx) => {
     const completed = await tx
       .update(iceCreamRequests)
-      .set({ status: "completed", completedAt: new Date(), updatedAt: new Date() })
+      .set({
+        status: "completed",
+        completedAt: new Date(),
+        updatedAt: new Date(),
+        // Purge identifying delivery text once the order is fulfilled
+        // (privacy policy). Coordinates remain for the delivery lifecycle only.
+        address: null,
+        deliveryInstructions: null,
+      })
       .where(
         and(
           eq(iceCreamRequests.id, requestId),
