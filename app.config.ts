@@ -138,6 +138,7 @@ const config: ExpoConfig = {
           kotlinVersion: "2.1.20",
           buildArchs: ["armeabi-v7a", "arm64-v8a"],
           minSdkVersion: 24,
+          targetSdkVersion: 36,
           // Enable R8 minification and resource shrinking for Google Play compliance
           enableProguardInReleaseBuilds: true,
           enableShrinkResourcesInReleaseBuilds: true,
