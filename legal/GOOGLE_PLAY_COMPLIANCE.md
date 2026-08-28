@@ -17,9 +17,9 @@
 | **Developer** | Mindy Gaines |
 | **Location** | Beaverton, Oregon, United States |
 | **Support / Contact email** | **mindy.gaines1@gmail.com** (this is the ONLY support email used in any public, legal, or Play Console material — never use support@theicecreamman.app) |
-| **Privacy Policy URL** | `https://theicecreamman.app/privacy` |
-| **Version (current)** | 1.0.22 (versionCode 10054) |
-| **Account type note** | Submitted on an individual developer account. If Google Play continues to flag the **organization account** requirement, see §D (org-account note) for the decision path. |
+| **Privacy Policy URL** | `https://mgfromthe503.github.io/Ice-cream-man-app/privacy.html` |
+| **Version (current)** | 1.0.22 (versionCode 10057) |
+| **Account type note** | Submitted on an individual developer account. The **only** org-account triggers under the Play Console Requirements policy are financial services, health apps, `VpnService` apps, and government apps. This app is **none** of these. The rejection was driven by the store listing and the Play Console financial-features declaration reading as a financial/gig service. Fix every declaration per [`PLAY_CONSOLE_CONTENT_DECLARATIONS.md`](PLAY_CONSOLE_CONTENT_DECLARATIONS.md) (set **Financial features = none**, Category = Food & Drink), then resubmit with a fresh build. |
 
 > **Email rule:** The support/contact email in **all** legal documents and Play Console entries must be `mindy.gaines1@gmail.com`. Do **not** use `support@theicecreamman.app` anywhere.
 
@@ -27,7 +27,7 @@
 
 ## B. Privacy Policy
 
-The canonical Privacy Policy lives in [`PRIVACY_POLICY.md`](PRIVACY_POLICY.md) and is hosted publicly at `https://theicecreamman.app/privacy`. The following is the reconciled, cleaned summary used for Play compliance.
+The canonical Privacy Policy lives in [`PRIVACY_POLICY.md`](PRIVACY_POLICY.md) and is hosted publicly at `https://mgfromthe503.github.io/Ice-cream-man-app/privacy.html`. The following is the reconciled, cleaned summary used for Play compliance.
 
 **Effective Date:** June 29, 2026 · **Last Updated:** August 26, 2026
 
@@ -147,9 +147,10 @@ Sources: [`GOOGLE_PLAY_LISTING.md`](GOOGLE_PLAY_LISTING.md), [`GOOGLE_PLAY_APP_A
 ### D.2 Category & content rating
 - **Category:** **Food & Drink** (do not use Business or Finance).
 - **Content rating:** **Everyone**.
-- **Org-account decision note:** Google may flag the app as requiring an **organization account** if the listing reads like a financial intermediary platform (revenue splits, driver earnings, supply/demand, "$25 fee" framing). The listing has been reframed as a fun ice cream truck finder. **If Play still flags the organization requirement** after a clean resubmission, choose one of these paths:
-  - **Option A (individual account):** keep the description purely customer-facing (summoning + tracking), minimize driver features in the listing, and keep Category Food & Drink.
-  - **Option B (organization account):** register a business entity, create a new org Google Play Developer account, transfer the listing, and update the developer name to the org name.
+- **Org-account root cause (confirmed):** Google Play only forces an **organization account** for financial products/services, health apps, `VpnService` apps, and government apps. This app is none of these — it is a Food & Drink ice cream-truck dispatch app whose only payment is a one-time Google Play Billing registration/access purchase (not a financial service). The rejection was triggered by the store listing and the Play Console **Financial features** declaration reading as a financial/gig-economy service. **Fix:** set the Play Console **Financial features** declaration to **"My app doesn't provide any financial features"**, keep Category **Food & Drink**, set Health = "no", Government = "no", and use the financial-free listing text in this repo. Full step-by-step values: [`PLAY_CONSOLE_CONTENT_DECLARATIONS.md`](PLAY_CONSOLE_CONTENT_DECLARATIONS.md).
+- If the app is still flagged after a clean resubmission, appeal via **Policy status → Help** and name the exact classification (financial/health/VPN/government). Only if Google upholds a classification the app actually has does it require an **organization account** (Option B below).
+  - **Option A (individual account — preferred):** declarations corrected (financial=no, category=Food & Drink), listing is customer-facing only, no driver income/earnings/fee language.
+  - **Option B (organization account):** necessary only if the app truly becomes a financial/health/VPN/government product. Register a business entity, create a new org Google Play Developer account, transfer the listing, and update the developer name to the org name.
 
 ### D.3 No AdMob / no advertising SDK
 The app uses **no AdMob and no advertising SDK**. Do **not** declare AdMob in the Data Safety form. The store listing and legal docs must not claim advertising.
@@ -172,7 +173,7 @@ Secure sign-in is required before a customer or vendor can access protected func
 - **Full description:** use the tone in `GOOGLE_PLAY_LISTING.md` — fun summoning, real-time tracking, community, convenience; driver benefits described in neutral terms (receive requests, save time). No revenue/earnings/split claims.
 - **Tags:** ice cream, ice cream truck, food delivery, local delivery, ice cream delivery, neighborhood, food truck, driver, earnings, side hustle.
 - **What's New:** current version notes from `GOOGLE_PLAY_LISTING.md`.
-- **Privacy Policy URL:** `https://theicecreamman.app/privacy` entered in **App content > Privacy policy**.
+- **Privacy Policy URL:** `https://mgfromthe503.github.io/Ice-cream-man-app/privacy.html` entered in **App content > Privacy policy**.
 
 ### D.8 Reviewer flow (app access)
 - **Customer:** Continue to secure sign-in → OAuth → choose Customer → tap order button → **Sweet Safety Reminder** appears before delivery details (continuation disabled until parent/guardian acknowledgment) → create request with test-safe location, **Street Name Only** default, confirm delivery.
@@ -185,7 +186,7 @@ Secure sign-in is required before a customer or vendor can access protected func
 > Before each resubmission, confirm:
 
 - [ ] **Data Safety matches implementation.** The form (§C) reflects the actual SDK/network inventory: only **Google Play Billing** and **OpenStreetMap Nominatim** as third-party data recipients; **NO** Phone number, Google Analytics, Google Maps SDK, or AdMob declared.
-- [ ] **Privacy policy URL is live** at `https://theicecreamman.app/privacy` (the in-app/public route) and matches `legal/PRIVACY_POLICY.md`.
+- [ ] **Privacy policy URL is live** at `https://mgfromthe503.github.io/Ice-cream-man-app/privacy.html` (the in-app/public route) and matches `legal/PRIVACY_POLICY.md`.
 - [ ] **No test accounts / no reviewer backdoor.** No hidden sign-in path, hard-coded credentials, local payment flags, or payment bypass in the release under review.
 - [ ] **Version & versionCode consistent.** `version`/`versionCode` in `app.config.ts` are higher than the last uploaded build.
 - [ ] **Cleartext disabled.** HTTP cleartext is disabled (HTTPS-only API/OAuth); the `withoutCleartext` plugin is in place.

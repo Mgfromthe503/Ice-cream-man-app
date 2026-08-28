@@ -168,7 +168,7 @@ export default function VendorPaymentScreen() {
               Become an Ice Cream Man
             </Text>
             <Text style={{ fontSize: 14, color: colors.muted, textAlign: 'center' }}>
-              One-time registration fee to start earning
+              One-time registration to start receiving requests
             </Text>
           </View>
 
@@ -227,7 +227,7 @@ export default function VendorPaymentScreen() {
               { icon: '⏰', title: 'Save Time', desc: 'Average vendors save 2+ hours daily. More selling, less searching.' },
               { icon: '📊', title: 'Daily Reports', desc: 'See your $/hour with app vs without. Track gas & time saved.' },
               { icon: '📍', title: 'Smart Matching', desc: 'Get matched to customers in YOUR zip code automatically.' },
-              { icon: '💰', title: 'Earn More', desc: 'Vendors report 200% improvement in hourly earnings.' },
+              { icon: '📍', title: 'More Requests', desc: 'Get matched to customers in your area instead of searching.' },
               { icon: '⭐', title: 'Build Reputation', desc: 'Customer ratings help you stand out and get more requests.' },
             ].map((item, i) => (
               <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
@@ -313,7 +313,7 @@ export default function VendorPaymentScreen() {
               </View>
             ) : (
               <View style={{ alignItems: 'center' }}>
-                <Text style={{ color: '#fff', fontSize: 19, fontWeight: '800' }}>💳 Pay $25 & Start Earning</Text>
+                <Text style={{ color: '#fff', fontSize: 19, fontWeight: '800' }}>💳 Pay $25 Registration</Text>
                 <Text style={{ color: '#fff', fontSize: 12, opacity: 0.85, marginTop: 4 }}>
                   Secure payment via Google Play Billing
                 </Text>

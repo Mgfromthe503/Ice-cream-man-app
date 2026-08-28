@@ -25,7 +25,7 @@
 | Data Type | Collected | Shared | Purpose | Optional |
 |-----------|-----------|--------|---------|----------|
 | Approximate location | Yes | No | App functionality | No |
-| Precise location | Yes | Yes (with other users) | App functionality, Analytics | No |
+| Precise location | Yes | Yes (with other users) | App functionality | No |
 
 ### Personal Info
 
@@ -46,7 +46,7 @@
 
 | Data Type | Collected | Shared | Purpose | Optional |
 |-----------|-----------|--------|---------|----------|
-| App interactions | Yes | No | Analytics | No |
+| App interactions | Yes | No | App functionality | No |
 | In-app search history | No | No | N/A | N/A |
 | Other user-generated content | Yes | No | App functionality | Yes |
 
@@ -111,8 +111,7 @@ The app does **not** embed a Google Maps SDK or a Google Analytics SDK. Tapping 
 
 ## Privacy Policy URL
 
-Host the Privacy Policy at a publicly accessible URL. Options:
-- GitHub Pages: `https://mgfromthe503.github.io/Ice-cream-man-app/legal/PRIVACY_POLICY`
-- Your own domain: `https://theicecreamman.app/privacy`
+Host the Privacy Policy at a publicly accessible URL. The canonical live URL is:
+- GitHub Pages: `https://mgfromthe503.github.io/Ice-cream-man-app/privacy.html`
 
 Enter this URL in Google Play Console under **App content > Privacy policy**.

@@ -36,7 +36,7 @@ const config: ExpoConfig = {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: APP_BUNDLE_ID,
-    versionCode: 10054,
+    versionCode: 10057,
     permissions: [
       "POST_NOTIFICATIONS",
       "com.android.vending.BILLING",

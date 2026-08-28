@@ -135,7 +135,7 @@ export default function RoleSelectScreen() {
                         Ice Cream Vendor
                       </Text>
                       <Text style={{ fontSize: 13, color: '#FFF8E7', lineHeight: 18 }}>
-                        Receive customer requests and earn money. Get alerts for neighborhoods requesting service.
+                        Receive customer requests and get alerts for neighborhoods requesting service.
                       </Text>
                       <View style={{
                         backgroundColor: 'rgba(255,255,255,0.25)',
@@ -146,7 +146,7 @@ export default function RoleSelectScreen() {
                         marginTop: 4,
                       }}>
                         <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 12 }}>
-                          Start Earning Money →
+                          Start Receiving Requests →
                         </Text>
                       </View>
                     </View>

@@ -1,8 +1,7 @@
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Platform, View } from 'react-native';
+import { Platform, View, Text } from 'react-native';
 import { useColors } from '@/hooks/use-colors';
 import { useLocation } from '@/lib/location-context';
 import { LocationDisclosure } from '@/components/location-disclosure';
@@ -41,32 +40,28 @@ export default function CustomerTabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarLabel: '🍦',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24 }}>🍦</Text>,
         }}
       />
       <Tabs.Screen
         name="map"
         options={{
           title: 'Map',
-          tabBarLabel: '🗺️',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="map.fill" color={color} />,
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24 }}>🗺️</Text>,
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
           title: 'History',
-          tabBarLabel: '📋',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="list.bullet" color={color} />,
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24 }}>📋</Text>,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarLabel: '👤',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24 }}>👤</Text>,
         }}
       />
     </Tabs>

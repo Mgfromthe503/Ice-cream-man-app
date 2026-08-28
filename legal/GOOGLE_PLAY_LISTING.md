@@ -1,10 +1,12 @@
 # The Ice Cream Man - Google Play Store Listing
 
+> **Compliance note:** This listing uses a neutral, customer-first tone. It contains **no** financial-service or gig-economy language (no earnings, income, payouts, registration-fee pricing, revenue splits, or "side hustle"). Keeping this clean is what keeps the app classified as **Food & Drink** — not a financial service — so it can be published on an **individual** developer account. Do not re-add driver income/earning claims to the listing.
+
 ## App Name
 The Ice Cream Man
 
 ## Short Description (80 characters max)
-Summon an ice cream truck to your neighborhood with one tap! Drivers earn more.
+Summon an ice cream truck to your neighborhood with a tap and track it live.
 
 ## Full Description (4000 characters max)
 
@@ -20,17 +22,16 @@ Remember the joy of hearing the ice cream truck jingle coming down your street? 
 • Fun ice cream facts and animations while you wait!
 
 **FOR ICE CREAM TRUCK DRIVERS:**
-• Stop driving around aimlessly hoping to find customers
-• Customers come to YOU - saving gas, time, and money
-• View dispatch activity and delivery-related dashboard insights
+• Find customers in your area without driving around aimlessly
+• Customers request service right where they are
+• View your dispatch activity and route details
 • Organize request activity and route-efficiency information
-• Get matched to customers in YOUR area automatically
+• Get matched to customers in your area automatically
 
-🚚💨 **ICE CREAM TRUCK DRIVERS WANTED!** 💨🚚
-Are you an ice cream truck driver? Do you know one? We're actively recruiting drivers in ALL areas! Register your truck in the app and start receiving customer requests immediately. No more guessing where the customers are - they tell YOU where they are!
+🚚💨 **ICE CREAM TRUCK VENDORS!** 💨🚚
+Are you an ice cream truck vendor? Do you know one? Register your truck in the app and start receiving customer requests. Customers tell YOU where they are instead of you hoping they find you.
 
-Benefits for drivers:
-✅ One-time registration unlocks the Driver Dashboard
+What you get:
 ✅ Receive customer request alerts in your coverage area
 ✅ Use delivery-related dashboard insights
 ✅ Customers matched to your coverage zone
@@ -38,18 +39,17 @@ Benefits for drivers:
 
 **HOW IT WORKS:**
 1. Customers tap the big ice cream button
-2. Nearby drivers get notified instantly
-3. Driver accepts and heads to the customer
+2. Nearby vendors get notified instantly
+3. A vendor accepts and heads to the customer
 4. Customer tracks the truck on the map
 5. Ice cream delivered! Everyone's happy! 🎉
 
 **FEATURES:**
-• Real-time GPS tracking
-• Push notifications for new orders
-• Fun ice cream truck jingle plays when ordering
+• Real-time tracking
+• Push notifications for new requests
+• Fun ice cream truck jingle when ordering
 • Beautiful candy-land themed interface
 • Delivery-related dashboard insights
-• Supply/demand balancing (we recruit more drivers when needed)
 • Area code matching for efficient routing
 
 Download now and never miss the ice cream truck again!
@@ -60,7 +60,7 @@ Download now and never miss the ice cream truck again!
 Food & Drink
 
 ## Tags
-ice cream, ice cream truck, food delivery, local delivery, ice cream delivery, neighborhood, food truck, driver, earnings, side hustle
+ice cream, ice cream truck, food delivery, local delivery, ice cream delivery, neighborhood, food truck, vendor, dessert
 
 ## Content Rating
 Everyone
@@ -69,7 +69,7 @@ Everyone
 mindy.gaines1@gmail.com (NOT support@theicecreamman.app)
 
 ## Privacy Policy URL
-https://theicecreamman.app/privacy-policy
+https://mgfromthe503.github.io/Ice-cream-man-app/privacy.html
 
 ---
 
@@ -90,18 +90,16 @@ https://theicecreamman.app/privacy-policy
 • Launch of The Ice Cream Man app!
 • One-tap ice cream truck summoning
 • Real-time truck tracking on map
-• Driver registration and earnings dashboard
-• Daily reports with gas/time savings calculations
+• Vendor registration and dashboard
+• Area-based request matching
 • Fun ice cream facts during wait times
 • Ice cream truck jingle notification
-• Push notifications for drivers and customers
-• Driver recruitment system for underserved areas
+• Push notifications for customers and vendors
 
 ---
 
 ## Feature Graphic Text
 "Summon Ice Cream to Your Door! 🍦🚚"
-"Drivers: Earn More, Drive Less!"
 
 ## Promotional Text
-Ice Cream Truck Drivers Wanted! Join The Ice Cream Man app and let customers come to YOU. Save gas, save time, earn more per hour. Download now!
+Find ice cream trucks near you on demand. Request a delivery in your neighborhood, track the truck live, and enjoy the sweetest way to get ice cream. Download now!
