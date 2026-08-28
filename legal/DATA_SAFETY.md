@@ -80,7 +80,7 @@ The app does **not** embed a Google Maps SDK or a Google Analytics SDK. Tapping 
 | Data encrypted in transit | Yes (HTTPS/TLS) |
 | Data encrypted at rest | Yes |
 | Users can request data deletion | Yes |
-| Data deletion request method | Email: mindy.gaines1@gmail.com |
+| Data deletion request method | In-app Delete Account or public request page: https://mgfromthe503.github.io/Ice-cream-man-app/account-deletion.html |
 | Data retention policy | See Privacy Policy |
 | Compliant with Children's Privacy laws | Yes |
 
@@ -115,3 +115,9 @@ Host the Privacy Policy at a publicly accessible URL. The canonical live URL is:
 - GitHub Pages: `https://mgfromthe503.github.io/Ice-cream-man-app/privacy.html`
 
 Enter this URL in Google Play Console under **App content > Privacy policy**.
+
+## External Account-Deletion Request Resource
+
+Users who cannot sign in can submit an account and associated-data deletion request at:
+
+`https://mgfromthe503.github.io/Ice-cream-man-app/account-deletion.html`

@@ -11,7 +11,6 @@ interface DriverRegistration {
   fullName: string;
   truckName: string;
   truckDescription: string;
-  phoneNumber: string;
   areaCode: string;
   truckNumber: string;
 }
@@ -30,7 +29,6 @@ export default function DriverRegisterScreen() {
     fullName: '',
     truckName: '',
     truckDescription: '',
-    phoneNumber: '',
     areaCode: '',
     truckNumber: '',
   });
@@ -43,10 +41,6 @@ export default function DriverRegisterScreen() {
     }
     if (!form.truckName.trim()) {
       Alert.alert('Required', 'Please enter your truck name or business name.');
-      return;
-    }
-    if (!form.phoneNumber.trim()) {
-      Alert.alert('Required', 'Please enter your phone number.');
       return;
     }
     if (!form.areaCode.trim() || form.areaCode.length < 3) {
@@ -344,27 +338,6 @@ export default function DriverRegisterScreen() {
                   borderColor: colors.border,
                   minHeight: 80,
                   textAlignVertical: 'top',
-                }}
-                placeholderTextColor={colors.muted}
-              />
-            </View>
-
-            {/* Phone Number */}
-            <View style={{ gap: 4 }}>
-              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground }}>Phone Number *</Text>
-              <TextInput
-                value={form.phoneNumber}
-                onChangeText={(text) => setForm({ ...form, phoneNumber: text })}
-                placeholder="(555) 123-4567"
-                keyboardType="phone-pad"
-                style={{
-                  backgroundColor: colors.surface,
-                  borderRadius: 12,
-                  padding: 14,
-                  fontSize: 16,
-                  color: colors.foreground,
-                  borderWidth: 1,
-                  borderColor: colors.border,
                 }}
                 placeholderTextColor={colors.muted}
               />
