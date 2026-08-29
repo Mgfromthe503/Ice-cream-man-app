@@ -36,7 +36,7 @@ Open **App content → Financial features** and select:
 
 Rationale (accurate): the app uses **Google Play Billing** only for a one-time app-access/registration purchase. Standard in-app purchases are **not** a "financial feature" under the Financial Services policy. Do **not** select "money transfer", "wallet", "trading", "loans", or "crypto".
 
-> If the Console instead shows a **"Purchases with real money"** questionnaire (targeting, etc.), answer truthfully: the app sells digital goods/access via Play Billing; it does not facilitate real-world money exchanges between users.
+> If the Console instead shows a **"Purchases with real money"** questionnaire (targeting, etc.), answer it per the app's actual behavior: the app sells a single digital access purchase via Play Billing; it does not facilitate real-world money exchanges between users.
 
 ## 3. App content → Health apps
 
@@ -64,7 +64,7 @@ Per **`legal/GOOGLE_PLAY_APP_ACCESS.md`**: restricted functionality; provide the
 - **Target audience**: **13+ only** (no under-13 age group selected).
 - **Why 13+:** The app is a general-audience Food & Drink app, and ordering requires **real-money payment** plus a real-world, location-based delivery. Gating at 13+ is a reasonable precaution and keeps the app outside the child-audience (Families) precise-location rules. This is the intended, defensible positioning.
 - **App is 13+ with a mandatory age gate.** The app shows an "Are you 13 or older?" gate before any use or data collection; anyone under 13 cannot use the app, so **no data of any kind is collected or shared from anyone under 13**.
-- Complete the **Families Policy questionnaire** truthfully: the app is **not** designed for children under 13 and **does not** collect precise location or advertising IDs from children.
+- Complete the **Families Policy questionnaire** per the app's actual behavior: the app is **not** designed for children under 13 and **does not** collect precise location or advertising IDs from children.
 - **"Does your app's store listing appeal to children?":** Because the ice cream styling/bright design could appeal to children, answer **Yes** where asked. This adds the "Not designed for children" banner — which is what protects you from a Families misclassification when you keep a 13+ target audience.
 - **Ads**: None. Do not declare ads.
 

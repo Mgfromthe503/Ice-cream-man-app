@@ -97,7 +97,7 @@ Ground truth for the Data Safety responses in Play Console. The full form source
 | Is all user data collected by the app encrypted in transit? | Yes |
 | Do you provide a way for users to request deletion of their data? | Yes (in-app + public web request page) |
 
-### C.2 Data types collected (truthful set)
+### C.2 Data types collected
 | Data Type | Collected | Shared | Purpose | Optional |
 |-----------|-----------|--------|---------|----------|
 | Approximate location | Yes | No | App functionality | No |
@@ -110,7 +110,7 @@ Ground truth for the Data Safety responses in Play Console. The full form source
 | Other user-generated content | Yes | No | App functionality | Yes |
 | Device or other IDs | Yes | No | App functionality (push notifications) | No |
 
-> **Truthfulness rules for the form:**
+> **Accuracy rules for the form:**
 > - **NO phone number** is collected — leave the Phone number field as "No".
 > - **NO analytics.** "App interactions" is collected for app functionality, not analytics.
 > - **NO Google Analytics, NO Google Maps SDK, NO AdMob, NO advertising SDK.** Do not declare any of these in the form.
@@ -122,6 +122,8 @@ Ground truth for the Data Safety responses in Play Console. The full form source
 | **OpenStreetMap Nominatim** | GPS coordinates (no user identity) | Reverse geocoding |
 
 Tapping "Navigate" in the driver flow opens the user's own external maps application; the app does not send location data to a third-party map SDK for analytics or tracking.
+
+> The **Android native** app does not use IP geolocation, so the Data Safety form lists only the two third parties above. The separately-hosted **web** deployment may obtain approximate location from the device IP (ipapi.co, ip-api.com, ipwho.is, Nominatim); this is web-only and not part of the Play review surface.
 
 ### C.4 Handling and security practices
 - Data encrypted in transit (HTTPS/TLS) — **yes** · at rest — **yes**.

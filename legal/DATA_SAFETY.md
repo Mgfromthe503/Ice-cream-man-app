@@ -37,6 +37,8 @@
 | Approximate location | Yes | No | App functionality | No |
 | Precise location | Yes | Yes (with other users) | App functionality | No |
 
+> **Precise-location sharing detail:** A customer's precise coordinates are shared with a driver **only** when the customer chooses the "exact address" share mode. In "street only" and "meetup" modes the driver receives rounded (approximately 1 km precision) coordinates. No precise location is ever collected or shared from anyone under 13.
+
 ### Personal Info
 
 | Data Type | Collected | Shared | Purpose | Optional |
@@ -78,6 +80,8 @@
 | OpenStreetMap Nominatim | GPS coordinates (no user identity) | Reverse geocoding |
 
 The app does **not** embed a Google Maps SDK or a Google Analytics SDK. Tapping "Navigate" in the driver flow opens the user's own external maps application; the app does not send location data to a third-party map SDK for analytics or tracking.
+
+> **Web-only IP geolocation:** The **Android native app does not use IP geolocation** — it is not part of the build reviewed in Play Console and is **not** listed in the Data Safety form. The separately-hosted **web** deployment may obtain an approximate location from the device IP via external IP-lookup services (ipapi.co, ip-api.com, ipwho.is, OpenStreetMap Nominatim). Under-13 users are blocked by the age gate before any of these are reached.
 
 > **Note:** This app does not use Google AdMob or any advertising SDK. Do **not** declare AdMob in the Play Console Data Safety form.
 
