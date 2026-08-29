@@ -240,7 +240,7 @@ export default function VendorPaymentScreen() {
             {[
               { icon: '⛽', title: 'Save on Gas', desc: 'Customers come to YOU. No more driving aimlessly burning fuel.' },
               { icon: '⏰', title: 'Save Time', desc: 'Average vendors save 2+ hours daily. More selling, less searching.' },
-              { icon: '📊', title: 'Daily Reports', desc: 'See your $/hour with app vs without. Track gas & time saved.' },
+              { icon: '📊', title: 'Daily Reports', desc: 'See your sales per hour with app vs without. Track gas & time saved.' },
               { icon: '📍', title: 'Smart Matching', desc: 'Get matched to customers in YOUR zip code automatically.' },
               { icon: '📍', title: 'More Requests', desc: 'Get matched to customers in your area instead of searching.' },
               { icon: '⭐', title: 'Build Reputation', desc: 'Customer ratings help you stand out and get more requests.' },

@@ -62,7 +62,7 @@ export default function DailyReportScreen() {
     }
 
     if (hoursDriven === 0) {
-      Alert.alert('Hours Required', 'Please enter how many hours you drove today so we can calculate your hourly rate.');
+      Alert.alert('Hours Required', 'Please enter how many hours you drove today so we can calculate your activity rate.');
       return;
     }
 
@@ -87,12 +87,12 @@ export default function DailyReportScreen() {
     const hoursSaved = hoursWithoutApp - hoursWithApp;
 
     // Hourly rate comparison - the key metric
-    const hourlyRateWithApp = hoursDriven > 0 ? totalSales / hoursDriven : 0;
+    const salesPerHourWithApp = hoursDriven > 0 ? totalSales / hoursDriven : 0;
     // Without app: same sales would take 3x longer (more driving, less selling)
     const hoursWithoutAppForSameSales = hoursDriven * 3;
-    const hourlyRateWithoutApp = hoursWithoutAppForSameSales > 0 ? totalSales / hoursWithoutAppForSameSales : 0;
-    const improvement = hourlyRateWithApp - hourlyRateWithoutApp;
-    const improvementPercent = hourlyRateWithoutApp > 0 ? ((improvement / hourlyRateWithoutApp) * 100) : 0;
+    const salesPerHourWithoutApp = hoursWithoutAppForSameSales > 0 ? totalSales / hoursWithoutAppForSameSales : 0;
+    const improvement = salesPerHourWithApp - salesPerHourWithoutApp;
+    const improvementPercent = salesPerHourWithoutApp > 0 ? ((improvement / salesPerHourWithoutApp) * 100) : 0;
 
     const newReport: DailyReport = {
       date: new Date().toLocaleDateString('en-US', {
@@ -121,8 +121,8 @@ export default function DailyReportScreen() {
         hoursSaved: Math.round(hoursSaved * 10) / 10,
       },
       hourlyRate: {
-        withApp: Math.round(hourlyRateWithApp * 100) / 100,
-        withoutApp: Math.round(hourlyRateWithoutApp * 100) / 100,
+        withApp: Math.round(salesPerHourWithApp * 100) / 100,
+        withoutApp: Math.round(salesPerHourWithoutApp * 100) / 100,
         improvement: Math.round(improvement * 100) / 100,
         improvementPercent: Math.round(improvementPercent),
       },
@@ -158,7 +158,7 @@ export default function DailyReportScreen() {
 
   const handleShareReport = async () => {
     if (!report) return;
-    const message = `🍦 Ice Cream Man Daily Report\n📅 ${report.date}\n\n💰 Sales: $${report.totalSales.toFixed(2)} (${report.totalOrders} orders)\n⏱️ Hours: ${report.hoursDriven}h\n💵 Hourly Rate: $${report.hourlyRate.withApp}/hr\n\n📈 With the app I'm making $${report.hourlyRate.improvement.toFixed(2)}/hr MORE than without it!\n⛽ Gas Saved: $${report.gasSavings.moneySaved.toFixed(2)}\n🕐 Time Saved: ${report.timeSavings.hoursSaved} hours\n\n#IceCreamMan #SideHustle`;
+    const message = `🍦 Ice Cream Man Daily Report\n📅 ${report.date}\n\n💰 Sales: $${report.totalSales.toFixed(2)} (${report.totalOrders} orders)\n⏱️ Hours: ${report.hoursDriven}h\n💵 Sales/Hour: $${report.hourlyRate.withApp.toFixed(2)}\n\n📈 With the app I'm making $${report.hourlyRate.improvement.toFixed(2)}/hr MORE than without it!\n⛽ Gas Saved: $${report.gasSavings.moneySaved.toFixed(2)}\n🕐 Time Saved: ${report.timeSavings.hoursSaved} hours\n\n#IceCreamMan`;
     try {
       await Share.share({ message });
     } catch (e) {
@@ -180,10 +180,10 @@ export default function DailyReportScreen() {
               <Text style={{ fontSize: 13, color: colors.muted }}>{report.date}</Text>
             </View>
 
-            {/* HOURLY RATE COMPARISON - The Star Feature */}
+            {/* SALES PER HOUR COMPARISON - The Star Feature */}
             <View style={{ backgroundColor: '#1a1a2e', borderRadius: 20, padding: 20, borderWidth: 2, borderColor: '#FFD700' }}>
               <Text style={{ fontSize: 16, fontWeight: '700', color: '#FFD700', textAlign: 'center', marginBottom: 12 }}>
-                💵 YOUR HOURLY RATE
+                💵 YOUR SALES PER HOUR
               </Text>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <View style={{ alignItems: 'center', flex: 1 }}>
@@ -298,14 +298,14 @@ export default function DailyReportScreen() {
               </View>
             </View>
 
-            {/* Bottom Line Summary */}
+            {/* Summary */}
             <View style={{ backgroundColor: '#FFF3E0', borderRadius: 16, padding: 16 }}>
               <Text style={{ fontSize: 16, fontWeight: '700', color: '#E65100', marginBottom: 8 }}>
-                📋 Bottom Line
+                📋 Summary
               </Text>
               <Text style={{ color: '#F57C00', fontSize: 13, lineHeight: 20 }}>
-                Today you made ${report.totalSales.toFixed(2)} in {report.hoursDriven} hours = ${report.hourlyRate.withApp.toFixed(2)}/hr.
-                Without the app, that same income would have taken ~{(report.hoursDriven * 3).toFixed(1)} hours of driving around,
+                Today you had ${report.totalSales.toFixed(2)} in sales over {report.hoursDriven} hours = ${report.hourlyRate.withApp.toFixed(2)}/hr.
+                Without the app, that same activity would have taken ~{(report.hoursDriven * 3).toFixed(1)} hours of driving around,
                 meaning only ${report.hourlyRate.withoutApp.toFixed(2)}/hr. The Ice Cream Man app saved you{' '}
                 ${report.gasSavings.moneySaved.toFixed(2)} in gas and {report.timeSavings.hoursSaved} hours of your day.
               </Text>
@@ -365,7 +365,7 @@ export default function DailyReportScreen() {
               End of Day Report
             </Text>
             <Text style={{ fontSize: 14, color: colors.muted, textAlign: 'center' }}>
-              Enter your daily numbers to see how much more you're making per hour with the app
+              Enter your daily numbers to see your sales per hour with vs without the app
             </Text>
           </View>
 
@@ -470,7 +470,7 @@ export default function DailyReportScreen() {
                 placeholderTextColor={colors.muted}
               />
               <Text style={{ color: colors.muted, fontSize: 11, marginTop: 4 }}>
-                Used to calculate your $/hour rate with vs without the app
+                Used to calculate your sales per hour with vs without the app
               </Text>
             </View>
 

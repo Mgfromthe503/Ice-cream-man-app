@@ -196,6 +196,28 @@ export default function DriverProfileScreen() {
               </View>
             </Pressable>
 
+            <Pressable
+              onPress={() => router.push('/(driver)/activity')}
+              style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
+            >
+              <View style={{
+                backgroundColor: colors.surface,
+                borderRadius: 12,
+                padding: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderWidth: 1,
+                borderColor: colors.border,
+              }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <Text style={{ fontSize: 20 }}>📈</Text>
+                  <Text style={{ fontSize: 15, fontWeight: '600', color: colors.foreground }}>Activity Summary</Text>
+                </View>
+                <Text style={{ color: colors.muted }}>→</Text>
+              </View>
+            </Pressable>
+
             <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}>
               <View style={{
                 backgroundColor: colors.surface,

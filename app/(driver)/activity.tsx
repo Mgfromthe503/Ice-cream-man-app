@@ -18,7 +18,7 @@ interface DailyReport {
   timeSavedPercent: number;
 }
 
-export default function DriverEarningsScreen() {
+export default function DriverActivityScreen() {
   const colors = useColors();
   const [reports, setReports] = useState<DailyReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -81,10 +81,10 @@ export default function DriverEarningsScreen() {
           {/* Header */}
           <View style={{ gap: 4 }}>
             <Text style={{ fontSize: 24, fontWeight: '800', color: colors.foreground }}>
-              💰 Earnings
+              📊 Activity Summary
             </Text>
             <Text style={{ fontSize: 13, color: colors.muted }}>
-              Your income summary from daily reports
+              Your daily reports summary
             </Text>
           </View>
 
@@ -93,16 +93,16 @@ export default function DriverEarningsScreen() {
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, paddingVertical: 40 }}>
               <Text style={{ fontSize: 60 }}>📊</Text>
               <Text style={{ fontSize: 20, fontWeight: '700', color: colors.foreground, textAlign: 'center' }}>
-                No earnings data yet
+                No activity data yet
               </Text>
               <Text style={{ fontSize: 14, color: colors.muted, textAlign: 'center', paddingHorizontal: 24, lineHeight: 20 }}>
-                Complete your first delivery and fill out a Daily Report to see your earnings tracked here!
+                Complete your first delivery and fill out a Daily Report to see your activity tracked here!
               </Text>
               <FactTicker variant="card" />
             </View>
           ) : (
             <>
-              {/* Total Earnings Card */}
+              {/* Total Sales Card */}
               <View style={{
                 backgroundColor: colors.primary,
                 borderRadius: 20,
@@ -114,7 +114,7 @@ export default function DriverEarningsScreen() {
                 shadowRadius: 12,
                 elevation: 8,
               }}>
-                <Text style={{ fontSize: 13, color: '#fff', opacity: 0.8 }}>Total Earnings</Text>
+                <Text style={{ fontSize: 13, color: '#fff', opacity: 0.8 }}>Total Sales</Text>
                 <Text style={{ fontSize: 42, fontWeight: '900', color: '#fff' }}>
                   ${totalEarnings.toFixed(2)}
                 </Text>
@@ -223,7 +223,7 @@ export default function DriverEarningsScreen() {
                       </View>
                       <View style={{ alignItems: 'flex-end' }}>
                         <Text style={{ fontSize: 16, fontWeight: '700', color: colors.success }}>
-                          +${report.totalSales.toFixed(2)}
+                          Sales: ${report.totalSales.toFixed(2)}
                         </Text>
                         <Text style={{ fontSize: 11, color: colors.primary }}>
                           ${report.hourlyRateWithApp.toFixed(2)}/hr

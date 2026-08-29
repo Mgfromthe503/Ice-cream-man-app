@@ -283,7 +283,7 @@ export default function DriverDashboardScreen() {
                 • Customers can see real drivers are available{"\n"}
                 • Get matched to nearby customers automatically{"\n"}
                 • Build your reputation with ratings{"\n"}
-                • Track your earnings and gas savings
+                • Track your daily reports and gas savings
               </Text>
             </View>
           </View>
