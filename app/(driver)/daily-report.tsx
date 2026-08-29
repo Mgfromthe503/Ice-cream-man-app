@@ -264,7 +264,7 @@ export default function DailyReportScreen() {
                 <Text style={{ fontWeight: '700', color: '#2E7D32' }}>{report.gasSavings.milesSaved} mi</Text>
               </View>
               <View style={{ backgroundColor: '#C8E6C9', borderRadius: 12, padding: 14, marginTop: 8, alignItems: 'center' }}>
-                <Text style={{ color: '#1B5E20', fontSize: 13 }}>Gas Money Saved Today</Text>
+                <Text style={{ color: '#1B5E20', fontSize: 13 }}>Approx. Fuel & Time Saved Today</Text>
                 <Text style={{ color: '#1B5E20', fontSize: 28, fontWeight: '900' }}>
                   ${report.gasSavings.moneySaved.toFixed(2)}
                 </Text>

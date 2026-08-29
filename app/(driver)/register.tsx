@@ -100,14 +100,14 @@ export default function DriverRegisterScreen() {
                 Payment Required
               </Text>
               <Text style={{ fontSize: 14, color: colors.muted, textAlign: 'center', lineHeight: 20 }}>
-                Before you can register your truck and start receiving customer requests, you need to complete the one-time $25 registration fee via Google Play.
+                Before you can register your truck and start receiving customer requests, you need to complete the one-time $25 Driver Dashboard access, billed securely by Google Play.
               </Text>
             </View>
 
             <View style={{ backgroundColor: colors.surface, borderRadius: 16, padding: 20, gap: 8 }}>
               <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground }}>Why a registration fee?</Text>
               <Text style={{ fontSize: 13, color: colors.muted, lineHeight: 20 }}>
-                The $25 one-time fee ensures only serious vendors join the platform. It helps maintain quality service for customers and keeps the app running. You'll never be charged again - no monthly fees, no hidden costs.
+                The one-time $25 Driver Dashboard access, billed securely by Google Play, ensures only serious vendors join the platform. It helps maintain quality service for customers and keeps the app running.
               </Text>
             </View>
 

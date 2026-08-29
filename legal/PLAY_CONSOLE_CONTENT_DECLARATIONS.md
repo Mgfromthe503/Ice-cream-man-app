@@ -21,7 +21,7 @@ The rejection fires because content declarations and/or the store listing were r
 | Field | Set to |
 |-------|--------|
 | **Category** | **Food & Drink** (NOT Business, NOT Finance, NOT Health & Fitness) |
-| **Content rating** | **Everyone** |
+| **Content rating** | **13+ (Teen)** — pending the IARC questionnaire. Do **NOT** select "Everyone": it contradicts the 13+ age gate and invites a Families misclassification. |
 | App name | The Ice Cream Man |
 | Short description | `Summon an ice cream truck to your neighborhood with a tap and track it live.` |
 | Full description | Use `legal/GOOGLE_PLAY_LISTING.md` (financial-free tone) |
@@ -61,9 +61,11 @@ Per **`legal/GOOGLE_PLAY_APP_ACCESS.md`**: restricted functionality; provide the
 
 ## 7. Main content / Targeting & audiences
 
-- **Target audience**: General audience (13+).
-- **App is 13+ with a mandatory age gate.** The app shows an "Are you 13 or older?" gate before use; anyone under 13 cannot use the app. Because of this, the app **is not directed at children** and **does not collect any data from anyone under 13**.
-- Complete the **Families Policy questionnaire** truthfully: the app is **not** designed for children under 13 and **does not** collect precise location or advertising IDs from children. The 13+ age gate plus Audience targeting in Play Console resolves the Family Policies / child-audience precise-location concern.
+- **Target audience**: **13+ only** (no under-13 age group selected).
+- **Why 13+:** The app is a general-audience Food & Drink app, and ordering requires **real-money payment** plus a real-world, location-based delivery. Gating at 13+ is a reasonable precaution and keeps the app outside the child-audience (Families) precise-location rules. This is the intended, defensible positioning.
+- **App is 13+ with a mandatory age gate.** The app shows an "Are you 13 or older?" gate before any use or data collection; anyone under 13 cannot use the app, so **no data of any kind is collected or shared from anyone under 13**.
+- Complete the **Families Policy questionnaire** truthfully: the app is **not** designed for children under 13 and **does not** collect precise location or advertising IDs from children.
+- **"Does your app's store listing appeal to children?":** Because the ice cream styling/bright design could appeal to children, answer **Yes** where asked. This adds the "Not designed for children" banner — which is what protects you from a Families misclassification when you keep a 13+ target audience.
 - **Ads**: None. Do not declare ads.
 
 ---

@@ -34,6 +34,18 @@ export async function getDb() {
   return _db;
 }
 
+// ============= PRIVACY HELPERS =============
+
+/**
+ * Approximate a coordinate to ~2 decimal places (~1km neighborhood/city
+ * granularity). Used so driver-facing waiting requests never expose the exact
+ * home location unless the customer explicitly chose shareMode of "exact".
+ */
+function toApproximate(v: number | null): number | null {
+  if (v === null || v === undefined) return v;
+  return Math.round(v * 100) / 100; // ~1km neighborhood precision
+}
+
 // ============= AUTH FUNCTIONS (Required for OAuth) =============
 
 export async function upsertUser(user: InsertUser): Promise<void> {
@@ -171,16 +183,39 @@ export async function createRequest(data: InsertIceCreamRequest) {
 }
 
 /**
- * Get all waiting requests (for drivers to see)
+ * Get all waiting requests (for drivers to see).
+ * Driver-facing privacy: the full request row (including precise latitude/
+ * longitude) is only returned for shareMode "exact". For "street" and
+ * "meetup", coordinates are reduced to ~1km neighborhood precision, and
+ * "meetup" additionally hides the home street address (the parent-chosen
+ * public meeting point lives in deliveryInstructions instead).
  */
 export async function getWaitingRequests() {
   const db = await getDb();
   if (!db) return [];
 
-  return db
+  const rows = await db
     .select()
     .from(iceCreamRequests)
     .where(eq(iceCreamRequests.status, "waiting"));
+
+  return rows.map((row): IceCreamRequest => {
+    // "exact" is the only mode that authorizes precise coordinates.
+    if (row.shareMode === "exact") {
+      return row;
+    }
+    return {
+      ...row,
+      // Approximate (~1km) precision. These are always numbers at runtime
+      // because the DB columns are NOT NULL, so toApproximate never sees
+      // null here.
+      latitude: toApproximate(row.latitude) as number,
+      longitude: toApproximate(row.longitude) as number,
+      // meetup hides the home address; the meeting point lives in
+      // deliveryInstructions.
+      address: row.shareMode === "meetup" ? null : row.address,
+    };
+  });
 }
 
 /**

@@ -63,7 +63,12 @@ Food & Drink
 ice cream, ice cream truck, food delivery, local delivery, ice cream delivery, neighborhood, food truck, vendor, dessert
 
 ## Content Rating
-Everyone
+Complete the IARC questionnaire truthfully. Because the app is **gated at 13+** (placed as a precaution because ordering requires real-money payment), the expected outcome is a **Teen (T)**-type rating — do **not** select "Everyone". Ratings are computed from your questionnaire answers; let the questionnaire produce the result you honestly reflect (13+ gate + paid orders).
+
+## Target Audience
+- Age groups: **13+ only** — do NOT include any under-13 age group.
+- The app is **not designed for children**. Answer the Families/child question accordingly.
+- When asked "Does your app's store listing appeal to children?", answer honestly. If the ice cream/bright styling could appeal to children, selecting **Yes** adds the "Not designed for children" banner, which protects you from a Families misclassification.
 
 ## Contact Email
 mindy.gaines1@gmail.com (NOT support@theicecreamman.app)

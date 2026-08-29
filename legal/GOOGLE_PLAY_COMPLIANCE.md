@@ -11,9 +11,9 @@
 |-------|-------|
 | **Package name (applicationId)** | `com.icecreamman.app` |
 | **App name (Play listing)** | The Ice Cream Man |
-| **Short description** | Summon an ice cream truck to your neighborhood with one tap! Drivers earn more. |
+| **Short description** | Summon an ice cream truck to your neighborhood with one tap and track it live. |
 | **Category** | Food & Drink |
-| **Content rating** | Everyone |
+| **Content rating** | 13+ (Teen — complete IARC honestly; NOT "Everyone") |
 | **Developer** | Mindy Gaines |
 | **Location** | Beaverton, Oregon, United States |
 | **Support / Contact email** | **mindy.gaines1@gmail.com** (this is the ONLY support email used in any public, legal, or Play Console material — never use support@theicecreamman.app) |
@@ -146,7 +146,7 @@ Sources: [`GOOGLE_PLAY_LISTING.md`](GOOGLE_PLAY_LISTING.md), [`GOOGLE_PLAY_APP_A
 
 ### D.2 Category & content rating
 - **Category:** **Food & Drink** (do not use Business or Finance).
-- **Content rating:** **Everyone**.
+- **Content rating:** Do **not** select "Everyone". Because the app is **gated at 13+** (precaution because ordering requires real-money payment), complete the IARC questionnaire so the result reflects a **Teen (T)**-type rating. Ratings are computed from your answers — answer honestly about the 13+ gate and paid orders. A "Everyone" rating contradicts the 13+ age gate and invites a Families misclassification.
 - **Org-account root cause (confirmed):** Google Play only forces an **organization account** for financial products/services, health apps, `VpnService` apps, and government apps. This app is none of these — it is a Food & Drink ice cream-truck dispatch app whose only payment is a one-time Google Play Billing registration/access purchase (not a financial service). The rejection was triggered by the store listing and the Play Console **Financial features** declaration reading as a financial/gig-economy service. **Fix:** set the Play Console **Financial features** declaration to **"My app doesn't provide any financial features"**, keep Category **Food & Drink**, set Health = "no", Government = "no", and use the financial-free listing text in this repo. Full step-by-step values: [`PLAY_CONSOLE_CONTENT_DECLARATIONS.md`](PLAY_CONSOLE_CONTENT_DECLARATIONS.md).
 - If the app is still flagged after a clean resubmission, appeal via **Policy status → Help** and name the exact classification (financial/health/VPN/government). Only if Google upholds a classification the app actually has does it require an **organization account** (Option B below).
   - **Option A (individual account — preferred):** declarations corrected (financial=no, category=Food & Drink), listing is customer-facing only, no driver income/earnings/fee language.
@@ -171,7 +171,7 @@ Secure sign-in is required before a customer or vendor can access protected func
 
 ### D.7 Store listing content
 - **Full description:** use the tone in `GOOGLE_PLAY_LISTING.md` — fun summoning, real-time tracking, community, convenience; driver benefits described in neutral terms (receive requests, save time). No revenue/earnings/split claims.
-- **Tags:** ice cream, ice cream truck, food delivery, local delivery, ice cream delivery, neighborhood, food truck, driver, earnings, side hustle.
+- **Tags:** ice cream, ice cream truck, food delivery, local delivery, ice cream delivery, neighborhood, food truck, vendor, dessert.
 - **What's New:** current version notes from `GOOGLE_PLAY_LISTING.md`.
 - **Privacy Policy URL:** `https://mgfromthe503.github.io/Ice-cream-man-app/privacy.html` entered in **App content > Privacy policy**.
 

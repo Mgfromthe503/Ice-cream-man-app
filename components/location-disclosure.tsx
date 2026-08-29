@@ -47,7 +47,7 @@ export function LocationDisclosure({ visible, onAccept, onDecline }: LocationDis
 
           {/* Disclosure Text - exact wording required by Google Play */}
           <Text className="text-sm text-foreground leading-5 mb-4">
-            This app collects location data to enable real-time tracking for ice cream deliveries even when the app is closed or not in use.
+            This app collects location data only while the app is open, to enable live ice cream delivery to your chosen location.
           </Text>
 
           {/* Additional context */}
@@ -56,7 +56,7 @@ export function LocationDisclosure({ visible, onAccept, onDecline }: LocationDis
             • Show nearby ice cream trucks on the map{'\n'}
             • Allow drivers to navigate to your delivery point{'\n'}
             • Calculate distance for the 1000ft delivery zone{'\n\n'}
-            You control what location info is shared with drivers (exact address, street only, or a custom meetup point). Location data is never sold to third parties and is deleted immediately after each delivery is completed.
+            You control what location info is shared with drivers (exact address, street only, or a custom meetup point). Location data is never sold to third parties. Your precise location is only ever shared with drivers when you choose the exact-address option.
           </Text>
 
           {/* Accept Button */}
