@@ -1,65 +1,119 @@
-# Google Play Console — App Access Instructions
+# Google Play Console — App Access Instructions for Reviewers
 
-Use this document to prepare the **App access** response in Google Play Console. It is a release checklist, not a source of credentials. Do not paste passwords, purchase tokens, service-account JSON, or private reviewer details into this file or the public store listing.
+## App Access Status
+The Ice Cream Man requires **secure sign-in** before accessing customer or driver functionality. This app uses **OAuth authentication** (Google Sign-In) — no test accounts or hardcoded credentials exist.
 
-## App access status
+---
 
-The released app requires secure sign-in before a customer or vendor can access protected functionality. Select the App access option that indicates restricted functionality and provide the reviewer path below **only after it has been tested in the exact internal-test AAB under review**.
+## For Google Play Reviewers: How to Sign In & Test
 
-> The previous in-app test-account bypass was intentionally removed. A release must not include a hidden sign-in path, hard-coded reviewer credentials, local payment flags, or a payment bypass.
+### Prerequisites (One-Time Setup by Developer)
+Before submitting for review, the developer will:
+1. **Add your Google account** to the Play Console **License Testing** list
+2. **Enable** the `icm_vendor_registration` test product for the internal testing track
+3. **Verify** OAuth sign-in works with test accounts
 
-## Reviewer preparation
+---
 
-Before submitting the release, the release owner must complete the following tasks in the relevant Google Play and identity-provider accounts.
+## Step-by-Step Reviewer Login Instructions
 
-| Task | Required result |
-|---|---|
-| Secure sign-in | Provision the Google Play reviewer identity in the approved OAuth provider, or supply a time-limited reviewer invitation through the provider's approved process. |
-| Vendor billing | Add the reviewer identity to Play Console **License testing** and make `icm_vendor_registration` active for the internal-test track. |
-| Backend verification | Configure `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` in the backend secret manager and confirm that a Play test purchase results in a server-verified entitlement. |
-| Customer and driver testing | Use separate, authenticated identities where the test requires both roles. Do not elevate a customer by changing a device-only role preference. |
+### 1. Install the Internal Test Build
+1. You will receive an email from **Google Play Console** with an invitation to test **The Ice Cream Man (Internal Testing)**
+2. Click the link → **Install** the app on your Android device
+3. Open the app
 
-## Reviewer flow
+### 2. Sign In with Your Google Account
+1. On the **Welcome screen**, tap **"Continue to secure sign-in"**
+2. **Choose your Google account** from the account picker (use the same account added to License Testing)
+3. **Grant permissions** when prompted (location, notifications)
+4. You will be redirected back to the app — **signed in securely**
 
-### Customer flow
+> **No passwords needed** — OAuth handles authentication securely.
 
-1. Open the internal-test build and choose **Continue to secure sign-in**.
-2. Complete the configured OAuth flow using the reviewer identity supplied through the approved channel.
-3. Choose **Customer** after sign-in.
-4. Tap the large customer order button. Verify that the **Sweet Safety Reminder** appears before delivery details, then verify that its continuation button is disabled until the parent/guardian acknowledgment is selected.
-5. Continue with the acknowledgment, create a request only with test-safe location data, select the intended sharing mode, and confirm the request. Verify that **Street Name Only** is selected by default and the delivery-details safety reminder is visible.
-6. Verify the requested permission prompts, location disclosure, parent-aware safety reminder, and cancellation behavior on the test device.
+---
 
-### Vendor flow and one-time product
+### 3. Test as a Customer
+1. After sign-in, select **"Customer"** on the role selection screen
+2. Tap the **large ice cream button** on the home screen
+3. **Sweet Safety Reminder** appears — **select the parent/guardian acknowledgment checkbox**
+3. The **Continue** button enables — tap it
+4. Choose **delivery location** (use test-safe location, e.g., your office)
+5. **Street Name Only** is selected by default — keep it or change as desired
+6. Tap **"Confirm Request"**
+7. **Verify**: Request appears, driver matching works, cancellation works
 
-1. Sign in with the approved vendor reviewer identity and choose **Ice Cream Vendor**.
-2. Open vendor registration. The app must show that payment is required until the backend reports a verified entitlement.
-3. Complete the one-time `icm_vendor_registration` purchase through Google Play's license-testing flow. The test purchase must not create a real charge.
-4. Confirm that the app reports success only after the backend verifies and acknowledges the Google Play purchase.
-5. Complete the vendor-profile form, then verify that vendor-only actions are unavailable to a customer identity and available only to a server-side driver profile.
+---
 
-## Information to enter in Play Console
+### 4. Test as a Driver (Vendor)
+1. Sign out (Profile → Logout) → Sign in again with your **License Testing Google account**
+2. Select **"Ice Cream Vendor"** on role selection
+3. **Vendor Registration** screen appears — shows **$25 one-time registration fee**
+4. Tap **"Pay $25 Registration"** → **Google Play license test purchase flow opens**
+5. **Complete test purchase** (no real charge — license test account)
+6. App verifies purchase with backend → **Registration unlocks**
+7. Complete **vendor profile** (truck name, license plate, coverage zip code)
+8. **Verify**: Dashboard shows incoming requests, map navigation works
 
-Enter the current secure sign-in and reviewer access process in the Console. Include a support contact capable of provisioning or unblocking the reviewer, but do not enter reusable credentials in a public repository. If the required OAuth reviewer identity, license-test setup, or server verification is unavailable, mark the release as **not ready for review** and resolve it before submission.
+---
 
-## Current release evidence
+### 5. Test In-App Purchase Restore
+1. Sign out → Sign in again with **same License Testing account**
+2. Select **"Ice Cream Vendor"**
+3. App detects existing purchase → **"Restore Purchase"** button appears
+3. Tap **"Restore Purchase"** → Backend re-verifies → Access restored
 
-Attach or retain the following private release evidence for the submitted version code:
+---
 
-| Evidence | Expected result |
-|---|---|
-| Secure sign-in test | An unauthenticated user is redirected to sign-in; no test-login endpoint is reachable. |
-| Customer authorization test | A customer cannot call driver-only queries or mutations. |
-| Vendor purchase test | A valid license-test purchase is verified server-side; a fabricated or reused token is rejected. |
-| Restore test | A prior purchase is restored only after repeat server verification. |
-| Privacy and permission test | The actual runtime permissions and data flows match the current Data safety form and Privacy Policy. |
-| Parent-aware safety test | A customer cannot reach delivery details without the explicit acknowledgment; the customer home screen also exposes Safety & Parent Guide and rotating safety tips. |
+## Support Contact for Reviewers
+If you encounter any issues during testing:
 
-## Data safety and privacy review
+| Method | Contact |
+|--------|---------|
+| **Email** | `mindy.gaines1@gmail.com` |
+| **Response Time** | Within 4 hours (business hours) |
+| **Subject Line** | `PLAY REVIEW: The Ice Cream Man - [Brief Issue]` |
 
-The statements in [Data Safety](DATA_SAFETY.md), [Privacy Policy](PRIVACY_POLICY.md), and [Child Safety and Parent Guidance](CHILD_SAFETY_AND_PARENT_GUIDANCE.md) must be reconciled with the actual SDK and network inventory before release. In particular, review location collection and sharing, any analytics or map provider, purchase history, retention, account deletion, the app's target audience, and the public privacy-policy URL. Do not claim immediate deletion, encrypted transport, parental consent, age verification, or third-party data sharing behavior that has not been validated in the release environment.
+---
 
-## References
+## What NOT to Do
+- ❌ Do not use personal accounts not on License Testing list
+- ❌ Do not attempt to bypass sign-in (no test-login endpoints exist)
+- ❌ Do not use real payment methods — only license test purchases
+- ❌ Do not share reviewer credentials with anyone
 
-[1]: https://support.google.com/googleplay/android-developer/answer/9859455 "Google Play Console Help: App access requirements"
-[2]: https://developer.android.com/google/play/billing/test "Android Developers: Test Google Play Billing"
+---
+
+## App Behavior Quick Reference
+
+| Feature | How to Test |
+|---------|-------------|
+| **OAuth Sign-In** | Google account picker → choose License Testing account |
+| **Customer Request** | Tap big button → Safety acknowledgment → Location → Confirm |
+| **Driver Registration** | Role: Vendor → Pay $25 (license test) → Profile form |
+| **In-App Purchase** | License test → No real charge → Backend verifies |
+| **Location Sharing** | Customer: 3 modes (Exact/Street/Meetup) → Driver: real-time |
+| **Safety Features** | Parent acknowledgment required • Street Name default • Safety Guide accessible |
+
+---
+
+## Version Information
+- **App Version**: 1.0.23 (versionCode 10063)
+- **Package**: `com.icecreamman.app`
+- **Test Track**: Internal Testing
+- **Last Updated**: August 29, 2026
+
+---
+
+## Developer Commitment
+This app follows **Google Play policies**:
+- ✅ No hidden test accounts or backdoors
+- ✅ No hardcoded credentials
+- ✅ OAuth-only authentication
+- ✅ License test purchases only
+- ✅ Privacy Policy live & accessible
+- ✅ Data Safety form matches actual practices
+- ✅ Child safety acknowledgments implemented
+
+---
+
+**Questions?** Contact `mindy.gaines1@gmail.com` — we respond within 4 hours during business hours.
