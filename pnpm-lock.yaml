@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  axios: ^1.18.1
+  axios: ^1.20.0
   '@xmldom/xmldom': ^0.9.8
   ajv: ^8.17.1
   '@eslint/eslintrc>ajv': 6.14.0
@@ -61,8 +61,8 @@ importers:
         specifier: 11.8.0
         version: 11.8.0(typescript@5.9.3)
       axios:
-        specifier: ^1.18.1
-        version: 1.18.1
+        specifier: ^1.20.0
+        version: 1.20.0
       brace-expansion:
         specifier: 2.1.4
         version: 2.1.4
@@ -100,8 +100,8 @@ importers:
         specifier: ~15.0.8
         version: 15.0.8(expo@54.0.37)
       expo-iap:
-        specifier: ^5.0.0
-        version: 5.0.0(expo@54.0.37)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+        specifier: ^5.4.1
+        version: 5.4.1(expo@54.0.37)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       expo-image:
         specifier: ~3.0.11
         version: 3.0.11(expo@54.0.37)(react-native-web@0.21.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -151,14 +151,14 @@ importers:
         specifier: ^4.22.1
         version: 4.22.2
       googleapis:
-        specifier: ^174.0.1
-        version: 174.0.1
+        specifier: ^176.0.0
+        version: 176.0.0
       helmet:
         specifier: ^8.3.0
         version: 8.3.0
       jose:
-        specifier: 6.1.0
-        version: 6.1.0
+        specifier: 6.2.10
+        version: 6.2.10
       nativewind:
         specifier: ^4.2.1
         version: 4.2.6(react-native-reanimated@4.1.7(react-native-worklets@0.5.1(@babel/core@7.29.7)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-safe-area-context@5.6.2(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-svg@15.12.1(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(tailwindcss@3.4.19(tsx@4.23.1)(yaml@2.9.0))
@@ -218,7 +218,7 @@ importers:
         specifier: ^4.17.25
         version: 4.17.25
       '@types/node':
-        specifier: ^22.19.3
+        specifier: ^22.20.1
         version: 22.20.1
       '@types/qrcode':
         specifier: ^1.5.6
@@ -230,7 +230,7 @@ importers:
         specifier: ^2.16.1
         version: 2.16.1
       concurrently:
-        specifier: ^9.2.1
+        specifier: ^9.2.4
         version: 9.2.4
       cross-env:
         specifier: ^7.0.3
@@ -242,13 +242,13 @@ importers:
         specifier: ^0.28.1
         version: 0.28.1
       eslint:
-        specifier: ^9.39.2
+        specifier: ^9.39.5
         version: 9.39.5(jiti@1.21.7)
       eslint-config-expo:
         specifier: ~10.0.0
         version: 10.0.0(eslint@9.39.5(jiti@1.21.7))(typescript@5.9.3)
       prettier:
-        specifier: ^3.7.4
+        specifier: ^3.9.5
         version: 3.9.5
       qrcode:
         specifier: ^1.5.4
@@ -2337,8 +2337,8 @@ packages:
     resolution: {integrity: sha512-NZKeq9AfyQvEeNlN0zSYAaWrmBffJh3IELMZfRpJVWgrpEbtEpnjvzqBPf+mxoI287JohRDoa+/nsfqqiZmF6g==}
     engines: {node: '>= 6.0.0'}
 
-  axios@1.18.1:
-    resolution: {integrity: sha512-3nTvFlvpn9Zu/RkHUqtc7/+al4UpRW5az71ap5zccp6e8RAYEzhMTecX8Dz1wWDYrPpUoB1HAQEGEAEvUr7S9g==}
+  axios@1.20.0:
+    resolution: {integrity: sha512-r8aOh8j9cGKpgQAqpzrUHnSIc6a59Y3Xf/cv8sy1DrHCkZHzQGEuoq1tARk6qSyDdtQGSDgpb9kFlruzPvrgwg==}
 
   babel-jest@29.7.0:
     resolution: {integrity: sha512-BrvGY3xZSwEcCzKvKsCi2GgHqDqsYkOP4/by5xCgIwGXQxIEh+8ew3gmrE1y7XRR6LHZIj6yLYnUi/mm2KXKBg==}
@@ -3285,10 +3285,10 @@ packages:
     peerDependencies:
       expo: '*'
 
-  expo-iap@5.0.0:
-    resolution: {integrity: sha512-vIz+86KI1xgfFHCHlSrcI/3DFjwgcz6qci2hShtYDP4m5g5ZHP3lE2sUG+o0pipqOYoRs5faWYWgkJNDZ/ZoSQ==}
+  expo-iap@5.4.1:
+    resolution: {integrity: sha512-npyM/jyoiq52xr6AYNIOhvfX99nZzKlUvZYbgZ/v3BDyjvQmZquQDSeqt5Wp6tnmpIoxCfXsJnP9ByIr4md3ng==}
     peerDependencies:
-      '@amazon-devices/keplerscript-appstore-iap-lib': ~2.12.13
+      '@amazon-devices/keplerscript-appstore-iap-lib': ~2.13.0
       '@amazon-devices/package-manager-lib': ~1.0.1767254401
       expo: '*'
       react: '*'
@@ -3729,8 +3729,8 @@ packages:
     resolution: {integrity: sha512-7g1yzQKx0mmNTjiK0H9dJ8eqKqDBveES9vLHeg5neb3BMQy/d1oQefIMhIpOVT8a+f+LOcixMEdRbFIW/cQUJw==}
     engines: {node: '>=18'}
 
-  googleapis@174.0.1:
-    resolution: {integrity: sha512-51B9r4WnyAyUXvsDhDswpSVZbqx3afSBEzrzshxBivysBKsB6kJ+X5CVOybRV/R3HIURiR01uHXLGkEm7On3dA==}
+  googleapis@176.0.0:
+    resolution: {integrity: sha512-v24+WfeIw3R9iF8LT7eixlawezy5SGGNB/WjFV8qeiBS9G6KCsqaFngsnTXvBrVH4womehN2Co8UYJxZ0KpbvQ==}
     engines: {node: '>=18'}
 
   gopd@1.2.0:
@@ -4107,8 +4107,8 @@ packages:
     resolution: {integrity: sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==}
     hasBin: true
 
-  jose@6.1.0:
-    resolution: {integrity: sha512-TTQJyoEoKcC1lscpVDCSsVgYzUDg/0Bt3WE//WiTPK6uOCQC2KZS4MpugbMWt/zyjkopgZoXhZuCi00gLudfUA==}
+  jose@6.2.10:
+    resolution: {integrity: sha512-iiW7J9qRFlGxvCOIBDBDxFePQSn7ZMAnrYGhrrOo6siO/MIqwfyilLR27pkfDgUk+raLuzADS8A3S/KLBisc0g==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -5399,10 +5399,6 @@ packages:
 
   shell-quote@1.10.0:
     resolution: {integrity: sha512-w1aiOKwKuRgtwAReIIj89puqg+I7GvX4IbLrvmhXbzQsj1+Zwi4VO3+fa6ZF91TWSjIxoEkKnMeHcLEODK5ZXA==}
-    engines: {node: '>= 0.4'}
-
-  shell-quote@1.9.0:
-    resolution: {integrity: sha512-Iov+JwFv/2HcTpcwNMKd8+IWNb8tboQJNQTkAY/LLVK7gGH9jy+LGkVqPxfekHl+yMmiqXszdGWXgkfml7hjqA==}
     engines: {node: '>= 0.4'}
 
   side-channel-list@1.0.1:
@@ -8479,7 +8475,7 @@ snapshots:
   aws-ssl-profiles@1.1.2:
     optional: true
 
-  axios@1.18.1:
+  axios@1.20.0:
     dependencies:
       follow-redirects: 1.16.0
       form-data: 4.0.6
@@ -8883,7 +8879,7 @@ snapshots:
     dependencies:
       chalk: 4.1.2
       rxjs: 7.8.2
-      shell-quote: 1.9.0
+      shell-quote: 1.10.0
       supports-color: 8.1.1
       tree-kill: 1.2.2
       yargs: 17.7.2
@@ -9553,7 +9549,7 @@ snapshots:
     dependencies:
       expo: 54.0.37(@babel/core@7.29.7)(@expo/metro-runtime@6.1.2)(expo-router@6.0.24)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
 
-  expo-iap@5.0.0(expo@54.0.37)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
+  expo-iap@5.4.1(expo@54.0.37)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
     dependencies:
       expo: 54.0.37(@babel/core@7.29.7)(@expo/metro-runtime@6.1.2)(expo-router@6.0.24)(react-native@0.81.5(@babel/core@7.29.7)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
       react: 19.1.0
@@ -10121,7 +10117,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  googleapis@174.0.1:
+  googleapis@176.0.0:
     dependencies:
       google-auth-library: 10.5.0
       googleapis-common: 8.0.3
@@ -10557,7 +10553,7 @@ snapshots:
 
   jiti@1.21.7: {}
 
-  jose@6.1.0: {}
+  jose@6.2.10: {}
 
   js-tokens@4.0.0: {}
 
@@ -12084,8 +12080,6 @@ snapshots:
   shebang-regex@3.0.0: {}
 
   shell-quote@1.10.0: {}
-
-  shell-quote@1.9.0: {}
 
   side-channel-list@1.0.1:
     dependencies:

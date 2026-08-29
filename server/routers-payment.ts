@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { GOOGLE_PLAY_REGISTRATION_PRODUCT_ID, verifyGooglePlayRegistrationPurchase } from "./google-play";
+import { GOOGLE_PLAY_REGISTRATION_PRODUCT_ID, verifyGooglePlayRegistrationPurchase, type VerifiedGooglePlayPurchase } from "./google-play";
 import { router, protectedProcedure, publicProcedure } from "./_core/trpc";
 import * as db from "./db";
 
@@ -43,7 +43,7 @@ function checkRateLimit(userId: string): { allowed: boolean; retryAfterMs?: numb
 }
 
 const verifyRegistrationRateLimit = protectedProcedure.use(async ({ ctx, next }) => {
-  const rateLimitResult = checkRateLimit(ctx.user.id);
+  const rateLimitResult = checkRateLimit(String(ctx.user.id));
   if (!rateLimitResult.allowed) {
     throw new TRPCError({
       code: "TOO_MANY_REQUESTS",
@@ -113,12 +113,13 @@ export const paymentRouter = router({
           };
         }
 
+        const verifiedPurchase = purchase as VerifiedGooglePlayPurchase;
         const result = await db.createVendorEntitlement({
           userId: ctx.user.id,
           productId: input.productId,
-          purchaseTokenHash: purchase.purchaseTokenHash,
-          orderId: purchase.orderId,
-          purchaseTimeMillis: purchase.purchaseTimeMillis,
+          purchaseTokenHash: verifiedPurchase.purchaseTokenHash,
+          orderId: verifiedPurchase.orderId ?? null,
+          purchaseTimeMillis: verifiedPurchase.purchaseTimeMillis,
         });
 
         return {
