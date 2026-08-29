@@ -24,7 +24,7 @@ Start with the guide that matches the task at hand. The [documentation index](do
 | Customers | Drivers |
 |---|---|
 | Request a nearby truck and view its approach on a map. | Receive nearby customer requests and open navigation. |
-| Review request history and rate completed service. | Review daily reports, earnings, mileage, and fuel-cost inputs. |
+| Review request history and rate completed service. | Review daily reports, mileage, and fuel-cost inputs. |
 | Receive proximity messaging and a configurable ice-cream-truck jingle. | Complete one-time registration through Google Play Billing. |
 
 ## Architecture at a glance
