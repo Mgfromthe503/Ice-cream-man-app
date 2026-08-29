@@ -1,16 +1,17 @@
 /**
  * Terms of Service Screen
- * 
+ *
  * Displays the full Terms of Service, Privacy Policy, and Vendor Agreement
  * for the Ice Cream Man driver registration. Required for Google Play compliance.
  */
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable, Linking } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { useRouter } from 'expo-router';
 
-const EFFECTIVE_DATE = 'June 29, 2026';
+const EFFECTIVE_DATE = 'August 28, 2026';
 const APP_NAME = 'The Ice Cream Man';
+const GOOGLE_PLAY_TOS_URL = 'https://play.google.com/about/play-terms';
 
 export default function TermsOfServiceScreen() {
   const colors = useColors();
@@ -56,6 +57,17 @@ export default function TermsOfServiceScreen() {
           • Agree to these Terms of Service, Privacy Policy, and Vendor Agreement{'\n'}
           • Maintain a valid driver's license and appropriate vehicle insurance{'\n\n'}
           The one-time purchase grants access to the App's Driver Dashboard. Google Play processes that app-access purchase; we do not collect or store card or bank-account details. This purchase does not collect, settle, transfer, or guarantee payment for physical ice cream orders, driver sales, or driver payouts. Refunds are handled through Google Play and any applicable law.
+          {'\n\n'}
+          <Text style={{ fontWeight: '700' }}>Important:</Text> This is a one-time, non-recurring purchase (not a subscription). Google Play provides a 48-hour refund window for in-app purchases; after 48 hours, refunds are at Google Play's discretion per their policies. Google Play's Terms of Service apply to all purchases.
+          {'\n\n'}
+          <Pressable
+            onPress={() => Linking.openURL(GOOGLE_PLAY_TOS_URL)}
+            style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
+          >
+            <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '600', textDecorationLine: 'underline' }}>
+              View Google Play Terms of Service →
+            </Text>
+          </Pressable>
         </Section>
 
         {/* Section 4 */}

@@ -136,7 +136,7 @@ Deletion is available **in-app** (both Customer and Driver profiles) via `POST /
 
 ## D. Google Play Listing Rules & Store Listing Details
 
-Sources: [`GOOGLE_PLAY_LISTING.md`](GOOGLE_PLAY_LISTING.md), [`GOOGLE_PLAY_APP_ACCESS.md`](GOOGLE_PLAY_APP_ACCESS.md), [`docs/rejection-response.md`](../docs/rejection-response.md), and the rejection-fixes checkpoint.
+Sources: [`GOOGLE_PLAY_LISTING.md`](GOOGLE_PLAY_LISTING.md), [`GOOGLE_PLAY_APP_ACCESS.md`](GOOGLE_PLAY_APP_ACCESS.md), and [`PLAY_CONSOLE_CONTENT_DECLARATIONS.md`](PLAY_CONSOLE_CONTENT_DECLARATIONS.md).
 
 ### D.1 No test-login / no hard-coded reviewer credentials
 > **The previous in-app test-account bypass was intentionally REMOVED. Do NOT add it back.**
@@ -202,6 +202,6 @@ Secure sign-in is required before a customer or vendor can access protected func
 - `legal/DATA_SAFETY.md` — Play Data Safety form source
 - `legal/GOOGLE_PLAY_LISTING.md` — store listing text
 - `legal/GOOGLE_PLAY_APP_ACCESS.md` — app-access reviewer prep
-- `docs/rejection-response.md` — rejection analysis and org-account decision
+- `legal/PLAY_CONSOLE_CONTENT_DECLARATIONS.md` — Play Console declaration checklist
 - Google Play Console Help: [App access requirements](https://support.google.com/googleplay/android-developer/answer/9859455)
 - Android Developers: [Test Google Play Billing](https://developer.android.com/google/play/billing/test)

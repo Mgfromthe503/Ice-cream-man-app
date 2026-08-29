@@ -14,7 +14,7 @@ const config: ExpoConfig = {
   name: APP_NAME,
   slug: APP_SLUG,
   owner: EXPO_OWNER,
-  version: "1.0.22",
+  version: "1.0.23",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: APP_SCHEME,
@@ -36,12 +36,12 @@ const config: ExpoConfig = {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: APP_BUNDLE_ID,
-    versionCode: 10057,
+    // versionCode managed by EAS autoIncrement (see eas.json)
     permissions: [
       "POST_NOTIFICATIONS",
       "com.android.vending.BILLING",
       "ACCESS_FINE_LOCATION",
-      "ACCESS_COARSE_LOCATION",
+      // ACCESS_COARSE_LOCATION removed - app uses precise location only
     ],
     // Queries block for Android 11+ (API 30+) package visibility
     // Required for Linking.openURL() to work with external maps apps
@@ -58,7 +58,7 @@ const config: ExpoConfig = {
         data: [
           {
             scheme: APP_SCHEME,
-            host: "*",
+            host: "mgfromthe503.github.io",
           },
         ],
         category: ["BROWSABLE", "DEFAULT"],
@@ -138,6 +138,7 @@ const config: ExpoConfig = {
           kotlinVersion: "2.1.20",
           buildArchs: ["armeabi-v7a", "arm64-v8a"],
           minSdkVersion: 24,
+          targetSdkVersion: 34,
           // Enable R8 minification and resource shrinking for Google Play compliance
           enableProguardInReleaseBuilds: true,
           enableShrinkResourcesInReleaseBuilds: true,

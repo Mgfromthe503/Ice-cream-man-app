@@ -41,13 +41,28 @@ export default function VendorPaymentScreen() {
   }, [paymentStatus.data?.registrationPaid, paymentStatus.isLoading]);
 
   const verifyPurchaseToken = async (purchaseToken: string) => {
-    await verifyRegistration.mutateAsync({
+    const result = await verifyRegistration.mutateAsync({
       productId: VENDOR_REGISTRATION_PRODUCT_ID,
       purchaseToken,
     });
     await finishVerifiedRegistrationPurchase(purchaseToken);
+
+    // Handle pending purchase state
+    if ("pending" in result && result.pending) {
+      Alert.alert(
+        "Payment Pending",
+        result.message || "Your payment is being processed. Please complete it in Google Play."
+      );
+      return;
+    }
+
+    // Refetch and update paid state ONLY after successful verification
     await paymentStatus.refetch();
-    setPaid(true);
+    // Verify the refetch actually returned paid=true before setting local state
+    const updatedStatus = await paymentStatus.refetch();
+    if (updatedStatus.data?.registrationPaid === true) {
+      setPaid(true);
+    }
   };
 
   const handlePayment = async () => {

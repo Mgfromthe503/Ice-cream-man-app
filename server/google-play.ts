@@ -15,6 +15,12 @@ export type VerifiedGooglePlayPurchase = {
   orderId: string | null;
   purchaseTimeMillis: string | null;
   purchaseTokenHash: string;
+  purchaseState: number;
+};
+
+export type PendingPurchaseResult = {
+  isPending: true;
+  purchaseTimeMillis: string | null;
 };
 
 function loadServiceAccountCredentials(): ServiceAccountCredentials {
@@ -53,7 +59,7 @@ export function hashPurchaseToken(purchaseToken: string): string {
  */
 export async function verifyGooglePlayRegistrationPurchase(
   purchaseToken: string,
-): Promise<VerifiedGooglePlayPurchase> {
+): Promise<VerifiedGooglePlayPurchase | PendingPurchaseResult> {
   const publisher = getAndroidPublisherClient();
   const response = await publisher.purchases.products.get({
     packageName: APP_BUNDLE_ID,
@@ -62,27 +68,46 @@ export async function verifyGooglePlayRegistrationPurchase(
   });
   const purchase = response.data;
 
+  // Handle pending purchases (cash payments, etc.)
+  if (purchase.purchaseState === 2) {
+    return {
+      isPending: true,
+      purchaseTimeMillis: purchase.purchaseTimeMillis ?? null,
+    };
+  }
+
   if (
     purchase.purchaseState !== 0 ||
     (purchase.productId && purchase.productId !== GOOGLE_PLAY_REGISTRATION_PRODUCT_ID) ||
-    purchase.consumptionState === 1 ||
-    purchase.refundableQuantity === 0
+    purchase.consumptionState === 1
   ) {
     throw new Error("Google Play did not confirm an active vendor-registration purchase.");
   }
 
+  // Reject test purchases in production (purchaseType: 0 = test, 1 = promo, null/undefined = production)
+  if (purchase.purchaseType === 0) {
+    throw new Error("Test purchase not allowed in production.");
+  }
+
+  // Acknowledge if not already acknowledged (idempotent - safe to call multiple times)
   if (purchase.acknowledgementState === 0) {
-    await publisher.purchases.products.acknowledge({
-      packageName: APP_BUNDLE_ID,
-      productId: GOOGLE_PLAY_REGISTRATION_PRODUCT_ID,
-      token: purchaseToken,
-      requestBody: {},
-    });
+    try {
+      await publisher.purchases.products.acknowledge({
+        packageName: APP_BUNDLE_ID,
+        productId: GOOGLE_PLAY_REGISTRATION_PRODUCT_ID,
+        token: purchaseToken,
+        requestBody: {},
+      });
+    } catch (ackError) {
+      // Log but don't fail - acknowledgment may have been done by another process
+      console.warn("[Billing] Acknowledgment failed (may be idempotent):", ackError);
+    }
   }
 
   return {
     orderId: purchase.orderId ?? null,
     purchaseTimeMillis: purchase.purchaseTimeMillis ?? null,
     purchaseTokenHash: hashPurchaseToken(purchaseToken),
+    purchaseState: purchase.purchaseState,
   };
 }

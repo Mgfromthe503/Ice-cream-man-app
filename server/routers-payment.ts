@@ -4,6 +4,56 @@ import { GOOGLE_PLAY_REGISTRATION_PRODUCT_ID, verifyGooglePlayRegistrationPurcha
 import { router, protectedProcedure, publicProcedure } from "./_core/trpc";
 import * as db from "./db";
 
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 5;
+
+interface RateLimitEntry {
+  count: number;
+  resetAt: number;
+}
+
+const rateLimitStore = new Map<string, RateLimitEntry>();
+
+function cleanupRateLimitStore() {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitStore.entries()) {
+    if (entry.resetAt < now) {
+      rateLimitStore.delete(key);
+    }
+  }
+}
+
+setInterval(cleanupRateLimitStore, RATE_LIMIT_WINDOW_MS);
+
+function checkRateLimit(userId: string): { allowed: boolean; retryAfterMs?: number } {
+  const now = Date.now();
+  const entry = rateLimitStore.get(userId);
+
+  if (!entry || entry.resetAt < now) {
+    rateLimitStore.set(userId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true };
+  }
+
+  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return { allowed: false, retryAfterMs: entry.resetAt - now };
+  }
+
+  entry.count++;
+  return { allowed: true };
+}
+
+const verifyRegistrationRateLimit = protectedProcedure.use(async ({ ctx, next }) => {
+  const rateLimitResult = checkRateLimit(ctx.user.id);
+  if (!rateLimitResult.allowed) {
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: "Too many verification attempts. Please wait before trying again.",
+      cause: { retryAfterMs: rateLimitResult.retryAfterMs },
+    });
+  }
+  return next();
+});
+
 /**
  * Payment & Monetization API Routes
  *
@@ -34,7 +84,7 @@ export const paymentRouter = router({
    * granting any entitlement. Purchase tokens remain server input only and are
    * stored as a hash solely for idempotency and replay prevention.
    */
-  verifyRegistration: protectedProcedure
+  verifyRegistration: verifyRegistrationRateLimit
     .input(
       z.object({
         purchaseToken: z.string().trim().min(20).max(4096),
@@ -53,6 +103,16 @@ export const paymentRouter = router({
 
       try {
         const purchase = await verifyGooglePlayRegistrationPurchase(input.purchaseToken);
+
+        // Handle pending purchases (cash payments, etc.)
+        if ("isPending" in purchase && purchase.isPending) {
+          return {
+            success: false,
+            pending: true,
+            message: "Payment is pending. Please complete the purchase in Google Play.",
+          };
+        }
+
         const result = await db.createVendorEntitlement({
           userId: ctx.user.id,
           productId: input.productId,
