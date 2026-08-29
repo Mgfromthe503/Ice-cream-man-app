@@ -12,7 +12,6 @@ interface DriverInfo {
   fullName: string;
   truckName: string;
   truckDescription: string;
-  phoneNumber: string;
   areaCode: string;
   truckNumber: string;
 }
@@ -152,13 +151,6 @@ export default function DriverProfileScreen() {
               <Text style={{ fontSize: 13, color: colors.muted }}>Coverage Area</Text>
               <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground }}>
                 {driverInfo?.areaCode || 'Not set'}
-              </Text>
-            </View>
-            <View style={{ height: 1, backgroundColor: colors.border }} />
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={{ fontSize: 13, color: colors.muted }}>Phone</Text>
-              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground }}>
-                {driverInfo?.phoneNumber || 'Not set'}
               </Text>
             </View>
             <View style={{ height: 1, backgroundColor: colors.border }} />

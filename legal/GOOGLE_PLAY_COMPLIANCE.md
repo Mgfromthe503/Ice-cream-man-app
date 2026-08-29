@@ -95,7 +95,7 @@ Ground truth for the Data Safety responses in Play Console. The full form source
 |----------|--------|
 | Does your app collect or share any of the required user data types? | Yes |
 | Is all user data collected by the app encrypted in transit? | Yes |
-| Do you provide a way for users to request deletion of their data? | Yes (in-app + email) |
+| Do you provide a way for users to request deletion of their data? | Yes (in-app + public web request page) |
 
 ### C.2 Data types collected (truthful set)
 | Data Type | Collected | Shared | Purpose | Optional |
@@ -125,12 +125,12 @@ Tapping "Navigate" in the driver flow opens the user's own external maps applica
 
 ### C.4 Handling and security practices
 - Data encrypted in transit (HTTPS/TLS) — **yes** · at rest — **yes**.
-- Users can request data deletion — **yes** (in-app Delete Account + email `mindy.gaines1@gmail.com`).
+- Users can request data deletion — **yes** (in-app Delete Account + public request page at `https://mgfromthe503.github.io/Ice-cream-man-app/account-deletion.html`).
 - HTTPS, authentication required, regular security updates, access controls, data minimization — all **yes**.
 - Compliant with children's privacy laws — **yes** (general-audience app; see §B.6).
 
 ### C.5 Data deletion declaration
-Deletion is available **in-app** (both Customer and Driver profiles) via `POST /api/auth/delete-account`, and by email to `mindy.gaines1@gmail.com`. This satisfies Play's "data deletion" declaration.
+Deletion is available **in-app** (both Customer and Driver profiles) via `POST /api/auth/delete-account`, and through the public request page at `https://mgfromthe503.github.io/Ice-cream-man-app/account-deletion.html`, which provides a deletion-request email action. This satisfies the documented in-app and external request paths.
 
 ---
 
@@ -185,7 +185,7 @@ Secure sign-in is required before a customer or vendor can access protected func
 
 > Before each resubmission, confirm:
 
-- [ ] **Data Safety matches implementation.** The form (§C) reflects the actual SDK/network inventory: only **Google Play Billing** and **OpenStreetMap Nominatim** as third-party data recipients; **NO** Phone number, Google Analytics, Google Maps SDK, or AdMob declared.
+- [ ] **Data Safety matches implementation.** The form (§C) reflects the actual SDK/network inventory: only **Google Play Billing** and **OpenStreetMap Nominatim** as third-party data recipients; **NO** Phone number, Google Analytics, Google Maps SDK, or AdMob declared. Account deletion is available in-app and through the public request page.
 - [ ] **Privacy policy URL is live** at `https://mgfromthe503.github.io/Ice-cream-man-app/privacy.html` (the in-app/public route) and matches `legal/PRIVACY_POLICY.md`.
 - [ ] **No test accounts / no reviewer backdoor.** No hidden sign-in path, hard-coded credentials, local payment flags, or payment bypass in the release under review.
 - [ ] **Version & versionCode consistent.** `version`/`versionCode` in `app.config.ts` are higher than the last uploaded build.

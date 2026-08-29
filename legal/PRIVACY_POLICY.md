@@ -6,6 +6,7 @@
 **Developer:** Mindy Gaines  
 **Contact:** mindy.gaines1@gmail.com  
 **Package:** com.icecreamman.app
+**Public account-deletion requests:** https://mgfromthe503.github.io/Ice-cream-man-app/account-deletion.html
 
 ---
 
@@ -83,6 +84,8 @@ The App uses **Google Play Billing** exclusively for the one-time $25 Driver reg
 | Device platform (Android/iOS/Web) | UI rendering and feature compatibility |
 | App state (foreground/background) | Battery-efficient polling management |
 | Push notification token | Delivery alerts and order notifications |
+
+The current Android release does not request or collect a phone number.
 
 ---
 
@@ -169,7 +172,7 @@ The Ice Cream Man does NOT perform background checks, criminal history checks, d
 |-------|-------------|-----------------|
 | Access | View your personal data | In-app profile settings |
 | Correction | Update inaccurate data | In-app profile settings |
-| Deletion | Request account and data deletion | Email mindy.gaines1@gmail.com |
+| Deletion | Delete in the App or request account and data deletion online | In-app Delete Account or https://mgfromthe503.github.io/Ice-cream-man-app/account-deletion.html |
 | Location control | Change sharing mode per order, or disable location entirely | In-app delivery options / device settings |
 | Data portability | Export your data | Email mindy.gaines1@gmail.com |
 
@@ -184,6 +187,8 @@ If you are a California resident, you have additional rights under the Californi
 - Right to non-discrimination for exercising your rights
 
 **We do not sell personal information to third parties.**
+
+For users who cannot sign in, account and associated-data deletion requests can be submitted at https://mgfromthe503.github.io/Ice-cream-man-app/account-deletion.html.
 
 ---
 

@@ -53,7 +53,7 @@ Open **App content → Government apps** and select **"No"**.
 Fill exactly per **`legal/DATA_SAFETY.md`**:
 - **No** Phone number · **No** Google Analytics · **No** Google Maps SDK · **No** AdMob / advertising SDK.
 - Third-party data recipients are only **Google Play Billing** (purchase metadata) and **OpenStreetMap Nominatim** (GPS for reverse geocoding).
-- **Yes** to: encrypted in transit, users can request deletion, in-app account deletion.
+- **Yes** to: encrypted in transit, users can request deletion, in-app account deletion, and the external deletion-request resource.
 
 ## 6. App access
 
@@ -72,6 +72,7 @@ Per **`legal/GOOGLE_PLAY_APP_ACCESS.md`**: restricted functionality; provide the
 - [ ] `app.config.ts` `version`/`versionCode` are **higher** than the last rejected build (currently version `1.0.22`, versionCode `10057`). Bump both before submitting.
 - [ ] Data safety matches the actual SDK/network inventory.
 - [ ] Privacy policy URL is live and matches `legal/PRIVACY_POLICY.md`.
+- [ ] External account-deletion request URL: `https://mgfromthe503.github.io/Ice-cream-man-app/account-deletion.html`.
 - [ ] No test login / reviewer backdoor in the release.
 - [ ] Store listing (above) has **no** earnings/income/fee/split language.
 - [ ] Use a **newly built AAB** (EAS `production` build → upload). Do not re-upload the same rejected AAB.
