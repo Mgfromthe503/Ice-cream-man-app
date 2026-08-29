@@ -145,7 +145,7 @@ export default function VendorPaymentScreen() {
               <Text style={{ fontSize: 18, fontWeight: '700', color: colors.foreground }}>What's Included:</Text>
               <Text style={{ color: colors.muted, fontSize: 14 }}>✅ Unlimited customer request alerts</Text>
               <Text style={{ color: colors.muted, fontSize: 14 }}>✅ Real-time GPS navigation to customers</Text>
-              <Text style={{ color: colors.muted, fontSize: 14 }}>✅ Daily earnings & savings reports</Text>
+              <Text style={{ color: colors.muted, fontSize: 14 }}>✅ Daily reports & savings</Text>
               <Text style={{ color: colors.muted, fontSize: 14 }}>✅ Gas savings calculator</Text>
               <Text style={{ color: colors.muted, fontSize: 14 }}>✅ Customer ratings & reviews</Text>
               <Text style={{ color: colors.muted, fontSize: 14 }}>✅ Hourly rate comparison (with vs without app)</Text>

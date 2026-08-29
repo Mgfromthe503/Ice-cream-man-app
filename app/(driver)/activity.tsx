@@ -68,7 +68,7 @@ export default function DriverActivityScreen() {
       <ScreenContainer className="p-6">
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text className="text-muted mt-4">Loading earnings...</Text>
+          <Text className="text-muted mt-4">Loading activity...</Text>
         </View>
       </ScreenContainer>
     );

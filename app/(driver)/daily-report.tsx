@@ -134,7 +134,7 @@ export default function DailyReportScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
 
-    // Save to AsyncStorage for earnings screen to read
+    // Save to AsyncStorage for activity screen to read
     try {
       const stored = await AsyncStorage.getItem('dailyReports');
       const existing = stored ? JSON.parse(stored) : [];
@@ -528,7 +528,7 @@ export default function DailyReportScreen() {
 
           {/* Info text */}
           <Text style={{ color: colors.muted, fontSize: 11, textAlign: 'center', lineHeight: 16 }}>
-            The report compares your actual hourly earnings to what they would be without the app
+            The report compares your actual sales per hour to what they would be without the app
             (driving 3x more miles to find customers randomly). Gas savings are calculated using
             your inputted gas price.
           </Text>
