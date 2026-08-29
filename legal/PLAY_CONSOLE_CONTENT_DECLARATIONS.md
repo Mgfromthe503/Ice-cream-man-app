@@ -61,8 +61,9 @@ Per **`legal/GOOGLE_PLAY_APP_ACCESS.md`**: restricted functionality; provide the
 
 ## 7. Main content / Targeting & audiences
 
-- **Target audience**: General audience.
-- Confirm the app is **not** directed at children (it is a general-audience Food & Drink app). Complete the Families-targeting questionnaire truthfully.
+- **Target audience**: General audience (13+).
+- **App is 13+ with a mandatory age gate.** The app shows an "Are you 13 or older?" gate before use; anyone under 13 cannot use the app. Because of this, the app **is not directed at children** and **does not collect any data from anyone under 13**.
+- Complete the **Families Policy questionnaire** truthfully: the app is **not** designed for children under 13 and **does not** collect precise location or advertising IDs from children. The 13+ age gate plus Audience targeting in Play Console resolves the Family Policies / child-audience precise-location concern.
 - **Ads**: None. Do not declare ads.
 
 ---

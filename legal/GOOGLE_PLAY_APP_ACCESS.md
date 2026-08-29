@@ -22,7 +22,13 @@ Before submitting for review, the developer will:
 2. Click the link → **Install** the app on your Android device
 3. Open the app
 
-### 2. Sign In with Your Google Account
+### 2. Confirm You Are 13 or Older (Age Gate)
+1. On the **Welcome / age gate screen**, tap **"Yes, I'm 13 or older"**
+2. You are then taken to the **role selection** screen
+
+> **Note:** The Ice Cream Man is a **13+ app**. Anyone under 13 cannot use the app and is not asked to share any location. This gate keeps the app compliant with Google Play Families Policy.
+
+### 3. Sign In with Your Google Account
 1. On the **Welcome screen**, tap **"Continue to secure sign-in"**
 2. **Choose your Google account** from the account picker (use the same account added to License Testing)
 3. **Grant permissions** when prompted (location, notifications)
@@ -32,19 +38,19 @@ Before submitting for review, the developer will:
 
 ---
 
-### 3. Test as a Customer
+### 4. Test as a Customer
 1. After sign-in, select **"Customer"** on the role selection screen
 2. Tap the **large ice cream button** on the home screen
 3. **Sweet Safety Reminder** appears — **select the parent/guardian acknowledgment checkbox**
-3. The **Continue** button enables — tap it
-4. Choose **delivery location** (use test-safe location, e.g., your office)
-5. **Street Name Only** is selected by default — keep it or change as desired
-6. Tap **"Confirm Request"**
-7. **Verify**: Request appears, driver matching works, cancellation works
+4. The **Continue** button enables — tap it
+5. Choose **delivery location** (use test-safe location, e.g., your office)
+6. **Street Name Only** is selected by default — keep it or change as desired
+7. Tap **"Confirm Request"**
+8. **Verify**: Request appears, driver matching works, cancellation works
 
 ---
 
-### 4. Test as a Driver (Vendor)
+### 5. Test as a Driver (Vendor)
 1. Sign out (Profile → Logout) → Sign in again with your **License Testing Google account**
 2. Select **"Ice Cream Vendor"** on role selection
 3. **Vendor Registration** screen appears — shows **$25 one-time registration fee**
@@ -56,11 +62,11 @@ Before submitting for review, the developer will:
 
 ---
 
-### 5. Test In-App Purchase Restore
+### 6. Test In-App Purchase Restore
 1. Sign out → Sign in again with **same License Testing account**
 2. Select **"Ice Cream Vendor"**
 3. App detects existing purchase → **"Restore Purchase"** button appears
-3. Tap **"Restore Purchase"** → Backend re-verifies → Access restored
+4. Tap **"Restore Purchase"** → Backend re-verifies → Access restored
 
 ---
 
@@ -97,7 +103,7 @@ If you encounter any issues during testing:
 ---
 
 ## Version Information
-- **App Version**: 1.0.23 (versionCode 10063)
+- **App Version**: 1.0.24 (versionCode via EAS auto-increment)
 - **Package**: `com.icecreamman.app`
 - **Test Track**: Internal Testing
 - **Last Updated**: August 29, 2026

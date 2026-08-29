@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getApiBaseUrl } from "@/constants/oauth";
+import { clearAgeGroup } from "@/lib/age-gate";
 import {
   clearUserInfo,
   getSessionToken,
@@ -59,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       AsyncStorage.removeItem(USER_ROLE_KEY),
       removeSessionToken(),
       clearUserInfo(),
+      clearAgeGroup(),
     ]);
     setUserRoleState(null);
     setUserId(null);

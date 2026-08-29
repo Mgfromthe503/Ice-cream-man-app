@@ -1,6 +1,7 @@
 import "@/global.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter, useSegments } from "expo-router";
+import { getAgeGroup } from "@/lib/age-gate";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -42,6 +43,30 @@ function RootLayoutNav() {
     const inOAuthCallback = segments[0] === "oauth";
     const inLogin = segments[0] === "login";
     const inRoleSelect = segments[0] === "role-select";
+    const inAgeGate = segments[0] === "age-gate";
+
+    // The 13+ age gate is the first gate. It runs before login so no data is
+    // collected from anyone under 13. Only confirmed 13+ users proceed.
+    if (!inAgeGate && !inOAuthCallback) {
+      getAgeGroup().then((group) => {
+        if (!group) {
+          router.replace("/age-gate");
+          return;
+        }
+        if (!isAuthenticated) {
+          if (!inLogin) router.replace("/login");
+          return;
+        }
+        if (!userRole) {
+          if (!inRoleSelect) router.replace("/role-select");
+          return;
+        }
+        if (!inProductGroup) {
+          router.replace(userRole === "customer" ? "/(customer)" : "/(driver)");
+        }
+      });
+      return;
+    }
 
     if (!isAuthenticated) {
       if (!inLogin && !inOAuthCallback) router.replace("/login");
@@ -62,6 +87,7 @@ function RootLayoutNav() {
     <>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="age-gate" />
         <Stack.Screen name="login" />
         <Stack.Screen name="role-select" />
         <Stack.Screen name="(customer)" />

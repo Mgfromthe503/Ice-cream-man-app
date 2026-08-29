@@ -13,8 +13,8 @@ interface DailyReport {
   milesDriven: number;
   gasCostPerGallon: number;
   hoursDriven: number;
-  hourlyRateWithApp: number;
-  hourlyRateWithoutApp: number;
+  salesPerHourWithApp: number;
+  salesPerHourWithoutApp: number;
   timeSavedPercent: number;
 }
 
@@ -44,23 +44,23 @@ export default function DriverActivityScreen() {
   };
 
   // Calculate aggregate stats from real reports
-  const totalEarnings = reports.reduce((sum, r) => sum + r.totalSales, 0);
+  const totalSales = reports.reduce((sum, r) => sum + r.totalSales, 0);
   const totalDeliveries = reports.reduce((sum, r) => sum + r.iceCreamsSold, 0);
   const totalMiles = reports.reduce((sum, r) => sum + r.milesDriven, 0);
   const totalHours = reports.reduce((sum, r) => sum + r.hoursDriven, 0);
-  const avgHourlyRate = totalHours > 0 ? totalEarnings / totalHours : 0;
+  const avgSalesPerHour = totalHours > 0 ? totalSales / totalHours : 0;
 
   // Today's stats
   const today = new Date().toISOString().split('T')[0];
   const todayReports = reports.filter(r => r.date === today);
-  const todayEarnings = todayReports.reduce((sum, r) => sum + r.totalSales, 0);
+  const todaySales = todayReports.reduce((sum, r) => sum + r.totalSales, 0);
   const todayDeliveries = todayReports.reduce((sum, r) => sum + r.iceCreamsSold, 0);
 
   // This week's stats
   const weekStart = new Date();
   weekStart.setDate(weekStart.getDate() - weekStart.getDay());
   const weekReports = reports.filter(r => new Date(r.date) >= weekStart);
-  const weekEarnings = weekReports.reduce((sum, r) => sum + r.totalSales, 0);
+  const weekSales = weekReports.reduce((sum, r) => sum + r.totalSales, 0);
   const weekDeliveries = weekReports.reduce((sum, r) => sum + r.iceCreamsSold, 0);
 
   if (isLoading) {
@@ -116,7 +116,7 @@ export default function DriverActivityScreen() {
               }}>
                 <Text style={{ fontSize: 13, color: '#fff', opacity: 0.8 }}>Total Sales</Text>
                 <Text style={{ fontSize: 42, fontWeight: '900', color: '#fff' }}>
-                  ${totalEarnings.toFixed(2)}
+                  ${totalSales.toFixed(2)}
                 </Text>
                 <Text style={{ fontSize: 13, color: '#fff', opacity: 0.8 }}>
                   {totalDeliveries} ice creams sold • {totalMiles.toFixed(1)} miles driven
@@ -136,7 +136,7 @@ export default function DriverActivityScreen() {
                   }}>
                     <Text style={{ fontSize: 11, color: colors.muted, marginBottom: 4 }}>Today</Text>
                     <Text style={{ fontSize: 24, fontWeight: '800', color: colors.primary }}>
-                      ${todayEarnings.toFixed(2)}
+                      ${todaySales.toFixed(2)}
                     </Text>
                     <Text style={{ fontSize: 11, color: colors.muted, marginTop: 4 }}>
                       {todayDeliveries} sold
@@ -152,7 +152,7 @@ export default function DriverActivityScreen() {
                   }}>
                     <Text style={{ fontSize: 11, color: colors.muted, marginBottom: 4 }}>This Week</Text>
                     <Text style={{ fontSize: 24, fontWeight: '800', color: colors.success }}>
-                      ${weekEarnings.toFixed(2)}
+                      ${weekSales.toFixed(2)}
                     </Text>
                     <Text style={{ fontSize: 11, color: colors.muted, marginTop: 4 }}>
                       {weekDeliveries} sold
@@ -171,7 +171,7 @@ export default function DriverActivityScreen() {
                   }}>
                     <Text style={{ fontSize: 11, color: colors.muted, marginBottom: 4 }}>Avg $/Hour</Text>
                     <Text style={{ fontSize: 24, fontWeight: '800', color: colors.warning }}>
-                      ${avgHourlyRate.toFixed(2)}
+                      ${avgSalesPerHour.toFixed(2)}
                     </Text>
                     <Text style={{ fontSize: 11, color: colors.muted, marginTop: 4 }}>
                       {totalHours.toFixed(1)} hrs total
@@ -226,7 +226,7 @@ export default function DriverActivityScreen() {
                           Sales: ${report.totalSales.toFixed(2)}
                         </Text>
                         <Text style={{ fontSize: 11, color: colors.primary }}>
-                          ${report.hourlyRateWithApp.toFixed(2)}/hr
+                          ${report.salesPerHourWithApp.toFixed(2)}/hr
                         </Text>
                       </View>
                     </View>

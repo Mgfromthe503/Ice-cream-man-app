@@ -14,7 +14,7 @@ const config: ExpoConfig = {
   name: APP_NAME,
   slug: APP_SLUG,
   owner: EXPO_OWNER,
-  version: "1.0.23",
+  version: "1.0.24",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: APP_SCHEME,

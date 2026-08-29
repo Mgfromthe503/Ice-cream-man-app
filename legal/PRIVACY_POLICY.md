@@ -152,7 +152,9 @@ Location updates are used while the app is active to show nearby trucks, let a c
 
 ## 8. Children, Parents, and Guardians
 
-The Ice Cream Man is a general-audience Food & Drink dispatch app. It is not designed for a child to independently arrange a real-world delivery or share location details. Before each customer request can advance to delivery details, the app shows a plain-language safety reminder and requires an acknowledgment that a parent or guardian knows about the request. This acknowledgment is a practical safety measure only; it is not age verification, verifiable parental consent, or a substitute for parental supervision.
+**The Ice Cream Man is a 13+ app.** A mandatory age gate asks "Are you 13 or older?" before the app can be used. Anyone who indicates they are **under 13 cannot use the app** and is asked to stop. **We do not collect, use, or share any location, personal, or device data from anyone under 13.** Because under-13 users are blocked at the age gate, all precisely-located services are only ever used by confirmed 13+ accounts.
+
+The app is a general-audience Food & Drink dispatch app intended for adults and families (13+). Before each customer request can advance to delivery details, the app shows a plain-language safety reminder and requires an acknowledgment that a parent or guardian knows about the request. This acknowledgment is a practical safety measure only; it is not age verification, verifiable parental consent, or a substitute for parental supervision.
 
 The reminder encourages families to use the least precise location-sharing option that works for them, avoid placing phone numbers, school details, or other private information in order notes, and cancel a request/tell a trusted adult if something feels wrong. A parent or guardian who believes that a child has provided personal information without their permission may contact us at mindy.gaines1@gmail.com to request deletion.
 

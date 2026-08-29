@@ -1,6 +1,6 @@
 # Child Safety and Parent Guidance
 
-**The Ice Cream Man** is a Food & Drink dispatch app for a general audience. It is **not a child-directed service**, and it is not designed for a child to independently arrange a real-world delivery or share location details. A parent or guardian should decide whether a minor may use the app and should approve and supervise any neighborhood request.
+**The Ice Cream Man** is a **13+** Food & Drink dispatch app for a general audience. It is **not a child-directed service**, and it is **not designed for or usable by anyone under 13**. A mandatory **age gate** asks "Are you 13 or older?" before the app can be used; anyone under 13 cannot use the app and is not asked to share any location. A parent or guardian decides whether a minor aged 13+ may use the app and should approve and supervise any neighborhood request.
 
 > This document and the in-app reminder are practical safety measures. They are not legal advice, age verification, verifiable parental consent, or a guarantee of safety. The developer must obtain qualified legal advice before changing the Play Console target audience, age range, data practices, or features that may be used by children.
 

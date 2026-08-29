@@ -6,6 +6,16 @@
 
 ---
 
+## Audience & Children's Privacy (Families Policy)
+
+**The Ice Cream Man is a 13+ app.** It is **not** intended for or directed at children under 13.
+
+- A mandatory **age gate** confirms "Are you 13 or older?" before the app can be used.
+- Anyone who indicates they are **under 13 cannot use the app** and is asked to stop.
+- **The app does not collect, use, or share any location, personal, or device data from anyone under 13.** Because under-13 users are blocked at the age gate, precisely-located services are only ever used by confirmed 13+ accounts. This keeps the app compliant with Google Play's Families Policy ("Children" audiences and data-handling requirements).
+
+---
+
 ## Data Safety Form Responses
 
 ### Overview
@@ -83,6 +93,8 @@ The app does **not** embed a Google Maps SDK or a Google Analytics SDK. Tapping 
 | Data deletion request method | In-app Delete Account or public request page: https://mgfromthe503.github.io/Ice-cream-man-app/account-deletion.html |
 | Data retention policy | See Privacy Policy |
 | Compliant with Children's Privacy laws | Yes |
+| Age gate before data collection | Yes (mandatory 13+ confirmation) |
+| Data collected from users under 13 | No (under-13 users are blocked at the age gate) |
 
 ---
 
