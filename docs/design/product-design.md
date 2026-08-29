@@ -40,10 +40,10 @@ A colorful, kid-friendly app that connects ice cream customers with mobile ice c
 - **Customer Location Pin** - Shows where request was placed
 
 ### Driver Dashboard
-- **Incoming Requests** - List of customer requests with location, distance, estimated payout
+- **Incoming Requests** - List of customer requests with location, distance
 - **Accept/Decline Buttons** - Quick action buttons for each request
 - **Active Delivery** - Current customer being served with live map
-- **Earnings Summary** - Daily/weekly earnings display
+- **Activity Summary** - Daily/weekly activity display
 - **Bottom Navigation** - Dashboard, Map, History, Profile
 
 ### Driver Map Screen
@@ -67,11 +67,11 @@ A colorful, kid-friendly app that connects ice cream customers with mobile ice c
 
 ### Driver Accepting Flow
 1. Driver opens app → Dashboard with incoming requests
-2. Sees list of customer requests (location, distance, payout)
+2. Sees list of customer requests (location, distance)
 3. Taps "Accept" on a request
 4. Map loads showing route to customer
 5. Drives to location, completes delivery
-6. Marks order complete, earns money
+6. Marks order complete
 
 ---
 

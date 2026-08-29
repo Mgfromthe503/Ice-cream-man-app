@@ -19,7 +19,7 @@ By downloading, installing, or using The Ice Cream Man mobile application ("App"
 The Ice Cream Man is a mobile platform that connects ice cream customers with ice cream vendors. The App provides:
 
 - **For Customers:** A one-tap system to request an ice cream vendor to come to their neighborhood, with real-time tracking of the vendor's location.
-- **For Vendors:** A platform to receive customer requests, navigate to customers efficiently, track daily earnings, and view gas/time savings reports.
+- **For Vendors:** A platform to receive customer requests, navigate to customers efficiently, track daily activity, and view gas/time savings reports.
 
 ---
 
@@ -61,7 +61,7 @@ The vendor registration fee is non-refundable once the vendor account has been a
 The one-time fee includes lifetime access to:
 - Unlimited customer request alerts
 - Real-time GPS navigation to customers
-- Daily earnings and savings reports
+- Daily activity and savings reports
 - Gas savings calculator
 - Time savings analytics
 - Economic impact dashboard
