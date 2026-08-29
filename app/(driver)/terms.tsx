@@ -58,7 +58,7 @@ export default function TermsOfServiceScreen() {
           • Maintain a valid driver's license and appropriate vehicle insurance{'\n\n'}
           The one-time purchase grants access to the App's Driver Dashboard. Google Play processes that app-access purchase; we do not collect or store card or bank-account details. This purchase does not collect, settle, transfer, or guarantee payment for physical ice cream orders, driver sales, or driver payouts. Refunds are handled through Google Play and any applicable law.
           {'\n\n'}
-          <Text style={{ fontWeight: '700' }}>Important:</Text> This is a one-time, non-recurring purchase (not a subscription). Google Play provides a 48-hour refund window for in-app purchases; after 48 hours, refunds are at Google Play's discretion per their policies. Google Play's Terms of Service apply to all purchases.
+          <Text style={{ fontWeight: '700' }}>Important:</Text> This is a one-time, non-recurring purchase (not a subscription). Google Play provides a mandatory 48-hour refund window for all in-app purchases. After 48 hours, **no refunds will be issued** — all sales are final. Google Play's Terms of Service apply to all purchases.
           {'\n\n'}
           <Pressable
             onPress={() => Linking.openURL(GOOGLE_PLAY_TOS_URL)}

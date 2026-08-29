@@ -225,7 +225,8 @@ export default function VendorPaymentScreen() {
               <Text style={{ fontSize: 12, color: colors.muted, lineHeight: 18 }}>
                 ✅ Charged once, never again{'\n'}
                 ✅ Processed by Google Play (secure){'\n'}
-                ✅ Refund available within 48 hours via Google Play{'\n'}
+                ✅ Google Play provides a 48-hour refund window{'\n'}
+                ✅ After 48 hours, all sales are final — no refunds{'\n'}
                 ✅ No subscription, no hidden fees
               </Text>
             </View>
@@ -355,7 +356,7 @@ export default function VendorPaymentScreen() {
             By proceeding, you agree to our Terms of Service and Privacy Policy.
             Payment is processed securely through Google Play Billing.
             This is a one-time, non-recurring fee of $25.00 USD.
-            Refunds are handled through Google Play within 48 hours of purchase.
+            Google Play provides a 48-hour refund window; after 48 hours, all sales are final — no refunds.
           </Text>
         </View>
       </ScrollView>
