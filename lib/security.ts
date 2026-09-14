@@ -78,7 +78,7 @@ export function sanitizeInput(input: string): string {
     // Remove null bytes
     .replace(/\0/g, '')
     // Remove script tags and event handlers
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script(?:\s+[^>]*)?\s*>/gi, '')
     .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
     // Remove SQL injection patterns
     .replace(/(['";])\s*(DROP|DELETE|UPDATE|INSERT|ALTER|EXEC|EXECUTE|UNION|SELECT)\s/gi, '$1')

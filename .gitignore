@@ -31,6 +31,8 @@ yarn-error.*
 .env.*
 !.env.example
 .project-config.json
+google-service-account.json
+*service-account*.json
 
 # macOS / editors
 .DS_Store

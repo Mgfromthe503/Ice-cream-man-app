@@ -2,7 +2,7 @@
 
 **The Ice Cream Man**
 **Effective Date:** May 23, 2026
-**Last Updated:** May 23, 2026
+**Last Updated:** August 26, 2026
 **Developer:** Mindy Gaines
 **Contact:** mindy.gaines1@gmail.com
 
@@ -19,7 +19,7 @@ By downloading, installing, or using The Ice Cream Man mobile application ("App"
 The Ice Cream Man is a mobile platform that connects ice cream customers with ice cream vendors. The App provides:
 
 - **For Customers:** A one-tap system to request an ice cream vendor to come to their neighborhood, with real-time tracking of the vendor's location.
-- **For Vendors:** A platform to receive customer requests, navigate to customers efficiently, track daily earnings, and view gas/time savings reports.
+- **For Vendors:** A platform to receive customer requests, navigate to customers efficiently, track daily activity, and view gas/time savings reports.
 
 ---
 
@@ -61,7 +61,7 @@ The vendor registration fee is non-refundable once the vendor account has been a
 The one-time fee includes lifetime access to:
 - Unlimited customer request alerts
 - Real-time GPS navigation to customers
-- Daily earnings and savings reports
+- Daily activity and savings reports
 - Gas savings calculator
 - Time savings analytics
 - Economic impact dashboard
@@ -76,6 +76,7 @@ The one-time fee includes lifetime access to:
 - Be available at the specified location when the vendor arrives
 - Treat vendors with respect
 - Not misuse the request system (spam, false requests)
+- If the Customer is a minor, obtain a parent or guardian's approval before sending a neighborhood request and follow that adult's supervision instructions
 
 ### 5.2 Vendors agree to:
 - Maintain proper business licenses and permits for ice cream vending
@@ -144,7 +145,8 @@ By using this App, you acknowledge and agree that:
 - You are solely responsible for your personal safety when interacting with vendors
 - You should always be aware of your surroundings, especially in unfamiliar neighborhoods
 - You should meet vendors in well-lit, public areas when possible
-- Minors should be supervised by a parent or guardian when interacting with vendors
+- Minors must not independently arrange a neighborhood request; a parent or guardian should approve and supervise the request and pickup
+- The in-app parent/guardian acknowledgment is a safety reminder, not age verification, verifiable parental consent, or a guarantee of safety
 - You should never share personal information (home address, phone number) directly with vendors
 - You should report any suspicious or unsafe behavior immediately to local authorities
 
@@ -183,7 +185,7 @@ You agree to indemnify, defend, and hold harmless Mindy Gaines, The Ice Cream Ma
 
 ## 11. Advertising
 
-The App displays advertisements through Google AdMob. By using the App, you consent to receiving advertisements. You may opt out of personalized advertising through your device settings.
+The current release does not display third-party advertising. If advertising, ad SDKs, or commercial promotions are added in a future release, the developer will update the Privacy Policy, Data safety form, and Play Console Ads declaration before release.
 
 ---
 

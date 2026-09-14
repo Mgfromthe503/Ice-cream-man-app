@@ -63,7 +63,7 @@ export default function DriverTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="earnings"
+        name="activity"
         options={{
           href: null, // Hidden from tab bar, accessed via profile
         }}

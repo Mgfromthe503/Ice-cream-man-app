@@ -38,8 +38,8 @@ export function DriversWantedBanner({ registeredDrivers, activeCustomers, show }
       const storeUrl = `https://play.google.com/store/apps/details?id=${APP_BUNDLE_ID}`;
       const message =
         Platform.OS === 'web'
-          ? `Ice Cream Truck Drivers Wanted! Download The Ice Cream Man app and start earning money delivering ice cream to neighborhoods. No more driving around aimlessly - customers come to YOU! Download: ${storeUrl}`
-          : `🍦🚚 Ice Cream Truck Drivers Wanted! Download The Ice Cream Man app and start earning money delivering ice cream to neighborhoods. Customers come to YOU! Download: ${storeUrl}`;
+          ? `Ice Cream Truck Drivers Wanted! Download The Ice Cream Man app and become an ice cream vendor with the Driver Dashboard — receive neighborhood requests in your area. No more driving around aimlessly - customers come to YOU! Download: ${storeUrl}`
+          : `🍦🚚 Ice Cream Truck Drivers Wanted! Download The Ice Cream Man app and become an ice cream vendor with the Driver Dashboard — receive neighborhood requests in your area. Customers come to YOU! Download: ${storeUrl}`;
 
       if (Platform.OS === 'web') {
         if (navigator.share) {

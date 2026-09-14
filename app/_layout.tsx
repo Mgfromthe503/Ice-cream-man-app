@@ -1,6 +1,7 @@
 import "@/global.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter, useSegments } from "expo-router";
+import { getAgeGroup } from "@/lib/age-gate";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -20,7 +21,7 @@ import {
 import type { EdgeInsets, Metrics, Rect } from "react-native-safe-area-context";
 
 import { trpc, createTRPCClient } from "@/lib/trpc";
-import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-runtime";
+import { initPreviewRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-runtime";
 // RatingsPrompt is now triggered from delivery completion flow, not globally
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -31,33 +32,62 @@ export const unstable_settings = {
 };
 
 function RootLayoutNav() {
-  const { userRole, isLoading } = useAuth();
+  const { userRole, isAuthenticated, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
     if (isLoading) return;
 
-    const inAuthGroup = segments[0] === "(customer)" || segments[0] === "(driver)";
+    const inProductGroup = segments[0] === "(customer)" || segments[0] === "(driver)";
+    const inOAuthCallback = segments[0] === "oauth";
+    const inLogin = segments[0] === "login";
+    const inRoleSelect = segments[0] === "role-select";
+    const inAgeGate = segments[0] === "age-gate";
 
-    if (!userRole && inAuthGroup) {
-      router.replace("/role-select");
-    } else if (!userRole && segments[0] === "(tabs)") {
-      // First app open — show role selection (no login required)
-      router.replace("/role-select");
-    } else if (userRole && !inAuthGroup && segments[0] !== "oauth") {
-      if (userRole === "customer") {
-        router.replace("/(customer)");
-      } else if (userRole === "driver") {
-        router.replace("/(driver)");
-      }
+    // The 13+ age gate is the first gate. It runs before login so no data is
+    // collected from anyone under 13. Only confirmed 13+ users proceed.
+    if (!inAgeGate && !inOAuthCallback) {
+      getAgeGroup().then((group) => {
+        if (!group) {
+          router.replace("/age-gate");
+          return;
+        }
+        if (!isAuthenticated) {
+          if (!inLogin) router.replace("/login");
+          return;
+        }
+        if (!userRole) {
+          if (!inRoleSelect) router.replace("/role-select");
+          return;
+        }
+        if (!inProductGroup) {
+          router.replace(userRole === "customer" ? "/(customer)" : "/(driver)");
+        }
+      });
+      return;
     }
-  }, [userRole, segments, isLoading]);
+
+    if (!isAuthenticated) {
+      if (!inLogin && !inOAuthCallback) router.replace("/login");
+      return;
+    }
+
+    if (!userRole) {
+      if (!inRoleSelect && !inOAuthCallback) router.replace("/role-select");
+      return;
+    }
+
+    if (!inProductGroup && !inOAuthCallback) {
+      router.replace(userRole === "customer" ? "/(customer)" : "/(driver)");
+    }
+  }, [isAuthenticated, isLoading, router, segments, userRole]);
 
   return (
     <>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="age-gate" />
         <Stack.Screen name="login" />
         <Stack.Screen name="role-select" />
         <Stack.Screen name="(customer)" />
@@ -76,9 +106,9 @@ export default function RootLayout() {
   const [insets, setInsets] = useState<EdgeInsets>(initialInsets);
   const [frame, setFrame] = useState<Rect>(initialFrame);
 
-  // Initialize Manus runtime for cookie injection from parent container
+  // Initialize preview runtime for cookie injection from parent container
   useEffect(() => {
-    initManusRuntime();
+    initPreviewRuntime();
   }, []);
 
   const handleSafeAreaUpdate = useCallback((metrics: Metrics) => {

@@ -1,67 +1,37 @@
 import { View, Text, Pressable, ScrollView, TextInput, Alert, ActivityIndicator, Platform } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import * as Haptics from 'expo-haptics';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { FactTicker } from '@/components/fact-ticker';
+import { trpc } from '@/lib/trpc';
 
 interface DriverRegistration {
   fullName: string;
   truckName: string;
   truckDescription: string;
-  phoneNumber: string;
   areaCode: string;
   truckNumber: string;
-}
-
-// Generate a unique truck number (ICM-XXXX format)
-function generateTruckNumber(): string {
-  const num = Math.floor(1000 + Math.random() * 9000);
-  return `ICM-${num}`;
 }
 
 export default function DriverRegisterScreen() {
   const colors = useColors();
   const router = useRouter();
-  const [isRegistered, setIsRegistered] = useState(false);
-  const [isPaid, setIsPaid] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const paymentStatus = trpc.payment.getPaymentStatus.useQuery(undefined, { retry: 1 });
+  const driverProfile = trpc.driver.getProfile.useQuery(undefined, { retry: 1 });
+  const createProfile = trpc.driver.createProfile.useMutation();
+  const isRegistered = driverProfile.data !== null && driverProfile.data !== undefined;
+  const isPaid = paymentStatus.data?.registrationPaid === true;
+  const isLoading = paymentStatus.isLoading || driverProfile.isLoading;
   const [form, setForm] = useState<DriverRegistration>({
     fullName: '',
     truckName: '',
     truckDescription: '',
-    phoneNumber: '',
     areaCode: '',
     truckNumber: '',
   });
-
-  // Check if driver is already registered AND has paid
-  useEffect(() => {
-    const checkStatus = async () => {
-      try {
-        const [saved, paidStatus] = await Promise.all([
-          AsyncStorage.getItem('driverRegistration'),
-          AsyncStorage.getItem('vendorRegistrationPaid'),
-        ]);
-        
-        if (saved) {
-          const data = JSON.parse(saved);
-          setForm(data);
-          setIsRegistered(true);
-        }
-        
-        setIsPaid(paidStatus === 'true');
-      } catch (error) {
-        console.error('Error checking registration:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    checkStatus();
-  }, []);
 
   const handleRegister = async () => {
     // Validate required fields
@@ -73,10 +43,6 @@ export default function DriverRegisterScreen() {
       Alert.alert('Required', 'Please enter your truck name or business name.');
       return;
     }
-    if (!form.phoneNumber.trim()) {
-      Alert.alert('Required', 'Please enter your phone number.');
-      return;
-    }
     if (!form.areaCode.trim() || form.areaCode.length < 3) {
       Alert.alert('Required', 'Please enter a valid area/zip code (3-5 digits).');
       return;
@@ -84,26 +50,21 @@ export default function DriverRegisterScreen() {
 
     setIsSaving(true);
     try {
-      // Auto-assign a truck number
-      const truckNumber = generateTruckNumber();
-      const registrationData = { ...form, truckNumber };
+      const profile = await createProfile.mutateAsync({
+        vehicleType: form.truckName.trim(),
+        licensePlate: form.truckNumber.trim() || undefined,
+      });
+      await driverProfile.refetch();
 
-      // Save registration locally
-      await AsyncStorage.setItem('driverRegistration', JSON.stringify(registrationData));
-      await AsyncStorage.setItem('driverAreaCode', form.areaCode);
-      await AsyncStorage.setItem('driverIsRegistered', 'true');
-      await AsyncStorage.setItem('driverTruckNumber', truckNumber);
-
-      if (Platform.OS !== 'web') {
+      if (Platform.OS !== "web") {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
-      setForm(registrationData);
-      setIsRegistered(true);
+      setForm((current) => ({ ...current, truckNumber: current.truckNumber || `ICM-${profile.id}` }));
 
       Alert.alert(
-        '🎉 Registration Complete!',
-        `Welcome aboard, ${form.fullName}!\n\nYour assigned truck number is:\n\n🚚 ${truckNumber}\n\nYour truck "${form.truckName}" is now active in the ${form.areaCode} area. You'll start receiving ice cream requests!`,
-        [{ text: 'Start Driving!', onPress: () => router.replace('/(driver)') }]
+        "Registration complete",
+        "Your vendor profile is now active. Keep your profile details current before accepting customer requests.",
+        [{ text: "Start driving", onPress: () => router.replace("/(driver)") }],
       );
     } catch (error) {
       console.error('Error saving registration:', error);
@@ -114,7 +75,7 @@ export default function DriverRegisterScreen() {
   };
 
   const handleEditRegistration = () => {
-    setIsRegistered(false);
+    router.replace("/(driver)/profile");
   };
 
   if (isLoading) {
@@ -139,14 +100,14 @@ export default function DriverRegisterScreen() {
                 Payment Required
               </Text>
               <Text style={{ fontSize: 14, color: colors.muted, textAlign: 'center', lineHeight: 20 }}>
-                Before you can register your truck and start receiving customer requests, you need to complete the one-time $25 registration fee via Google Play.
+                Before you can register your truck and start receiving customer requests, you need to complete the one-time $25 Driver Dashboard access, billed securely by Google Play.
               </Text>
             </View>
 
             <View style={{ backgroundColor: colors.surface, borderRadius: 16, padding: 20, gap: 8 }}>
               <Text style={{ fontSize: 14, fontWeight: '600', color: colors.foreground }}>Why a registration fee?</Text>
               <Text style={{ fontSize: 13, color: colors.muted, lineHeight: 20 }}>
-                The $25 one-time fee ensures only serious vendors join the platform. It helps maintain quality service for customers and keeps the app running. You'll never be charged again - no monthly fees, no hidden costs.
+                The one-time $25 Driver Dashboard access, billed securely by Google Play, ensures only serious vendors join the platform. It helps maintain quality service for customers and keeps the app running.
               </Text>
             </View>
 
@@ -254,13 +215,6 @@ export default function DriverRegisterScreen() {
                 </View>
               </View>
 
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <Text style={{ fontSize: 28 }}>📞</Text>
-                <View>
-                  <Text style={{ fontSize: 11, color: colors.muted }}>Phone</Text>
-                  <Text style={{ fontSize: 14, color: colors.foreground }}>{form.phoneNumber}</Text>
-                </View>
-              </View>
             </View>
 
             {/* Payment Status */}
@@ -377,27 +331,6 @@ export default function DriverRegisterScreen() {
                   borderColor: colors.border,
                   minHeight: 80,
                   textAlignVertical: 'top',
-                }}
-                placeholderTextColor={colors.muted}
-              />
-            </View>
-
-            {/* Phone Number */}
-            <View style={{ gap: 4 }}>
-              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.foreground }}>Phone Number *</Text>
-              <TextInput
-                value={form.phoneNumber}
-                onChangeText={(text) => setForm({ ...form, phoneNumber: text })}
-                placeholder="(555) 123-4567"
-                keyboardType="phone-pad"
-                style={{
-                  backgroundColor: colors.surface,
-                  borderRadius: 12,
-                  padding: 14,
-                  fontSize: 16,
-                  color: colors.foreground,
-                  borderWidth: 1,
-                  borderColor: colors.border,
                 }}
                 placeholderTextColor={colors.muted}
               />

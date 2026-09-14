@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
 // Notification types
 export type NotificationType = 'new_request' | 'request_accepted' | 'driver_arriving' | 'delivery_complete' | 'eta_update';
@@ -50,8 +51,13 @@ export async function registerForPushNotifications(): Promise<string | null> {
       return null;
     }
 
-    // Get push token
-    const tokenData = await Notifications.getExpoPushTokenAsync();
+    // Get push token — projectId is required in expo-notifications ≥ 0.29
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId ??
+      Constants.easConfig?.projectId;
+    const tokenData = await Notifications.getExpoPushTokenAsync(
+      projectId ? { projectId } : undefined,
+    );
     const token = tokenData.data;
 
     // Save token

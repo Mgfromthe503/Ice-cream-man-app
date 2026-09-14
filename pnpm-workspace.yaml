@@ -1,29 +1,7 @@
-# Monorepo workspace — The Ice Cream Man
-# Primary app + server live at the repo root (single package).
-# packages/* is reserved for future shared libraries (e.g. types, UI).
+# The Ice Cream Expo application lives at the repository root.
 packages:
   - "."
   - "packages/*"
-
-# Dependency overrides (pnpm 9.12+ reads overrides from pnpm-workspace.yaml,
-# not from the "pnpm" field in package.json).
-overrides:
-  axios: ^1.18.1
-  "@xmldom/xmldom": ^0.9.8
-  ajv: ^8.17.1
-  brace-expansion: ^5.0.8
-  esbuild: ^0.28.1
-  fast-uri: ^3.1.2
-  flatted: ^3.4.2
-  form-data: ^4.0.4
-  js-yaml: ^4.1.1
-  minimatch: ^9.0.9
-  node-forge: ^1.3.1
-  path-to-regexp: ^8.2.0
-  picomatch: ^4.0.3
-  postcss: ^8.5.18
-  qs: ^6.14.1
-  rollup: ^4.59.0
-  shell-quote: ^1.8.3
-  tar: ^7.5.21
-  uuid: ^11.1.1
+# pnpm 9.12.0 is pinned for EAS and resolves overrides from package.json
+# "pnpm.overrides". Keep this file free of an `overrides:` block until the
+# project intentionally upgrades its package-manager contract.

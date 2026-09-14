@@ -1,43 +1,55 @@
 /**
- * Expo Config Plugin: withBillingClient
- * 
- * Injects Google Play Billing Library 9.1.0 into the Android native build
- * and adds ProGuard/R8 rules to keep BillingClient classes.
+ * Expo config plugin that injects Google Play Billing Library and the
+ * R8 rules required by expo-iap/OpenIAP into a generated Android project.
+ *
+ * Google Play requires Billing Library 6.0.1+ with gRPC transport.
+ * This plugin ensures the correct version is injected regardless of
+ * what expo-iap or other dependencies may pull in.
  */
-const { withAppBuildGradle, withProjectBuildGradle, withDangerousMod } = require("expo/config-plugins");
+const { withAppBuildGradle, withDangerousMod } = require("expo/config-plugins");
 const fs = require("fs");
 const path = require("path");
 
-const BILLING_DEPENDENCY = `    implementation "com.android.billingclient:billing:9.1.0"`;
-const BILLING_KTX_DEPENDENCY = `    implementation "com.android.billingclient:billing-ktx:9.1.0"`;
+// Google Play requires Billing Library 6.0.1+ for new app updates.
+// Version 8.1.0 is the latest stable with full gRPC support.
+const BILLING_VERSION = "8.1.0";
+const BILLING_DEPENDENCIES = [
+  `    implementation "com.android.billingclient:billing:${BILLING_VERSION}"`,
+  `    implementation "com.android.billingclient:billing-ktx:${BILLING_VERSION}"`,
+].join("\n");
+
+// Remove ALL existing billing declarations (any version) to prevent conflicts
+const BILLING_DEPENDENCY_PATTERN =
+  /^\s*implementation\s+["']com\.android\.billingclient:billing(?:-ktx)?:[^"']+["']\s*\r?\n?/gm;
 
 /**
- * Add BillingClient dependency to app/build.gradle
+ * Add the supported Play Billing dependency pair to app/build.gradle.
  */
 function withBillingGradle(config) {
   return withAppBuildGradle(config, (config) => {
-    const contents = config.modResults.contents;
-    
-    // Check if already added
-    if (contents.includes("com.android.billingclient:billing:9.1.0")) {
-      return config;
-    }
-
-    // Find the dependencies block and add our dependency
+    const withoutExistingBilling = config.modResults.contents.replace(
+      BILLING_DEPENDENCY_PATTERN,
+      ""
+    );
     const dependenciesRegex = /dependencies\s*\{/;
-    if (dependenciesRegex.test(contents)) {
-      config.modResults.contents = contents.replace(
-        dependenciesRegex,
-        `dependencies {\n${BILLING_DEPENDENCY}\n${BILLING_KTX_DEPENDENCY}`
+
+    if (!dependenciesRegex.test(withoutExistingBilling)) {
+      throw new Error(
+        "Unable to inject Google Play Billing: app/build.gradle has no dependencies block."
       );
     }
+
+    config.modResults.contents = withoutExistingBilling.replace(
+      dependenciesRegex,
+      `dependencies {\n${BILLING_DEPENDENCIES}`
+    );
 
     return config;
   });
 }
 
 /**
- * Add ProGuard rules to keep BillingClient classes
+ * Add R8 rules needed by Google Play Billing and expo-iap/OpenIAP.
  */
 function withBillingProguard(config) {
   return withDangerousMod(config, [
@@ -66,13 +78,11 @@ function withBillingProguard(config) {
 -dontwarn com.google.android.play.**
 `;
 
-      // Read existing content or create new
       let existingContent = "";
       if (fs.existsSync(proguardPath)) {
         existingContent = fs.readFileSync(proguardPath, "utf-8");
       }
 
-      // Only add if not already present
       if (!existingContent.includes("com.android.billingclient")) {
         fs.writeFileSync(proguardPath, existingContent + proguardRules);
       }
@@ -83,16 +93,14 @@ function withBillingProguard(config) {
 }
 
 /**
- * Enable R8 minification with mapping file in app/build.gradle
+ * Keep generated legacy Gradle templates aligned with release minification.
+ * expo-build-properties supplies the corresponding Gradle properties.
  */
 function withR8Enabled(config) {
   return withAppBuildGradle(config, (config) => {
     const contents = config.modResults.contents;
 
-    // Look for the release buildType block and ensure minifyEnabled and shrinkResources are true
-    // Also ensure proguardFiles includes our custom rules
     if (contents.includes("minifyEnabled")) {
-      // Already has minifyEnabled, make sure it's true
       config.modResults.contents = contents
         .replace(/minifyEnabled\s+false/g, "minifyEnabled true")
         .replace(/shrinkResources\s+false/g, "shrinkResources true");
@@ -103,13 +111,32 @@ function withR8Enabled(config) {
 }
 
 /**
- * Main plugin export
+ * Force billing library version in build.gradle ext block to prevent
+ * any dependency from overriding it.
  */
+function withBillingVersionForced(config) {
+  return withAppBuildGradle(config, (config) => {
+    const contents = config.modResults.contents;
+
+    // Add ext block with billing version if not present
+    if (!contents.includes("billingLibraryVersion")) {
+      config.modResults.contents = contents.replace(
+        /android\s*\{/,
+        `android {\n    ext {\n        billingLibraryVersion = "${BILLING_VERSION}"\n    }`
+      );
+    }
+
+    return config;
+  });
+}
+
 function withBillingClient(config) {
   config = withBillingGradle(config);
   config = withBillingProguard(config);
   config = withR8Enabled(config);
+  config = withBillingVersionForced(config);
   return config;
 }
 
 module.exports = withBillingClient;
+module.exports.BILLING_VERSION = BILLING_VERSION;

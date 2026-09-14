@@ -1,6 +1,58 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { GOOGLE_PLAY_REGISTRATION_PRODUCT_ID, verifyGooglePlayRegistrationPurchase, type VerifiedGooglePlayPurchase } from "./google-play";
 import { router, protectedProcedure, publicProcedure } from "./_core/trpc";
 import * as db from "./db";
+
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 5;
+
+interface RateLimitEntry {
+  count: number;
+  resetAt: number;
+}
+
+const rateLimitStore = new Map<string, RateLimitEntry>();
+
+function cleanupRateLimitStore() {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitStore.entries()) {
+    if (entry.resetAt < now) {
+      rateLimitStore.delete(key);
+    }
+  }
+}
+
+setInterval(cleanupRateLimitStore, RATE_LIMIT_WINDOW_MS);
+
+function checkRateLimit(userId: string): { allowed: boolean; retryAfterMs?: number } {
+  const now = Date.now();
+  const entry = rateLimitStore.get(userId);
+
+  if (!entry || entry.resetAt < now) {
+    rateLimitStore.set(userId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true };
+  }
+
+  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return { allowed: false, retryAfterMs: entry.resetAt - now };
+  }
+
+  entry.count++;
+  return { allowed: true };
+}
+
+const verifyRegistrationRateLimit = protectedProcedure.use(async ({ ctx, next }) => {
+  const rateLimitResult = checkRateLimit(String(ctx.user.id));
+  if (!rateLimitResult.allowed) {
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: "Too many verification attempts. Please wait before trying again.",
+      cause: { retryAfterMs: rateLimitResult.retryAfterMs },
+    });
+  }
+  return next();
+});
 
 /**
  * Payment & Monetization API Routes
@@ -28,120 +80,81 @@ import * as db from "./db";
  */
 export const paymentRouter = router({
   /**
-   * Verify vendor registration purchase with Google Play
-   * Called by: Client after successful Google Play Billing purchase
-   *
-   * This validates the purchase token with Google's servers to prevent fraud.
-   * The actual payment has already been collected by Google Play on the client.
-   * Money flow: User → Google Play → Your Developer Account (minus 15%)
+   * Verify the one-time vendor-registration purchase with Google Play before
+   * granting any entitlement. Purchase tokens remain server input only and are
+   * stored as a hash solely for idempotency and replay prevention.
    */
-  verifyRegistration: protectedProcedure
+  verifyRegistration: verifyRegistrationRateLimit
     .input(
       z.object({
-        purchaseToken: z.string(), // Google Play Billing purchase token
-        transactionId: z.string().optional(), // Order ID from Google Play
-        productId: z.string(), // Should be "icm_vendor_registration"
+        purchaseToken: z.string().trim().min(20).max(4096),
+        productId: z.literal(GOOGLE_PLAY_REGISTRATION_PRODUCT_ID),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      /**
-       * PRODUCTION IMPLEMENTATION:
-       *
-       * In production, verify the purchase token with Google Play Developer API:
-       *
-       * 1. Use googleapis package to call:
-       *    androidpublisher.purchases.products.get({
-       *      packageName: 'com.icecreamman.app',
-       *      productId: input.productId,
-       *      token: input.purchaseToken,
-       *    })
-       *
-       * 2. Check response.purchaseState === 0 (purchased)
-       * 3. Check response.consumptionState === 0 (not consumed - one-time purchase)
-       * 4. Acknowledge the purchase if not already acknowledged
-       *
-       * For now, we trust the client-side purchase (the money is already collected
-       * by Google Play regardless of server verification).
-       */
-
-      // Validate product ID
-      if (input.productId !== "icm_vendor_registration") {
+      const existing = await db.getVendorEntitlementForUser(ctx.user.id);
+      if (existing) {
         return {
-          success: false,
-          error: "Invalid product ID",
+          success: true,
+          verificationId: `entitlement_${existing.id}`,
+          alreadyVerified: true,
         };
       }
 
-      // Record the purchase in database (for audit trail)
-      // In production, store: userId, purchaseToken, transactionId, timestamp, amount
-      const verificationId = `verified_${Date.now()}_${ctx.user.id}`;
+      try {
+        const purchase = await verifyGooglePlayRegistrationPurchase(input.purchaseToken);
 
-      return {
-        success: true,
-        verificationId,
-        amount: 25.0,
-        developerReceives: 21.25, // After Google's 15% cut
-        message: "Registration fee verified. Welcome to Ice Cream Man!",
-      };
+        // Handle pending purchases (cash payments, etc.)
+        if ("isPending" in purchase && purchase.isPending) {
+          return {
+            success: false,
+            pending: true,
+            message: "Payment is pending. Please complete the purchase in Google Play.",
+          };
+        }
+
+        const verifiedPurchase = purchase as VerifiedGooglePlayPurchase;
+        const result = await db.createVendorEntitlement({
+          userId: ctx.user.id,
+          productId: input.productId,
+          purchaseTokenHash: verifiedPurchase.purchaseTokenHash,
+          orderId: verifiedPurchase.orderId ?? null,
+          purchaseTimeMillis: verifiedPurchase.purchaseTimeMillis,
+        });
+
+        return {
+          success: true,
+          verificationId: `entitlement_${result.entitlement.id}`,
+          alreadyVerified: !result.created,
+        };
+      } catch (error) {
+        console.error("[Billing] Vendor registration verification failed", {
+          userId: ctx.user.id,
+          reason: error instanceof Error ? error.message : "unknown verification error",
+        });
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "We could not verify this Google Play purchase. No registration access was granted.",
+        });
+      }
     }),
 
-  /**
-   * Process vendor registration fee ($25)
-   * LEGACY: Kept for backward compatibility
-   * Called by: New Driver during registration
-   */
-  processRegistration: protectedProcedure
-    .input(
-      z.object({
-        paymentToken: z.string(), // Google Play Billing token
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      // Verify payment with Google Play Billing API
-      // In production, this validates the purchase token with Google
-      const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-      return {
-        success: true,
-        transactionId,
-        amount: 25.0,
-        developerReceives: 21.25,
-        message: "Registration fee processed successfully. Welcome to Ice Cream Man!",
-      };
-    }),
-
-  /**
-   * Get payment status for driver
-   * Called by: Driver to check if registration is paid
-   */
   getPaymentStatus: protectedProcedure.query(async ({ ctx }) => {
-    // Check if driver has paid registration
-    const profile = await db.getDriverProfile(ctx.user.id);
+    const entitlement = await db.getVendorEntitlementForUser(ctx.user.id);
     return {
-      registrationPaid: profile ? true : false,
-      registrationAmount: 25.0,
-      googleCut: 3.75,
-      developerReceives: 21.25,
+      registrationPaid: entitlement !== null,
+      verifiedAt: entitlement?.verifiedAt ?? null,
     };
   }),
 
   /**
-   * Get platform economic impact stats
-   * Called by: Anyone (public)
+   * Placeholder for future server-derived impact reporting. Public clients must
+   * never be shown fabricated business metrics when the reporting store is absent.
    */
-  getEconomicImpact: publicProcedure.query(async () => {
-    // Calculate platform-wide stats
-    return {
-      totalIceCreamSales: 50000,
-      totalVendors: 150,
-      totalCustomersServed: 12000,
-      totalGasSaved: 8500, // gallons
-      totalTimeSaved: 4200, // hours
-      economyStimulation: 125000,
-      headline:
-        "$50,000+ in ice cream sales have stimulated the economy because of The Ice Cream Man app!",
-    };
-  }),
+  getEconomicImpact: publicProcedure.query(async () => ({
+    available: false,
+    message: "Platform impact reporting is not available yet.",
+  })),
 });
 
 /**

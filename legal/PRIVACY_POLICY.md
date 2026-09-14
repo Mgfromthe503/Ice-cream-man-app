@@ -2,10 +2,11 @@
 
 **The Ice Cream Man**  
 **Effective Date:** June 29, 2026  
-**Last Updated:** June 29, 2026  
+**Last Updated:** August 26, 2026
 **Developer:** Mindy Gaines  
-**Contact:** icecreammanapp@gmail.com  
+**Contact:** mindy.gaines1@gmail.com  
 **Package:** com.icecreamman.app
+**Public account-deletion requests:** https://mgfromthe503.github.io/Ice-cream-man-app/account-deletion.html
 
 ---
 
@@ -17,13 +18,13 @@ By downloading, installing, or using the App, you agree to the collection and us
 
 ---
 
-## 2. Dual-Marketplace Architecture
+## 2. Two User Roles
 
-The Ice Cream Man operates as a **dual-marketplace platform** connecting two distinct user roles within a single application:
+The Ice Cream Man serves two types of users within a single application:
 
 | Role | Description | Key Data Interactions |
 |------|-------------|----------------------|
-| **Customer** | Orders ice cream delivery to their location | Shares location data (at their chosen precision) with assigned Driver |
+| **Customer** | Requests ice cream delivery to their location | Shares location data (at their chosen precision) with assigned Driver |
 | **Driver/Vendor** | Receives and fulfills customer delivery requests | Shares real-time GPS location for proximity verification and navigation |
 
 Each role has different data collection requirements, retention periods, and privacy controls as described below.
@@ -84,6 +85,8 @@ The App uses **Google Play Billing** exclusively for the one-time $25 Driver reg
 | App state (foreground/background) | Battery-efficient polling management |
 | Push notification token | Delivery alerts and order notifications |
 
+The current Android release does not request or collect a phone number.
+
 ---
 
 ## 4. How We Use Your Information
@@ -139,25 +142,29 @@ We implement industry-standard security measures including:
 
 ---
 
-## 7. Background Location Disclosure
+## 7. Location Use While the App Is Active
 
-**This app collects location data to enable real-time tracking for ice cream deliveries even when the app is closed or not in use.**
+**The current Android release requests foreground location only. It does not request Android background-location permission and does not run a location foreground service.**
 
-This applies specifically to:
-- **Drivers** who have an active delivery in progress (background location enables continued navigation)
-- **Customers** — location is collected only while the app is in the foreground during order placement
+Location updates are used while the app is active to show nearby trucks, let a customer choose a sharing mode for an active request, and provide delivery-related ETA/proximity features. Users can decline location permission; the app then uses its documented fallback behavior where available. The developer must update this policy, the Data Safety form, and Play Console declarations before enabling background location or a location foreground service in a future release.
 
 ---
 
-## 8. Children's Privacy
+## 8. Children, Parents, and Guardians
 
-The Ice Cream Man is designed for use by all ages. However, we do not knowingly collect personal information from children under 13 without parental consent. If you are a parent or guardian and believe your child has provided us with personal information, please contact us at icecreammanapp@gmail.com and we will take steps to delete such information.
+**The Ice Cream Man is a 13+ app.** A mandatory age gate asks "Are you 13 or older?" before the app can be used. Anyone who indicates they are **under 13 cannot use the app** and is asked to stop. **We do not collect, use, or share any location, personal, or device data from anyone under 13.** Because under-13 users are blocked at the age gate, all precisely-located services are only ever used by confirmed 13+ accounts.
+
+The app is a general-audience Food & Drink dispatch app intended for adults and families (13+). Before each customer request can advance to delivery details, the app shows a plain-language safety reminder and requires an acknowledgment that a parent or guardian knows about the request. This acknowledgment is a practical safety measure only; it is not age verification, verifiable parental consent, or a substitute for parental supervision.
+
+The reminder encourages families to use the least precise location-sharing option that works for them, avoid placing phone numbers, school details, or other private information in order notes, and cancel a request/tell a trusted adult if something feels wrong. A parent or guardian who believes that a child has provided personal information without their permission may contact us at mindy.gaines1@gmail.com to request deletion.
+
+Because location and delivery instructions can be sensitive, the developer will not represent the app as a child-directed service without first obtaining legal advice, reassessing the target audience, and making every required change to the app’s data practices and Play Console declarations.
 
 ---
 
 ## 9. Vendor Screening Disclosure
 
-The Ice Cream Man does NOT perform background checks, criminal history checks, driving record checks, or any other form of screening on vendors who register through the App. Vendor registration requires only payment of the registration fee and completion of the registration form. Users interact with vendors at their own discretion.
+The Ice Cream Man does NOT perform background checks, criminal history checks, driving record checks, or any other form of screening on vendors who register through the App. Vendor registration requires only payment of the registration fee and completion of the registration form. Users interact with vendors at their own discretion and should exercise normal precautions.
 
 ---
 
@@ -167,9 +174,9 @@ The Ice Cream Man does NOT perform background checks, criminal history checks, d
 |-------|-------------|-----------------|
 | Access | View your personal data | In-app profile settings |
 | Correction | Update inaccurate data | In-app profile settings |
-| Deletion | Request account and data deletion | Email icecreammanapp@gmail.com |
+| Deletion | Delete in the App or request account and data deletion online | In-app Delete Account or https://mgfromthe503.github.io/Ice-cream-man-app/account-deletion.html |
 | Location control | Change sharing mode per order, or disable location entirely | In-app delivery options / device settings |
-| Data portability | Export your data | Email icecreammanapp@gmail.com |
+| Data portability | Export your data | Email mindy.gaines1@gmail.com |
 
 ---
 
@@ -183,6 +190,8 @@ If you are a California resident, you have additional rights under the Californi
 
 **We do not sell personal information to third parties.**
 
+For users who cannot sign in, account and associated-data deletion requests can be submitted at https://mgfromthe503.github.io/Ice-cream-man-app/account-deletion.html.
+
 ---
 
 ## 12. Changes to This Privacy Policy
@@ -195,7 +204,7 @@ We may update this Privacy Policy from time to time. We will notify you of any c
 
 | Method | Details |
 |--------|---------|
-| Email | icecreammanapp@gmail.com |
+| Email | mindy.gaines1@gmail.com |
 | Developer | Mindy Gaines |
 | App | The Ice Cream Man |
 | Location | Beaverton, Oregon, United States |

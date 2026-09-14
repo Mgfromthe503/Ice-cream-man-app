@@ -1,123 +1,125 @@
-# Google Play Console — App Access Instructions
+# Google Play Console — App Access Instructions for Reviewers
 
-**Paste this into: Google Play Console → App Content → App Access**
-
----
-
-## App Access Type: All functionality is available without special access
-
-The Ice Cream Man is a dual-marketplace app with two user roles (Customer and Driver). Both roles are accessible from the home screen without any login requirement for basic testing. Below are instructions for testing each flow.
+## App Access Status
+The Ice Cream Man requires **secure sign-in** before accessing customer or driver functionality. This app uses **OAuth authentication** (Google Sign-In) — no test accounts or hardcoded credentials exist.
 
 ---
 
-## Testing Instructions for Reviewers
+## For Google Play Reviewers: How to Sign In & Test
 
-### CUSTOMER FLOW (No Login Required)
-
-1. Open the app
-2. Tap **"Tap to Order Ice Cream →"** on the Customer card
-3. The customer home screen displays with a large pulsing **"I WANT ICE CREAM!"** button
-4. Tap the button to initiate an order
-5. The app will request location permission — grant it
-6. Choose a delivery share mode (Exact Address / Street Only / Meetup Point)
-7. Optionally add delivery instructions
-8. Confirm the order
-9. The summoning animation plays with rotating ice cream facts
-10. After ~20 seconds, the simulated delivery completes
-
-### DRIVER/VENDOR FLOW (Registration Required — $25 Fee)
-
-1. Open the app
-2. Tap **"Start Earning Money →"** on the Ice Cream Vendor card
-3. You will see the **"Register Your Truck First!"** screen
-4. Tap **"Register My Truck"**
-5. Fill in: Name, Truck Name, Truck Color (truck number auto-assigned)
-6. After registration form, the **$25 Google Play Billing** payment screen appears
-7. Complete payment via Google Play test card (use a license tester account)
-8. After payment, enter a zip/area code to set your coverage zone
-9. The dashboard shows incoming customer requests (if any are waiting)
-10. Accept a request → Navigate button opens Google Maps with directions
-11. Complete delivery when within 1000 feet of customer
-
-### TEST ACCOUNTS FOR REVIEW (Pre-Configured — No Payment Required)
-
-Two test accounts are pre-configured that bypass all registration and payment flows:
-
-**How to access the test login screen:**
-1. On the initial role-select screen ("Choose your role to get started")
-2. Scroll to the bottom
-3. Tap the small gray **"v1.0.0"** version text at the very bottom of the screen
-4. This opens the hidden Test Login screen
-
-**Customer Test Account:**
-| Field | Value |
-|-------|-------|
-| Email | Icecream@customertest.com |
-| Password | GoogleTest2026! |
-
-This account bypasses all verification and lands directly on the Customer ordering screen.
-
-**Driver Test Account:**
-| Field | Value |
-|-------|-------|
-| Email | Icecream@driverlogintest.com |
-| Password | GoogleTest2026! |
-
-This account bypasses the $25 registration fee, email verification, and all activation checks. It lands directly on the operational Driver Dashboard with a pre-registered truck (ICM-9999, area code 97005), ready to accept incoming customer requests.
-
-**Alternative (License Tester for real billing flow):**
-If you want to test the actual $25 Google Play Billing flow, add your reviewer's Google account as a License Tester in Google Play Console (Setup → License testing) with Payment Response set to RESPOND_NORMALLY (uses test card, no real charge).
-
-### DEMO MODE (If No Active Drivers Available)
-
-When testing the Customer flow, if no real Drivers are online, the app uses a simulated delivery timeline:
-- 8 seconds: Driver accepts your order
-- 15 seconds: Driver is nearby
-- 20 seconds: Delivery arrives
-
-This ensures the reviewer can experience the full customer journey without needing a second device.
+### Prerequisites (One-Time Setup by Developer)
+Before submitting for review, the developer will:
+1. **Add your Google account** to the Play Console **License Testing** list
+2. **Enable** the `icm_vendor_registration` test product for the internal testing track
+3. **Verify** OAuth sign-in works with test accounts
 
 ---
 
-## Key Features to Verify
+## Step-by-Step Reviewer Login Instructions
 
-| Feature | Where to Find |
-|---------|---------------|
-| Location permission prompt | Customer order flow (with prominent disclosure modal shown first) |
-| Google Play Billing ($25 fee) | Driver registration flow |
-| Push notifications | Driver receives alert when customer orders |
-| Maps navigation | Driver dashboard → Accept request → Navigate button |
-| Privacy controls | Customer chooses Exact/Street/Meetup before each order |
-| Data deletion | Customer location wiped from Driver device on delivery completion |
-| Battery optimization | Polling pauses when app is backgrounded |
+### 1. Install the Internal Test Build
+1. You will receive an email from **Google Play Console** with an invitation to test **The Ice Cream Man (Internal Testing)**
+2. Click the link → **Install** the app on your Android device
+3. Open the app
 
----
+### 2. Confirm You Are 13 or Older (Age Gate)
+1. On the **Welcome / age gate screen**, tap **"Yes, I'm 13 or older"**
+2. You are then taken to the **role selection** screen
 
-## Privacy Policy URL
+> **Note:** The Ice Cream Man is a **13+ app**. Anyone under 13 cannot use the app and is not asked to share any location. This gate keeps the app compliant with Google Play Families Policy.
 
-Host the Privacy Policy at a publicly accessible URL before submitting to Play Console.
-Options (choose one):
-- GitHub Pages: `https://mgfromthe503.github.io/Ice-cream-man-app/legal/PRIVACY_POLICY`
-- Your own domain: `https://theicecreamman.app/privacy`
+### 3. Sign In with Your Google Account
+1. On the **Welcome screen**, tap **"Continue to secure sign-in"**
+2. **Choose your Google account** from the account picker (use the same account added to License Testing)
+3. **Grant permissions** when prompted (location, notifications)
+4. You will be redirected back to the app — **signed in securely**
 
-Enter this URL in Google Play Console under **App content > Privacy policy**.
-
-(Also accessible in-app via Profile screens)
+> **No passwords needed** — OAuth handles authentication securely.
 
 ---
 
-## Data Safety Declarations
-
-| Question | Answer |
-|----------|--------|
-| Does your app collect or share user data? | Yes |
-| Is all collected data encrypted in transit? | Yes (HTTPS/TLS) |
-| Do you provide a way for users to request data deletion? | Yes (email request) |
-| Does your app collect precise location? | Yes (for delivery navigation) |
-| Does your app collect approximate location? | Yes (for area matching) |
-| Is location data shared with other users? | Yes (Customer → Driver during active delivery only) |
-| Is location data processed ephemerally? | Yes (deleted on delivery completion) |
+### 4. Test as a Customer
+1. After sign-in, select **"Customer"** on the role selection screen
+2. Tap the **large ice cream button** on the home screen
+3. **Sweet Safety Reminder** appears — **select the parent/guardian acknowledgment checkbox**
+4. The **Continue** button enables — tap it
+5. Choose **delivery location** (use test-safe location, e.g., your office)
+6. **Street Name Only** is selected by default — keep it or change as desired
+7. Tap **"Confirm Request"**
+8. **Verify**: Request appears, driver matching works, cancellation works
 
 ---
 
-*This document is ready to paste into Google Play Console's App Access section.*
+### 5. Test as a Driver (Vendor)
+1. Sign out (Profile → Logout) → Sign in again with your **License Testing Google account**
+2. Select **"Ice Cream Vendor"** on role selection
+3. **Vendor Registration** screen appears — shows **$25 one-time registration fee**
+4. Tap **"Pay $25 Registration"** → **Google Play license test purchase flow opens**
+5. **Complete test purchase** (no real charge — license test account)
+6. App verifies purchase with backend → **Registration unlocks**
+7. Complete **vendor profile** (truck name, license plate, coverage zip code)
+8. **Verify**: Dashboard shows incoming requests, map navigation works
+
+---
+
+### 6. Test In-App Purchase Restore
+1. Sign out → Sign in again with **same License Testing account**
+2. Select **"Ice Cream Vendor"**
+3. App detects existing purchase → **"Restore Purchase"** button appears
+4. Tap **"Restore Purchase"** → Backend re-verifies → Access restored
+
+---
+
+## Support Contact for Reviewers
+If you encounter any issues during testing:
+
+| Method | Contact |
+|--------|---------|
+| **Email** | `mindy.gaines1@gmail.com` |
+| **Response Time** | Within 4 hours (business hours) |
+| **Subject Line** | `PLAY REVIEW: The Ice Cream Man - [Brief Issue]` |
+
+---
+
+## What NOT to Do
+- ❌ Do not use personal accounts not on License Testing list
+- ❌ Do not attempt to bypass sign-in (no test-login endpoints exist)
+- ❌ Do not use real payment methods — only license test purchases
+- ❌ Do not share reviewer credentials with anyone
+
+---
+
+## App Behavior Quick Reference
+
+| Feature | How to Test |
+|---------|-------------|
+| **OAuth Sign-In** | Google account picker → choose License Testing account |
+| **Customer Request** | Tap big button → Safety acknowledgment → Location → Confirm |
+| **Driver Registration** | Role: Vendor → Pay $25 (license test) → Profile form |
+| **In-App Purchase** | License test → No real charge → Backend verifies |
+| **Location Sharing** | Customer: 3 modes (Exact/Street/Meetup) → Driver: real-time |
+| **Safety Features** | Parent acknowledgment required • Street Name default • Safety Guide accessible |
+
+---
+
+## Version Information
+- **App Version**: 1.0.24 (versionCode via EAS auto-increment)
+- **Package**: `com.icecreamman.app`
+- **Test Track**: Internal Testing
+- **Last Updated**: August 29, 2026
+
+---
+
+## Developer Commitment
+This app follows **Google Play policies**:
+- ✅ No hidden test accounts or backdoors
+- ✅ No hardcoded credentials
+- ✅ OAuth-only authentication
+- ✅ License test purchases only
+- ✅ Privacy Policy live & accessible
+- ✅ Data Safety form matches actual practices
+- ✅ Child safety acknowledgments implemented
+
+---
+
+**Questions?** Contact `mindy.gaines1@gmail.com` — we respond within 4 hours during business hours.

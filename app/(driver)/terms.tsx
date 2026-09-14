@@ -1,16 +1,17 @@
 /**
  * Terms of Service Screen
- * 
+ *
  * Displays the full Terms of Service, Privacy Policy, and Vendor Agreement
  * for the Ice Cream Man driver registration. Required for Google Play compliance.
  */
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable, Linking } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
 import { useRouter } from 'expo-router';
 
-const EFFECTIVE_DATE = 'June 29, 2026';
+const EFFECTIVE_DATE = 'August 28, 2026';
 const APP_NAME = 'The Ice Cream Man';
+const GOOGLE_PLAY_TOS_URL = 'https://play.google.com/about/play-terms';
 
 export default function TermsOfServiceScreen() {
   const colors = useColors();
@@ -45,22 +46,33 @@ export default function TermsOfServiceScreen() {
 
         {/* Section 2 */}
         <Section title="2. Description of Service" colors={colors}>
-          The Ice Cream Man is a dual-marketplace mobile application that connects independent ice cream vendors ("Drivers") with customers ("Customers") seeking on-demand ice cream delivery. The App facilitates real-time location sharing, order management, and payment processing between Drivers and Customers.
+          The Ice Cream Man is a dual-marketplace mobile application that connects independent ice cream vendors ("Drivers") with customers ("Customers") seeking on-demand ice cream delivery. The App facilitates real-time location sharing and order-management tools. It is not a bank, payment processor, money transmitter, digital wallet, lender, or driver-payout service.
         </Section>
 
         {/* Section 3 */}
         <Section title="3. Driver Registration & Payment" colors={colors}>
           To register as a Driver on the platform, you must:{'\n\n'}
           • Complete the Driver registration form with accurate personal and vehicle information{'\n'}
-          • Pay a one-time, non-refundable registration fee of $25.00 USD via Google Play Billing{'\n'}
+          • Purchase one-time access to the Driver Dashboard through Google Play Billing{'\n'}
           • Agree to these Terms of Service, Privacy Policy, and Vendor Agreement{'\n'}
           • Maintain a valid driver's license and appropriate vehicle insurance{'\n\n'}
-          The registration fee grants you lifetime access to the Driver Dashboard and is processed exclusively through Google Play's billing system. No external payment gateways are used. Refunds are handled through Google Play within 48 hours of purchase per Google Play's refund policy.
+          The one-time purchase grants access to the App's Driver Dashboard. Google Play processes that app-access purchase; we do not collect or store card or bank-account details. This purchase does not collect, settle, transfer, or guarantee payment for physical ice cream orders, driver sales, or driver payouts. Refunds are handled through Google Play and any applicable law.
+          {'\n\n'}
+          <Text style={{ fontWeight: '700' }}>Important:</Text> This is a one-time, non-recurring purchase (not a subscription). Google Play provides a mandatory 48-hour refund window for all in-app purchases. After 48 hours, **no refunds will be issued** — all sales are final. Google Play's Terms of Service apply to all purchases.
+          {'\n\n'}
+          <Pressable
+            onPress={() => Linking.openURL(GOOGLE_PLAY_TOS_URL)}
+            style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
+          >
+            <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '600', textDecorationLine: 'underline' }}>
+              View Google Play Terms of Service →
+            </Text>
+          </Pressable>
         </Section>
 
         {/* Section 4 */}
         <Section title="4. Location Data & Privacy" colors={colors}>
-          This App collects location data to enable real-time tracking for ice cream deliveries even when the app is closed or not in use.{'\n\n'}
+          This App collects location data to enable real-time tracking for ice cream deliveries while the app is in use.{'\n\n'}
           <Text style={{ fontWeight: '700' }}>Customer Location Sharing:</Text> Customers may choose to share their location in one of three ways:{'\n'}
           • Exact GPS coordinates (precise location){'\n'}
           • Street-level address only{'\n'}
@@ -71,12 +83,12 @@ export default function TermsOfServiceScreen() {
 
         {/* Section 5 */}
         <Section title="5. Payment & Financial Terms" colors={colors}>
-          All in-app purchases and registration fees are processed exclusively through Google Play Billing. We do not collect, store, or process credit card numbers, bank account details, or other financial instruments directly.{'\n\n'}
-          • Driver registration: One-time $25.00 USD fee{'\n'}
-          • Customer orders: Pricing set by individual Drivers{'\n'}
-          • Revenue split: 85% to Driver, 15% platform fee{'\n'}
-          • Payouts: Processed through Google Play Console to Driver's linked bank account{'\n\n'}
-          All financial transactions are protected by industry-standard encryption (TLS 1.3), fraud detection, and Google Play's built-in purchase verification.
+          Google Play Billing processes the one-time purchase of access to the Driver Dashboard. We do not collect, store, or process credit-card numbers, bank-account details, digital-wallet balances, or other financial instruments.{'\n\n'}
+          • Driver Dashboard access: One-time $25.00 USD Google Play purchase{'\n'}
+          • Customer food orders: Pricing and collection are determined by the individual Driver outside the App{'\n'}
+          • Driver sales and payouts: Not collected, processed, held, transmitted, or paid out by Google Play or this App{'\n'}
+          • Dashboard metrics: Operational estimates only; they are not a bank balance, wage advance, payment account, or financial-advice service{'\n\n'}
+          Google Play purchase verification protects the Driver Dashboard access purchase. The App's security controls do not transform it into a financial service.
         </Section>
 
         {/* Section 6 */}
@@ -120,9 +132,19 @@ export default function TermsOfServiceScreen() {
         {/* Section 12 */}
         <Section title="12. Contact Information" colors={colors}>
           For questions about these Terms of Service, please contact us at:{'\n\n'}
-          Email: support@theicecreamman.app{'\n'}
+          Email: mindy.gaines1@gmail.com{'\n'}
           Address: Portland, OR 97005, United States
         </Section>
+
+        {/* Full privacy policy is available inside the app */}
+        <Pressable
+          onPress={() => router.push('/privacy-policy')}
+          style={({ pressed }) => [{ alignItems: 'center', marginTop: 4, marginBottom: 12, opacity: pressed ? 0.65 : 1 }]}
+        >
+          <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '700', textDecorationLine: 'underline' }}>
+            Read the full Privacy Policy
+          </Text>
+        </Pressable>
 
         {/* Back button */}
         <Pressable

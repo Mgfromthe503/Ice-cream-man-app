@@ -13,6 +13,7 @@
 
 import type { Request, Response, NextFunction } from 'express';
 import sanitizeHtml from 'sanitize-html';
+import { GOOGLE_PLAY_REGISTRATION_PRODUCT_ID, verifyGooglePlayRegistrationPurchase } from "./google-play";
 
 // ============================================
 // SECURITY HEADERS (OWASP Best Practices)
@@ -274,27 +275,24 @@ function addFraudSignal(signal: FraudSignal) {
  */
 export async function verifyGooglePlayReceipt(
   purchaseToken: string,
-  productId: string
+  productId: string,
 ): Promise<{ valid: boolean; error?: string }> {
-  // Validate token format
   if (!purchaseToken || purchaseToken.length < 20) {
-    return { valid: false, error: 'Invalid purchase token format' };
+    return { valid: false, error: "Invalid purchase token." };
   }
-  
-  if (!productId || productId !== 'icm_vendor_registration') {
-    return { valid: false, error: 'Invalid product ID' };
+  if (productId !== GOOGLE_PLAY_REGISTRATION_PRODUCT_ID) {
+    return { valid: false, error: "Invalid product." };
   }
-  
-  // In production, this would call:
-  // https://androidpublisher.googleapis.com/androidpublisher/v3/applications/{packageName}/purchases/products/{productId}/tokens/{token}
-  // 
-  // For now, we validate the token format and log it.
-  // The actual Google API verification requires a service account key
-  // which is configured in Google Play Console.
-  
-  console.log(`[Security] Verifying purchase: product=${productId}`);
-  
-  return { valid: true };
+
+  try {
+    await verifyGooglePlayRegistrationPurchase(purchaseToken);
+    return { valid: true };
+  } catch (error) {
+    console.error("[Security] Google Play receipt verification failed", {
+      reason: error instanceof Error ? error.message : "unknown verification error",
+    });
+    return { valid: false, error: "Google Play could not verify this purchase." };
+  }
 }
 
 // ============================================

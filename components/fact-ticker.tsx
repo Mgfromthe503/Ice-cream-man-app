@@ -12,7 +12,7 @@ import { View, Text, Animated, Easing } from 'react-native';
  * - intervalMs: how often to rotate (default 4000ms)
  */
 
-const ICE_CREAM_FACTS = [
+export const ICE_CREAM_FACTS = [
   // USER-CURATED FACTS
   "🏠 90% of American households eat ice cream!",
   "🌭 One of the most unusual ice cream flavors is hot dog flavored ice cream, created in Arizona, US!",
@@ -37,13 +37,26 @@ const ICE_CREAM_FACTS = [
   "🎺 Listening to low-pitched, heavy brass instruments causes dark chocolate or coffee ice cream to taste much more intense and bitter!",
 ];
 
+/** Short safety reminders are intentionally part of the same gentle rotation as fun facts. */
+export const ICE_CREAM_SAFETY_TIPS = [
+  "🛟 Safety scoop: Ask a parent or guardian before you summon the truck!",
+  "👀 Smart scoop: Wait with a trusted adult and watch for cars and driveways.",
+  "📍 Privacy scoop: Street Name Only is a sweet choice when it works for your family.",
+  "🤝 Meetup scoop: Pick a familiar public spot with your grown-up when possible.",
+  "🔒 Keep it cool: Never put phone numbers, school details, or private info in order notes.",
+  "🛑 Trust your sprinkles: If something feels off, cancel and tell a trusted adult.",
+  "🍦 Grown-ups get the final scoop: Make sure yours knows before you order!",
+];
+
+export const ICE_CREAM_TICKER_MESSAGES = [...ICE_CREAM_FACTS, ...ICE_CREAM_SAFETY_TIPS];
+
 interface FactTickerProps {
   variant?: 'compact' | 'card' | 'banner';
   intervalMs?: number;
 }
 
 export function FactTicker({ variant = 'card', intervalMs = 4000 }: FactTickerProps) {
-  const [currentIndex, setCurrentIndex] = useState(() => Math.floor(Math.random() * ICE_CREAM_FACTS.length));
+  const [currentIndex, setCurrentIndex] = useState(() => Math.floor(Math.random() * ICE_CREAM_TICKER_MESSAGES.length));
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
 
@@ -63,7 +76,7 @@ export function FactTicker({ variant = 'card', intervalMs = 4000 }: FactTickerPr
         }),
       ]).start(() => {
         // Change fact - pick a random one instead of sequential
-        setCurrentIndex(Math.floor(Math.random() * ICE_CREAM_FACTS.length));
+        setCurrentIndex(Math.floor(Math.random() * ICE_CREAM_TICKER_MESSAGES.length));
         slideAnim.setValue(20);
         // Fade in + slide down
         Animated.parallel([
@@ -86,7 +99,8 @@ export function FactTicker({ variant = 'card', intervalMs = 4000 }: FactTickerPr
     return () => clearInterval(interval);
   }, [intervalMs]);
 
-  const fact = ICE_CREAM_FACTS[currentIndex];
+  const fact = ICE_CREAM_TICKER_MESSAGES[currentIndex];
+  const isSafetyTip = ICE_CREAM_SAFETY_TIPS.includes(fact);
 
   if (variant === 'compact') {
     return (
@@ -143,7 +157,7 @@ export function FactTicker({ variant = 'card', intervalMs = 4000 }: FactTickerPr
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
         <Text style={{ fontSize: 14 }}>🍦</Text>
         <Text style={{ fontSize: 11, fontWeight: '700', color: '#FF69B4', letterSpacing: 0.5 }}>
-          DID YOU KNOW?
+          {isSafetyTip ? 'SAFETY SCOOP' : 'DID YOU KNOW?'}
         </Text>
         <Text style={{ fontSize: 14 }}>🍦</Text>
       </View>

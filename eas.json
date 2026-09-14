@@ -11,8 +11,7 @@
       "env": {
         "EAS_BUILD_NO_EXPO_GO_WARNING": "1",
         "EAS_SKIP_AUTO_FINGERPRINT": "1",
-        "EAS_NO_VCS": "1",
-        "NODE_OPTIONS": "--require ./scripts/brace-expansion-preload.cjs"
+        "EAS_NO_VCS": "1"
       }
     },
     "development": {

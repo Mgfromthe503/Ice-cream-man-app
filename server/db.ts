@@ -1,6 +1,22 @@
-import { eq, and } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, iceCreamRequests, driverProfiles, driverLocationHistory, type InsertIceCreamRequest, type InsertDriverProfile } from "../drizzle/schema";
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
+import {
+  InsertUser,
+  users,
+  iceCreamRequests,
+  driverProfiles,
+  driverLocationHistory,
+  vendorEntitlements,
+  driverAvailability,
+  requestEvents,
+  payments,
+  dailySales,
+  type InsertIceCreamRequest,
+  type InsertDriverProfile,
+  type User,
+  type IceCreamRequest,
+} from "../drizzle/schema";
+import type { RequestStatus } from "../shared/dispatch-policy";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -16,6 +32,18 @@ export async function getDb() {
     }
   }
   return _db;
+}
+
+// ============= PRIVACY HELPERS =============
+
+/**
+ * Approximate a coordinate to ~2 decimal places (~1km neighborhood/city
+ * granularity). Used so driver-facing waiting requests never expose the exact
+ * home location unless the customer explicitly chose shareMode of "exact".
+ */
+function toApproximate(v: number | null): number | null {
+  if (v === null || v === undefined) return v;
+  return Math.round(v * 100) / 100; // ~1km neighborhood precision
 }
 
 // ============= AUTH FUNCTIONS (Required for OAuth) =============
@@ -61,7 +89,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     if (Object.keys(updateSet).length === 0) {
       updateSet.lastSignedIn = new Date();
     }
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
+    await db.insert(users).values(values).onConflictDoUpdate({
+      target: users.openId,
       set: updateSet,
     });
   } catch (error) {
@@ -80,6 +109,66 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+/**
+ * Delete a user and all of their associated data (Google Play data-deletion
+ * requirement). This cascades manually because the schema has no foreign-key
+ * relations defined. Requests list the customer by users.id and the driver by
+ * driver_profiles.id, so the driver profile id is resolved first.
+ */
+export async function deleteUserAccount(userId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return db.transaction(async (tx) => {
+    const profile = await tx
+      .select({ id: driverProfiles.id })
+      .from(driverProfiles)
+      .where(eq(driverProfiles.userId, userId))
+      .limit(1);
+    const driverProfileId = profile[0]?.id ?? null;
+
+    // Resolve any request ids referencing the user and delete their events.
+    const requestIds = await tx
+      .select({ id: iceCreamRequests.id })
+      .from(iceCreamRequests)
+      .where(
+        driverProfileId === null
+          ? eq(iceCreamRequests.customerId, userId)
+          : sql`${iceCreamRequests.customerId} = ${userId} OR ${iceCreamRequests.driverId} = ${driverProfileId}`,
+      );
+    const ids = requestIds.map((r) => r.id);
+    if (ids.length > 0) {
+      await tx.delete(requestEvents).where(inArray(requestEvents.requestId, ids));
+    }
+
+    await tx
+      .delete(iceCreamRequests)
+      .where(
+        driverProfileId === null
+          ? eq(iceCreamRequests.customerId, userId)
+          : sql`${iceCreamRequests.customerId} = ${userId} OR ${iceCreamRequests.driverId} = ${driverProfileId}`,
+      );
+
+    if (driverProfileId !== null) {
+      await tx.delete(driverLocationHistory).where(eq(driverLocationHistory.driverId, driverProfileId));
+      await tx.delete(driverAvailability).where(eq(driverAvailability.driverId, driverProfileId));
+      await tx.delete(dailySales).where(eq(dailySales.driverId, driverProfileId));
+      await tx.delete(payments).where(eq(payments.driverId, driverProfileId));
+      await tx.delete(driverProfiles).where(eq(driverProfiles.id, driverProfileId));
+    }
+
+    await tx.delete(vendorEntitlements).where(eq(vendorEntitlements.userId, userId));
+    await tx
+      .delete(requestEvents)
+      .where(
+        sql`${requestEvents.actorId} = ${userId} AND ${requestEvents.requestId} NOT IN (${ids.length ? sql.join(ids.map((i) => sql`${i}`), sql`, `) : sql`0`})`,
+      );
+
+    const deleted = await tx.delete(users).where(eq(users.id, userId)).returning({ id: users.id });
+    return deleted.length === 1;
+  });
+}
+
 // ============= ICE CREAM REQUEST FUNCTIONS =============
 
 /**
@@ -94,16 +183,39 @@ export async function createRequest(data: InsertIceCreamRequest) {
 }
 
 /**
- * Get all waiting requests (for drivers to see)
+ * Get all waiting requests (for drivers to see).
+ * Driver-facing privacy: the full request row (including precise latitude/
+ * longitude) is only returned for shareMode "exact". For "street" and
+ * "meetup", coordinates are reduced to ~1km neighborhood precision, and
+ * "meetup" additionally hides the home street address (the parent-chosen
+ * public meeting point lives in deliveryInstructions instead).
  */
 export async function getWaitingRequests() {
   const db = await getDb();
   if (!db) return [];
 
-  return db
+  const rows = await db
     .select()
     .from(iceCreamRequests)
     .where(eq(iceCreamRequests.status, "waiting"));
+
+  return rows.map((row): IceCreamRequest => {
+    // "exact" is the only mode that authorizes precise coordinates.
+    if (row.shareMode === "exact") {
+      return row;
+    }
+    return {
+      ...row,
+      // Approximate (~1km) precision. These are always numbers at runtime
+      // because the DB columns are NOT NULL, so toApproximate never sees
+      // null here.
+      latitude: toApproximate(row.latitude) as number,
+      longitude: toApproximate(row.longitude) as number,
+      // meetup hides the home address; the meeting point lives in
+      // deliveryInstructions.
+      address: row.shareMode === "meetup" ? null : row.address,
+    };
+  });
 }
 
 /**
@@ -140,38 +252,111 @@ export async function getDriverRequests(driverId: number) {
 /**
  * Accept a request (assign to driver)
  */
-export async function acceptRequest(requestId: number, driverId: number) {
+export async function acceptRequest(requestId: number, driverId: number): Promise<boolean> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  await db
+  const accepted = await db
     .update(iceCreamRequests)
     .set({
       driverId,
       status: "accepted",
       acceptedAt: new Date(),
+      updatedAt: new Date(),
     })
-    .where(eq(iceCreamRequests.id, requestId));
+    .where(and(eq(iceCreamRequests.id, requestId), eq(iceCreamRequests.status, "waiting")))
+    .returning({ id: iceCreamRequests.id });
+  return accepted.length === 1;
 }
 
-/**
- * Update request status
- */
-export async function updateRequestStatus(
+export async function updateAssignedRequestStatus(
   requestId: number,
-  status: "waiting" | "accepted" | "in_transit" | "completed" | "cancelled",
-) {
+  driverId: number,
+  expectedStatus: "accepted" | "in_transit",
+  nextStatus: "in_transit",
+): Promise<boolean> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const updateData: any = { status };
-  if (status === "completed") {
-    updateData.completedAt = new Date();
-  } else if (status === "cancelled") {
-    updateData.cancelledAt = new Date();
-  }
+  const updated = await db
+    .update(iceCreamRequests)
+    .set({ status: nextStatus, updatedAt: new Date() })
+    .where(
+      and(
+        eq(iceCreamRequests.id, requestId),
+        eq(iceCreamRequests.driverId, driverId),
+        eq(iceCreamRequests.status, expectedStatus),
+      ),
+    )
+    .returning({ id: iceCreamRequests.id });
+  return updated.length === 1;
+}
 
-  await db.update(iceCreamRequests).set(updateData).where(eq(iceCreamRequests.id, requestId));
+export async function cancelCustomerRequest(requestId: number, customerId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const cancelled = await db
+    .update(iceCreamRequests)
+    .set({
+      status: "cancelled",
+      cancelledAt: new Date(),
+      updatedAt: new Date(),
+      // Purge identifying delivery text on cancellation (privacy policy).
+      address: null,
+      deliveryInstructions: null,
+    })
+    .where(
+      and(
+        eq(iceCreamRequests.id, requestId),
+        eq(iceCreamRequests.customerId, customerId),
+        inArray(iceCreamRequests.status, ["waiting", "accepted"]),
+      ),
+    )
+    .returning({ id: iceCreamRequests.id });
+  return cancelled.length === 1;
+}
+
+export async function completeDriverDelivery(requestId: number, driverId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return db.transaction(async (tx) => {
+    const completed = await tx
+      .update(iceCreamRequests)
+      .set({
+        status: "completed",
+        completedAt: new Date(),
+        updatedAt: new Date(),
+        // Purge identifying delivery text once the order is fulfilled
+        // (privacy policy). Coordinates remain for the delivery lifecycle only.
+        address: null,
+        deliveryInstructions: null,
+      })
+      .where(
+        and(
+          eq(iceCreamRequests.id, requestId),
+          eq(iceCreamRequests.driverId, driverId),
+          eq(iceCreamRequests.status, "in_transit"),
+        ),
+      )
+      .returning({ price: iceCreamRequests.price });
+    if (completed.length !== 1) return false;
+
+    const updatedProfile = await tx
+      .update(driverProfiles)
+      .set({
+        totalEarnings: sql`${driverProfiles.totalEarnings} + ${completed[0].price}`,
+        totalDeliveries: sql`${driverProfiles.totalDeliveries} + 1`,
+        updatedAt: new Date(),
+      })
+      .where(eq(driverProfiles.id, driverId))
+      .returning({ id: driverProfiles.id });
+    if (updatedProfile.length !== 1) {
+      throw new Error("Driver profile not found while completing delivery");
+    }
+    return true;
+  });
 }
 
 /**
@@ -282,4 +467,207 @@ export async function setDriverOnlineStatus(driverId: number, isOnline: boolean)
       isOnline: isOnline ? 1 : 0,
     })
     .where(eq(driverProfiles.id, driverId));
+}
+
+export async function getVendorEntitlementForUser(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db
+    .select()
+    .from(vendorEntitlements)
+    .where(eq(vendorEntitlements.userId, userId))
+    .limit(1);
+  return result[0] ?? null;
+}
+
+export async function createVendorEntitlement(input: {
+  userId: number;
+  productId: string;
+  purchaseTokenHash: string;
+  orderId: string | null;
+  purchaseTimeMillis: string | null;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const existingForUser = await getVendorEntitlementForUser(input.userId);
+  if (existingForUser) {
+    return { entitlement: existingForUser, created: false };
+  }
+
+  const inserted = await db
+    .insert(vendorEntitlements)
+    .values(input)
+    .onConflictDoNothing()
+    .returning();
+  if (inserted[0]) {
+    return { entitlement: inserted[0], created: true };
+  }
+
+  const tokenMatches = await db
+    .select()
+    .from(vendorEntitlements)
+    .where(eq(vendorEntitlements.purchaseTokenHash, input.purchaseTokenHash))
+    .limit(1);
+  const existingForToken = tokenMatches[0];
+  if (existingForToken?.userId === input.userId) {
+    return { entitlement: existingForToken, created: false };
+  }
+
+  throw new Error("This Google Play purchase has already been used by another account.");
+}
+
+// ============= SECURITY FUNCTIONS =============
+
+/** Strip sensitive fields from user before sending to client */
+export function toSafeUser(user: User) {
+  const { passwordHash: _hash, failedLoginAttempts: _attempts, lockedUntil: _lock, ...safeUser } = user;
+  return safeUser;
+}
+
+/** Record a failed login attempt; locks account after 5 failures for 15 minutes */
+export async function recordFailedLogin(user: User) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const attempts = (user.failedLoginAttempts ?? 0) + 1;
+  const lockedUntil = attempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null;
+  await db
+    .update(users)
+    .set({ failedLoginAttempts: lockedUntil ? 0 : attempts, lockedUntil })
+    .where(eq(users.id, user.id));
+}
+
+/** Reset failed login attempts on successful login */
+export async function recordSuccessfulLogin(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .update(users)
+    .set({ failedLoginAttempts: 0, lockedUntil: null, lastSignedIn: new Date() })
+    .where(eq(users.id, userId));
+}
+
+// ============= DRIVER AVAILABILITY =============
+
+export async function getDriverAvailability(driverId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(driverAvailability).where(eq(driverAvailability.driverId, driverId)).limit(1);
+  return result[0] ?? null;
+}
+
+export async function setDriverAvailability(input: { driverId: number; available: boolean; latitude?: number; longitude?: number }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db
+    .insert(driverAvailability)
+    .values({
+      driverId: input.driverId,
+      available: input.available,
+      latitude: input.latitude,
+      longitude: input.longitude,
+    })
+    .onConflictDoUpdate({
+      target: driverAvailability.driverId,
+      set: {
+        available: input.available,
+        latitude: input.latitude,
+        longitude: input.longitude,
+        updatedAt: new Date(),
+      },
+    });
+  return getDriverAvailability(input.driverId);
+}
+
+// ============= REQUEST EVENTS (AUDIT TRAIL) =============
+
+export async function logRequestEvent(input: { requestId: number; actorId?: number; fromStatus?: RequestStatus; toStatus: RequestStatus; note?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(requestEvents).values({
+    requestId: input.requestId,
+    actorId: input.actorId,
+    fromStatus: input.fromStatus,
+    toStatus: input.toStatus,
+    note: input.note,
+  });
+}
+
+// ============= DISPATCH FUNCTIONS =============
+
+/** Get active request for a customer (waiting, accepted, in_transit, or arrived) */
+export async function getCustomerActiveRequest(customerId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db
+    .select()
+    .from(iceCreamRequests)
+    .where(
+      and(
+        eq(iceCreamRequests.customerId, customerId),
+        inArray(iceCreamRequests.status, ["waiting", "accepted", "in_transit", "arrived"]),
+      ),
+    )
+    .orderBy(desc(iceCreamRequests.createdAt))
+    .limit(1);
+  return result[0] ?? null;
+}
+
+/** Get active request for a driver (accepted, in_transit, or arrived) */
+export async function getDriverActiveRequest(driverId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db
+    .select()
+    .from(iceCreamRequests)
+    .where(
+      and(
+        eq(iceCreamRequests.driverId, driverId),
+        inArray(iceCreamRequests.status, ["accepted", "in_transit", "arrived"]),
+      ),
+    )
+    .orderBy(desc(iceCreamRequests.acceptedAt))
+    .limit(1);
+  return result[0] ?? null;
+}
+
+/**
+ * Atomic driver acceptance with guard.
+ * Only one driver can win a pending request.
+ * Returns the accepted request or a reason code on failure.
+ */
+export async function acceptRequestAtomic(
+  requestId: number,
+  driverId: number,
+): Promise<{ accepted: true; request: IceCreamRequest } | { accepted: false; reason: "ACTIVE_ASSIGNMENT" | "NO_LONGER_AVAILABLE" }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Guard: driver already has an active assignment
+  if (await getDriverActiveRequest(driverId)) {
+    return { accepted: false, reason: "ACTIVE_ASSIGNMENT" };
+  }
+
+  // Atomic update: only if still waiting and no driver assigned
+  const result = await db
+    .update(iceCreamRequests)
+    .set({ driverId, status: "accepted", acceptedAt: new Date(), updatedAt: new Date() })
+    .where(
+      and(
+        eq(iceCreamRequests.id, requestId),
+        eq(iceCreamRequests.status, "waiting"),
+        isNull(iceCreamRequests.driverId),
+      ),
+    )
+    .returning();
+
+  if (result.length !== 1) {
+    return { accepted: false, reason: "NO_LONGER_AVAILABLE" };
+  }
+
+  // Log the event
+  await logRequestEvent({ requestId, actorId: driverId, fromStatus: "waiting", toStatus: "accepted" });
+
+  return { accepted: true, request: result[0] };
 }

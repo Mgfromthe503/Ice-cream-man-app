@@ -1,8 +1,9 @@
 /**
- * Manus Runtime - Communication layer between Expo web app and parent container (next-agent-webapp)
+ * Preview Runtime - Communication layer between the Expo web build and a parent
+ * preview container (e.g. an iframe-based web preview environment).
  *
  * Simplified flow:
- * 1. initManusRuntime() called
+ * 1. initPreviewRuntime() called
  * 2. Send 'appDevServerReady' to parent to signal app is ready
  *
  * User will manually login via the app's login page - no automatic cookie injection.
@@ -11,12 +12,12 @@
 import { Platform } from "react-native";
 import type { Metrics } from "react-native-safe-area-context";
 
-// Debug logging with timestamps
-const DEBUG = true;
+// Debug logging with timestamps (disabled in production)
+const DEBUG = false;
 const log = (msg: string) => {
   if (!DEBUG) return;
   const ts = new Date().toISOString();
-  console.log(`[ManusRuntime ${ts}] ${msg}`);
+  console.log(`[PreviewRuntime ${ts}] ${msg}`);
 };
 
 type MessageType = "appDevServerReady";
@@ -101,17 +102,20 @@ export function subscribeSafeAreaInsets(callback: SafeAreaCallback): () => void 
 }
 
 /**
- * Initialize Manus Runtime - just notifies parent that app is ready
+ * Initialize Preview Runtime - just notifies parent that app is ready
  */
-export function initManusRuntime(): void {
+export function initPreviewRuntime(): void {
   if (!isWeb() || !isInIframe()) return;
   if (initialized) return;
   initialized = true;
 
-  log("initManusRuntime called");
+  log("initPreviewRuntime called");
   window.addEventListener("message", handleMessage);
   sendToParent("appDevServerReady", {});
 }
+
+/** @deprecated Use initPreviewRuntime instead */
+export const initManusRuntime = initPreviewRuntime;
 
 /**
  * Check if running inside preview iframe

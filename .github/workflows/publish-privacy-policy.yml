@@ -1,0 +1,46 @@
+name: Publish privacy policy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "legal/PRIVACY_POLICY.md"
+      - "scripts/generate_privacy_policy.py"
+      - ".github/workflows/publish-privacy-policy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install Markdown renderer
+        run: python -m pip install --disable-pip-version-check --no-input Markdown
+
+      - name: Render privacy policy
+        run: python scripts/generate_privacy_policy.py
+
+      - name: Commit generated GitHub Pages document
+        run: |
+          if git diff --quiet -- docs/privacy.html; then
+            echo "Privacy policy is already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/privacy.html
+          git commit -m "chore: publish updated privacy policy"
+          git push origin main

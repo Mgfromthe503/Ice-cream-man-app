@@ -88,6 +88,7 @@ async function reverseGeocode(latitude: number, longitude: number): Promise<stri
  * for neighborhood-level address accuracy.
  */
 async function getLocationFromIP(): Promise<LocationData | null> {
+  if (Platform.OS !== 'web') return null;
   // Try multiple free IP geolocation services as fallbacks
   const services = [
     {
@@ -257,7 +258,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     if (isMountedRef.current) setIsLoadingLocation(false);
   };
 
-  // Request location permission (always returns true since we have IP fallback)
+  // Request location permission
   const requestLocationPermission = async (): Promise<boolean> => {
     // Check disclosure first on native
     if (Platform.OS !== 'web') {
@@ -265,14 +266,14 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       if (!accepted) {
         // Show disclosure modal instead of requesting permission directly
         setShowDisclosure(true);
-        return true; // IP fallback will work in the meantime
+        return false;
       }
       try {
         const ExpoLocation = require('expo-location');
         const { status } = await ExpoLocation.requestForegroundPermissionsAsync();
         return status === 'granted';
       } catch (error) {
-        return true; // IP fallback will work
+        return false;
       }
     }
     return true; // Web always has IP fallback
@@ -309,15 +310,15 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
           };
         }
       } catch (nativeError) {
-        console.log('Native GPS failed, using IP fallback');
+        console.log('Native GPS failed');
       }
 
-      // Native fallback: IP geolocation
-      return await getLocationFromIP();
+      // Native: GPS denied or failed - surface an error (no IP fallback)
+      return null;
     } catch (error) {
       console.error('getCurrentLocation error:', error);
-      // Last resort: IP geolocation
-      return await getLocationFromIP();
+      // No IP fallback on native - surface an error instead
+      return null;
     }
   };
 
@@ -424,39 +425,20 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
             );
             locationSubRef.current = subscription;
           } else {
-            // Permission denied on native - use IP polling
-            const pollInterval = setInterval(async () => {
-              if (!isMountedRef.current) return;
-              const loc = await getLocationFromIP();
-              if (loc && isMountedRef.current) {
-                setUserLocation(loc);
-              }
-            }, 60000);
-            locationSubRef.current = { remove: () => clearInterval(pollInterval) };
+            // Permission denied on native - stop tracking and surface the error
+            setLocationError('Location permission was denied. Enable location access to share your position.');
           }
         } catch (error) {
-          console.log('Native location tracking failed, using IP polling');
-          const pollInterval = setInterval(async () => {
-            if (!isMountedRef.current) return;
-            const loc = await getLocationFromIP();
-            if (loc && isMountedRef.current) {
-              setUserLocation(loc);
-            }
-          }, 60000);
-          locationSubRef.current = { remove: () => clearInterval(pollInterval) };
+          console.log('Native location tracking failed');
+          if (isMountedRef.current) {
+            setLocationError('Could not start location tracking. Please try again.');
+          }
         }
       }
     } catch (error) {
       console.error('Failed to start location tracking:', error);
       if (isMountedRef.current) {
-        // Even on total failure, try IP one more time
-        const ipLoc = await getLocationFromIP();
-        if (ipLoc) {
-          setUserLocation(ipLoc);
-          setLocationError(null);
-        } else {
-          setLocationError('Unable to determine location. Check internet connection.');
-        }
+        setLocationError('Unable to determine location. Check your location settings.');
         setIsLoadingLocation(false);
       }
     }
@@ -504,9 +486,8 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
           // Already accepted — proceed with full GPS tracking
           startLocationTracking();
         } else {
-          // Not yet accepted — start with IP-only, show disclosure when user interacts
-          await startIPOnlyTracking();
-          // Show disclosure modal after a short delay so the screen loads first
+          // Not yet accepted — show disclosure modal and wait for user to accept
+          // (do NOT auto-fetch IP on native)
           setTimeout(() => {
             if (isMountedRef.current) setShowDisclosure(true);
           }, 1500);

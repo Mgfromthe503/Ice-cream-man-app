@@ -14,7 +14,7 @@ const config: ExpoConfig = {
   name: APP_NAME,
   slug: APP_SLUG,
   owner: EXPO_OWNER,
-  version: "1.0.14",
+  version: "1.0.24",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: APP_SCHEME,
@@ -31,18 +31,17 @@ const config: ExpoConfig = {
     adaptiveIcon: {
       backgroundColor: "#E6F4FE",
       foregroundImage: "./assets/images/android-icon-foreground.png",
-      backgroundImage: "./assets/images/android-icon-background.png",
       monochromeImage: "./assets/images/android-icon-monochrome.png",
     },
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: APP_BUNDLE_ID,
-    versionCode: 10014,
+    // versionCode managed by EAS autoIncrement (see eas.json)
     permissions: [
       "POST_NOTIFICATIONS",
       "com.android.vending.BILLING",
       "ACCESS_FINE_LOCATION",
-      "ACCESS_COARSE_LOCATION",
+      // ACCESS_COARSE_LOCATION removed - app uses precise location only
     ],
     // Queries block for Android 11+ (API 30+) package visibility
     // Required for Linking.openURL() to work with external maps apps
@@ -59,7 +58,7 @@ const config: ExpoConfig = {
         data: [
           {
             scheme: APP_SCHEME,
-            host: "*",
+            host: "mgfromthe503.github.io",
           },
         ],
         category: ["BROWSABLE", "DEFAULT"],
@@ -75,29 +74,48 @@ const config: ExpoConfig = {
     "expo-router",
     "expo-font",
     "expo-web-browser",
+    [
+      "expo-notifications",
+      {
+        icon: "./assets/images/icon.png",
+        color: "#E6F4FE",
+        defaultChannel: "default",
+      },
+    ],
     // Google Play Billing (vendor registration). Requires a dev client / EAS
     // build — not available in Expo Go.
     "expo-iap",
-    // Custom plugin: injects BillingClient 9.1.0 dependency + ProGuard rules
+    // Custom plugin: injects BillingClient 8.1.0 dependency + ProGuard rules
     "./plugins/withBillingClient",
     [
       "expo-location",
       {
+        // Location updates run only while the app is active. Keeping the
+        // foreground service disabled avoids requesting Android 14 FGS
+        // permissions when there is no background-navigation feature.
         isAndroidBackgroundLocationEnabled: false,
         isAndroidForegroundServiceEnabled: false,
       },
     ],
+    // Must run after expo-location so the library manifest cannot re-add
+    // unused Android foreground-service permissions.
+    "./plugins/withoutLocationForegroundService",
+    // Disable cleartext HTTP; API/OAuth backends are HTTPS-only.
+    "./plugins/withoutCleartext",
     [
       "expo-audio",
       {
-        microphonePermission: "Allow $(PRODUCT_NAME) to access your microphone.",
+        // The app uses playback only. Do not request microphone access or ship RECORD_AUDIO.
+        microphonePermission: false,
+        recordAudioAndroid: false,
+        enableBackgroundRecording: false,
       },
     ],
     [
       "expo-video",
       {
-        supportsBackgroundPlayback: true,
-        supportsPictureInPicture: true,
+        supportsBackgroundPlayback: false,
+        supportsPictureInPicture: false,
       },
     ],
     [
@@ -116,17 +134,18 @@ const config: ExpoConfig = {
       "expo-build-properties",
       {
         android: {
-          // Google Play Billing Library 9.1.0 (via expo-iap) needs Kotlin 2.x.
+          // Google Play Billing Library 8.1.0 (via expo-iap) needs Kotlin 2.x.
           kotlinVersion: "2.1.20",
           buildArchs: ["armeabi-v7a", "arm64-v8a"],
           minSdkVersion: 24,
+          targetSdkVersion: 36,
           // Enable R8 minification and resource shrinking for Google Play compliance
           enableProguardInReleaseBuilds: true,
           enableShrinkResourcesInReleaseBuilds: true,
           // Enable minification (R8) for release builds
           enableMinifyInReleaseBuilds: true,
-          // Google Play Billing Library version 9.1.0
-          billingLibraryVersion: "9.1.0",
+          // Google Play Billing Library version 8.1.0
+          billingLibraryVersion: "8.1.0",
         },
       },
     ],

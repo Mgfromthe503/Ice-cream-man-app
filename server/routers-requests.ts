@@ -1,5 +1,6 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { router, protectedProcedure, publicProcedure } from "./_core/trpc";
+import { driverProcedure, router, protectedProcedure } from "./_core/trpc";
 import * as db from "./db";
 
 /**
@@ -40,7 +41,7 @@ export const requestsRouter = router({
    * Get all waiting requests
    * Called by: Driver
    */
-  getWaiting: protectedProcedure.query(async () => {
+  getWaiting: driverProcedure.query(async () => {
     return db.getWaitingRequests();
   }),
 
@@ -56,22 +57,21 @@ export const requestsRouter = router({
    * Get driver's active requests
    * Called by: Driver
    */
-  getDriverActive: protectedProcedure.query(async ({ ctx }) => {
-    // TODO: Get driver ID from user profile
-    const driverId = ctx.user.id;
-    return db.getDriverRequests(driverId);
+  getDriverActive: driverProcedure.query(async ({ ctx }) => {
+    return db.getDriverRequests(ctx.driverProfile.id);
   }),
 
   /**
    * Accept a request
    * Called by: Driver
    */
-  accept: protectedProcedure
-    .input(z.object({ requestId: z.number() }))
+  accept: driverProcedure
+    .input(z.object({ requestId: z.number().int().positive() }))
     .mutation(async ({ ctx, input }) => {
-      // TODO: Get driver ID from user profile
-      const driverId = ctx.user.id;
-      await db.acceptRequest(input.requestId, driverId);
+      const accepted = await db.acceptRequest(input.requestId, ctx.driverProfile.id);
+      if (!accepted) {
+        throw new TRPCError({ code: "CONFLICT", message: "This request is no longer available." });
+      }
       return { success: true };
     }),
 
@@ -79,15 +79,23 @@ export const requestsRouter = router({
    * Update request status
    * Called by: Driver
    */
-  updateStatus: protectedProcedure
+  updateStatus: driverProcedure
     .input(
       z.object({
-        requestId: z.number(),
-        status: z.enum(["waiting", "accepted", "in_transit", "completed", "cancelled"]),
+        requestId: z.number().int().positive(),
+        status: z.literal("in_transit"),
       }),
     )
-    .mutation(async ({ input }) => {
-      await db.updateRequestStatus(input.requestId, input.status);
+    .mutation(async ({ ctx, input }) => {
+      const updated = await db.updateAssignedRequestStatus(
+        input.requestId,
+        ctx.driverProfile.id,
+        "accepted",
+        input.status,
+      );
+      if (!updated) {
+        throw new TRPCError({ code: "CONFLICT", message: "This request cannot enter transit." });
+      }
       return { success: true };
     }),
 
@@ -96,9 +104,12 @@ export const requestsRouter = router({
    * Called by: Customer or Driver
    */
   cancel: protectedProcedure
-    .input(z.object({ requestId: z.number() }))
-    .mutation(async ({ input }) => {
-      await db.updateRequestStatus(input.requestId, "cancelled");
+    .input(z.object({ requestId: z.number().int().positive() }))
+    .mutation(async ({ ctx, input }) => {
+      const cancelled = await db.cancelCustomerRequest(input.requestId, ctx.user.id);
+      if (!cancelled) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Only the requesting customer can cancel an active request." });
+      }
       return { success: true };
     }),
 });
@@ -127,6 +138,13 @@ export const driverRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const entitlement = await db.getVendorEntitlementForUser(ctx.user.id);
+      if (!entitlement) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Google Play registration must be verified first." });
+      }
+      const existingProfile = await db.getDriverProfile(ctx.user.id);
+      if (existingProfile) return { id: existingProfile.id };
+
       const profileId = await db.createDriverProfile({
         userId: ctx.user.id,
         vehicleType: input.vehicleType || "Ice Cream Truck",
@@ -144,7 +162,7 @@ export const driverRouter = router({
    * Update driver location (real-time tracking)
    * Called by: Driver (frequently)
    */
-  updateLocation: protectedProcedure
+  updateLocation: driverProcedure
     .input(
       z.object({
         latitude: z.number(),
@@ -154,10 +172,8 @@ export const driverRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // TODO: Get driver ID from user profile
-      const driverId = ctx.user.id;
       await db.updateDriverLocation(
-        driverId,
+        ctx.driverProfile.id,
         input.latitude,
         input.longitude,
         input.heading,
@@ -170,24 +186,20 @@ export const driverRouter = router({
    * Get driver location history
    * Called by: Driver or Admin
    */
-  getLocationHistory: protectedProcedure
+  getLocationHistory: driverProcedure
     .input(z.object({ limit: z.number().optional() }))
     .query(async ({ ctx, input }) => {
-      // TODO: Get driver ID from user profile
-      const driverId = ctx.user.id;
-      return db.getDriverLocationHistory(driverId, input.limit || 100);
+      return db.getDriverLocationHistory(ctx.driverProfile.id, input.limit || 100);
     }),
 
   /**
    * Set driver online status
    * Called by: Driver
    */
-  setOnlineStatus: protectedProcedure
+  setOnlineStatus: driverProcedure
     .input(z.object({ isOnline: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
-      // TODO: Get driver ID from user profile
-      const driverId = ctx.user.id;
-      await db.setDriverOnlineStatus(driverId, input.isOnline);
+      await db.setDriverOnlineStatus(ctx.driverProfile.id, input.isOnline);
       return { success: true };
     }),
 
@@ -195,18 +207,13 @@ export const driverRouter = router({
    * Complete delivery and update earnings
    * Called by: Driver
    */
-  completeDelivery: protectedProcedure
-    .input(z.object({ requestId: z.number(), amount: z.number() }))
+  completeDelivery: driverProcedure
+    .input(z.object({ requestId: z.number().int().positive() }))
     .mutation(async ({ ctx, input }) => {
-      // TODO: Get driver ID from user profile
-      const driverId = ctx.user.id;
-
-      // Update request status
-      await db.updateRequestStatus(input.requestId, "completed");
-
-      // Update driver earnings
-      await db.updateDriverEarnings(driverId, input.amount);
-
+      const completed = await db.completeDriverDelivery(input.requestId, ctx.driverProfile.id);
+      if (!completed) {
+        throw new TRPCError({ code: "CONFLICT", message: "This delivery cannot be completed." });
+      }
       return { success: true };
     }),
 });
